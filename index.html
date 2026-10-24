@@ -161,7 +161,7 @@ input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border
 <div id="toast"></div>
 
 <script>
-const APPVER='20261025a';
+const APPVER='20261025b';
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const PDFOPT={cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'};
 const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/';
@@ -542,11 +542,22 @@ $('camBtn').onclick=()=>{if(!$('view').classList.contains('nocam')&&stream){if(r
 $('flip').onclick=async()=>{if(rec){toast('녹화 중엔 바꿀 수 없어요');return}facing=facing==='user'?'environment':'user';LS.set('facing',facing);camStop();await camStart()};
 function recType(){const c=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9,opus','video/webm'];
  return c.find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||''}
+// ★ 아이패드를 세로로 세우면 카메라도 세로 영상을 준다 → 미리보기(16:9 가운데)와 똑같이 잘라 가로로 녹화(10/25 사용자)
+let cropStop=null;
+function recSource(){const v=$('vid'),vw=v.videoWidth,vh=v.videoHeight;
+ if(!vw||!vh||vh<=vw||!HTMLCanvasElement.prototype.captureStream)return stream;
+ const W=Math.min(1920,vw)&~1,H=Math.round(W*9/16)&~1,sh=vw*9/16,sy=(vh-sh)/2,cv=document.createElement('canvas');cv.width=W;cv.height=H;
+ const cx=cv.getContext('2d');let on=true,timer=0;
+ const paint=()=>{if(!on)return;cx.drawImage(v,0,sy,vw,sh,0,0,W,H);
+  if(v.requestVideoFrameCallback)v.requestVideoFrameCallback(paint)};
+ paint();if(!v.requestVideoFrameCallback)timer=setInterval(paint,1000/30);
+ const out=cv.captureStream(30);stream.getAudioTracks().forEach(t=>out.addTrack(t));
+ cropStop=()=>{on=false;clearInterval(timer);out.getVideoTracks().forEach(t=>t.stop());cropStop=null};return out}
 function recStart(){if(!stream){camStart().then(()=>stream&&recStart());return}
  if(!window.MediaRecorder){toast('이 기기는 녹화를 지원하지 않아요');return}
- const type=recType();recChunks=[];rec=new MediaRecorder(stream,type?{mimeType:type,videoBitsPerSecond:6e6}:undefined);
+ const type=recType();recChunks=[];rec=new MediaRecorder(recSource(),type?{mimeType:type,videoBitsPerSecond:6e6}:undefined);
  rec.ondataavailable=e=>{if(e.data&&e.data.size)recChunks.push(e.data)};
- rec.onstop=()=>{const t=rec.mimeType||type||'video/mp4',ext=/mp4/.test(t)?'mp4':'webm';
+ rec.onstop=()=>{if(cropStop)cropStop();const t=rec.mimeType||type||'video/mp4',ext=/mp4/.test(t)?'mp4':'webm';
   const d=new Date(),stamp=`${d.getMonth()+1}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;
   recFile=new File(recChunks,`${(cur?cur.title+'_'+cur.part:'합주').replace(/[\\/:*?"<>|\s]+/g,'_')}_${stamp}.${ext}`,{type:t.split(';')[0]});
   rec=null;$('saveRec').style.display='block';toast('녹화 끝! 💾 녹화 저장 을 눌러 주세요',3000)};
