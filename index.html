@@ -161,7 +161,7 @@ input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border
 <div id="toast"></div>
 
 <script>
-const APPVER='20261025b';
+const APPVER='20261025c';
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const PDFOPT={cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'};
 const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/';
@@ -406,8 +406,10 @@ function mkTile(k,x,w,U,G){const n=B.seq[k],b=B.boxes[n],d=document.createElemen
  Object.assign(d.style,{left:x+'px',width:w+'px'});return d}
 function buildWipe(){const box=$('wipe');box.innerHTML='';W8={slots:[],lines:[],lineOf:[],S:1};if(!cur||!B.seq.length)return;
  const sh=$('sheet'),W=sh.clientWidth,H=sh.clientHeight,G=tgeo(),per=G.maxA+G.maxB,gap=12;
- const U=Math.min(W/(X1-X0),H*0.96/per),TH=per*U,R=Math.max(1,Math.floor((H+gap)/(TH+gap))),C=R>=2?1:2,sw=(W-(C-1)*gap)/C;
- const ws=B.seq.map(n=>B.boxes[n]?(B.boxes[n].x1-B.boxes[n].x0)*U:0).filter(Boolean).sort((a,b)=>a-b),rw=(ws[ws.length>>1]||W/4)*0.6;
+ // ★ 폰은 원본 한 줄을 그대로 맞추면 음표가 깨알 → 마디 하나가 최소 170px(또는 화면 절반)은 되게 키운다(10/25 사용자 «기기가 다양해»)
+ const bw=B.seq.map(n=>B.boxes[n]?B.boxes[n].x1-B.boxes[n].x0:0).filter(Boolean).sort((a,b)=>a-b),mb=bw[bw.length>>1]||(X1-X0)/4;
+ const U=Math.min(Math.max(W/(X1-X0),Math.min(W/2,170)/mb),H*0.96/per,W*0.98/bw[bw.length-1]||1e9),TH=per*U,R=Math.max(1,Math.floor((H+gap)/(TH+gap))),C=R>=2?1:2,sw=(W-(C-1)*gap)/C;
+ const ws=bw.map(w=>w*U),rw=(ws[ws.length>>1]||W/4)*0.6;
  // 마디를 칸 너비만큼씩 줄로 담는다(한 마디가 칸보다 넓으면 그 마디 혼자 한 줄)
  let L=null;B.seq.forEach((n,k)=>{const b=B.boxes[n],w=b?(b.x1-b.x0)*U:rw;
   if(!L||(L.x+w>sw&&L.items.length)){L={items:[],x:0};W8.lines.push(L)}L.items.push({k,x:L.x,w});L.x+=w;W8.lineOf[k]=W8.lines.length-1});
