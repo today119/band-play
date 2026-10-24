@@ -53,6 +53,20 @@ input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border
 #tool .sep{flex:none;width:1px;height:26px;background:#374151}
 #live{flex:none;background:#dc2626;color:#fff;border-radius:8px;padding:4px 8px;font:700 13px sans-serif}
 #sheet{position:relative;flex:1;min-height:0;background:#fff;overflow:hidden}
+#wipe{position:absolute;inset:0;overflow:hidden;background:#fff;touch-action:none}
+.slot{position:absolute;overflow:hidden}
+.slot.fresh{animation:fresh .45s ease-out}
+@keyframes fresh{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.slot .ph{top:0;bottom:0;position:absolute;z-index:3}
+.slot.next::before{content:'다음';position:absolute;right:4px;top:2px;z-index:4;font:800 11px sans-serif;color:#fff;background:#16a34a;border-radius:6px;padding:1px 6px}
+#tape{position:absolute;inset:0;overflow:hidden;background:#fff;touch-action:none}
+#tapeIn{position:absolute;left:0;will-change:transform}
+.tile{position:absolute;top:0;height:100%;overflow:hidden}
+.tile img{position:absolute;max-width:none;pointer-events:none}
+.tile.rest{display:flex;align-items:center;justify-content:center;color:#94a3b8;font:700 16px sans-serif;background:#f8fafc;border-left:1px solid #e2e8f0}
+.tile.now::after{content:'';position:absolute;inset:0;background:#fde04738;pointer-events:none}
+.tn{position:absolute;left:3px;top:2px;font:700 11px sans-serif;color:#2563eb;background:#ffffffcc;border-radius:4px;padding:0 3px;line-height:1.3}
+#tapePh{position:absolute;width:4px;margin-left:-2px;background:#dc2626;box-shadow:0 0 8px #dc2626aa;border-radius:2px;pointer-events:none;z-index:3}
 #strip{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:4px 0 40vh}
 .band{position:relative;line-height:0;border-bottom:1px solid #f1f5f9}
 .band img{width:100%;display:block;pointer-events:none}
@@ -138,7 +152,7 @@ input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border
   <span class="sep"></span><button id="fix">🔢</button><button id="fs">⛶</button>
  </div>
  <div id="sheet">
-  <div id="strip"></div><div id="stage" class="hide"></div><div id="L" class="hint">‹</div><div id="R" class="hint">›</div>
+  <div id="strip"></div><div id="wipe" class="hide"></div><div id="tape" class="hide"><div id="tapeIn"></div><div id="tapePh"></div></div><div id="stage" class="hide"></div><div id="L" class="hint">‹</div><div id="R" class="hint">›</div>
   <div id="cnt"></div><div id="rest"></div>
   <div id="fixbar" class="hide"><span>빨간 숫자(줄 첫 마디)를 누르면 번호를 고쳐요</span><button id="fixDone">다 됐어요</button></div>
  </div>
@@ -147,7 +161,7 @@ input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border
 <div id="toast"></div>
 
 <script>
-const APPVER='20261024c';
+const APPVER='20261025a';
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const PDFOPT={cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'};
 const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/';
@@ -330,10 +344,14 @@ $('fGo').onclick=async()=>{if(!pending)return;const title=$('fTitle').value.trim
 
 // ════════ 악보 화면 ════════
 // 보기: flow = 줄 띠가 흘러감, fixed = 한 화면씩 넘김, page = 원본 쪽
-let cur=null,B=null,imgs=[],bandImgs=[],bands=[],X0=0,X1=1,i=0,two=LS.get('two',false),fixing=false,mode=LS.get('mode','flow');
+let cur=null,B=null,imgs=[],bandImgs=[],bands=[],X0=0,X1=1,i=0,two=LS.get('two',false),fixing=false,mode=LS.get('mode3','wipe');
+const lin=()=>mode==='tape'||mode==='wipe';
+let W8={slots:[],lines:[],lineOf:[],S:1},bandWH=[],tiles=[],tapeW=0,tapeX=0,tapeDrag=null;
 let playing=false,pos=0,frac=0,t0=0,raf=0,ac=null,beatAt=0,beatN=0,clk=LS.get('clk',true);
 const st=$('stage'),strip=$('strip');
-const MODES={flow:'🌊 흐름',fixed:'📄 넘김',page:'🗒 원본'};
+// tape = 마디를 연주 순서대로 옆으로 이어 붙인 긴 띠 — 재생바는 제자리, 악보가 흘러온다(10/25 사용자 «다음 악보가 뭔지 모르잖아»)
+// wipe = 왼→오 재생바, 지나간 자리(앞 절반·윗줄)에 다음 마디가 미리 들어온다(10/25 사용자 «4마디 전쯤 다음 16박이 나와서 다시 왼쪽»)
+const MODES={wipe:'🔁 이어 보기',tape:'🎞 가로 흐름',flow:'🌊 흐름',fixed:'📄 넘김',page:'🗒 원본'};
 // 줄(시스템)마다 잘라낼 띠 범위: 위아래 이웃 줄과의 가운데까지(코드·가사 포함)
 function bandGeom(sys){const byP={};sys.forEach((s,k)=>{(byP[s.p]=byP[s.p]||[]).push(k)});
  const gaps=[];Object.values(byP).forEach(l=>{l.sort((a,b)=>sys[a].y0-sys[b].y0);for(let j=1;j<l.length;j++)gaps.push(sys[l[j]].y0-sys[l[j-1]].y1)});
@@ -357,7 +375,7 @@ async function openScore(id){const sc=await sGet(id);if(!sc)return;cur=sc;B=buil
    for(let k=0;k<sc.systems.length;k++){if(sc.systems[k].p!==p-1)continue;const b=g[k];
     const sx=Math.round(X0*cv.width),sy=Math.round(b.top*cv.height),sw=Math.round((X1-X0)*cv.width),sh=Math.max(1,Math.round((b.bot-b.top)*cv.height));
     const c2=document.createElement('canvas');c2.width=sw;c2.height=sh;const x2=c2.getContext('2d');x2.drawImage(cv,sx,sy,sw,sh,0,0,sw,sh);
-    bandImgs[k]=URL.createObjectURL(await new Promise(r=>c2.toBlob(r,'image/jpeg',0.9)))}
+    bandWH[k]=[sw,sh];bandImgs[k]=URL.createObjectURL(await new Promise(r=>c2.toBlob(r,'image/jpeg',0.9)))}
    cv.width=cv.height=1}}
  catch(e){console.error(e);toast('악보를 펼치지 못했어요');$('prog').classList.add('hide');return}
  $('prog').classList.add('hide');LS.set('last_'+norm(sc.title),sc.id);
@@ -368,19 +386,72 @@ function closeView(){stopLocal();recStop();camStop();$('view').classList.add('hi
 function step(){return two?2:1}
 // 화면 다시 짜기(보기 바꿈·처음 열 때)
 function layout(){if(!cur)return;$('mode').textContent=MODES[mode];
- const pg=mode==='page';strip.classList.toggle('hide',pg);st.classList.toggle('hide',!pg);
+ const pg=mode==='page',tp=mode==='tape',wp=mode==='wipe';strip.classList.toggle('hide',pg||tp||wp);$('wipe').classList.toggle('hide',!wp);st.classList.toggle('hide',!pg);$('tape').classList.toggle('hide',!tp);
  $('L').classList.toggle('hide',!pg);$('R').classList.toggle('hide',!pg);
  if(pg){show();return}
+ if(tp){buildTape();draw();return}
+ if(wp){buildWipe();draw();return}
  strip.innerHTML='';cur.systems.forEach((s,k)=>{const d=document.createElement('div');d.className='band';d.dataset.si=k;
   const im=document.createElement('img');im.src=bandImgs[k]||'';im.draggable=false;d.appendChild(im);strip.appendChild(d)});
  lastSi=-1;draw();follow(true)}
+// 가로 띠: 줄마다 오선 첫 줄(y0)을 같은 높이에 맞춰, 마디 상자 하나 = 타일 하나
+function tgeo(){const geo=cur.systems.map((s,k)=>{const wh=bandWH[k]||[1,1],g=bands[k],hU=(X1-X0)*wh[1]/wh[0];return{hU,above:(s.y0-g.top)/(g.bot-g.top)*hU}});
+ return{geo,maxA:Math.max(...geo.map(q=>q.above)),maxB:Math.max(...geo.map(q=>q.hU-q.above))}}
+// 마디 타일 하나(가로 흐름·이어 보기 공용)
+function mkTile(k,x,w,U,G){const n=B.seq[k],b=B.boxes[n],d=document.createElement('div');d.className='tile';d.dataset.k=k;
+ if(b){const q=G.geo[b.si],im=document.createElement('img');im.src=bandImgs[b.si]||'';im.draggable=false;
+  Object.assign(im.style,{width:(X1-X0)*U+'px',height:q.hU*U+'px',left:-(b.x0-X0)*U+'px',top:(G.maxA-q.above)*U+'px'});d.appendChild(im);
+  const t=document.createElement('span');t.className='tn';t.textContent=n;d.appendChild(t)}
+ else{d.classList.add('rest');d.textContent='🎵 '+n}
+ Object.assign(d.style,{left:x+'px',width:w+'px'});return d}
+function buildWipe(){const box=$('wipe');box.innerHTML='';W8={slots:[],lines:[],lineOf:[],S:1};if(!cur||!B.seq.length)return;
+ const sh=$('sheet'),W=sh.clientWidth,H=sh.clientHeight,G=tgeo(),per=G.maxA+G.maxB,gap=12;
+ const U=Math.min(W/(X1-X0),H*0.96/per),TH=per*U,R=Math.max(1,Math.floor((H+gap)/(TH+gap))),C=R>=2?1:2,sw=(W-(C-1)*gap)/C;
+ const ws=B.seq.map(n=>B.boxes[n]?(B.boxes[n].x1-B.boxes[n].x0)*U:0).filter(Boolean).sort((a,b)=>a-b),rw=(ws[ws.length>>1]||W/4)*0.6;
+ // 마디를 칸 너비만큼씩 줄로 담는다(한 마디가 칸보다 넓으면 그 마디 혼자 한 줄)
+ let L=null;B.seq.forEach((n,k)=>{const b=B.boxes[n],w=b?(b.x1-b.x0)*U:rw;
+  if(!L||(L.x+w>sw&&L.items.length)){L={items:[],x:0};W8.lines.push(L)}L.items.push({k,x:L.x,w});L.x+=w;W8.lineOf[k]=W8.lines.length-1});
+ const top0=Math.max(4,(H-(R*TH+(R-1)*gap))/2);W8.S=R*C;W8.U=U;W8.G=G;
+ for(let q=0;q<W8.S;q++){const el=document.createElement('div');el.className='slot';el.dataset.line=-1;
+  Object.assign(el.style,{left:(q%C)*(sw+gap)+'px',top:top0+Math.floor(q/C)*(TH+gap)+'px',width:sw+'px',height:TH+'px'});box.appendChild(el);W8.slots.push(el)}}
+function drawWipe(){if(!W8.lines.length)return;const k=Math.min(pos,B.seq.length-1),l=W8.lineOf[k],S=W8.S;
+ W8.slots.forEach((el,q)=>{const want=l+((q-l%S)%S+S)%S;el.classList.toggle('next',q<l%S&&want<W8.lines.length); // 지나간 자리에 미리 들어온 줄만 «다음»
+  if(+el.dataset.line===want)return;el.dataset.line=want;el.innerHTML='';const L=W8.lines[want];if(!L)return;
+  L.items.forEach(m=>el.appendChild(mkTile(m.k,m.x,m.w,W8.U,W8.G)));el.classList.remove('fresh');void el.offsetWidth;el.classList.add('fresh')});
+ const slot=W8.slots[l%S],it=W8.lines[l].items.find(m=>m.k===k);
+ document.querySelectorAll('#wipe .tile.now').forEach(e=>e.classList.remove('now'));
+ const te=slot.querySelector('.tile[data-k="'+k+'"]');if(te)te.classList.add('now');
+ let ph=$('wipePh');if(!ph){ph=document.createElement('div');ph.id='wipePh';ph.className='ph'}if(ph.parentNode!==slot)slot.appendChild(ph);
+ ph.style.left=(it.x+it.w*frac)+'px';
+ const rest=$('rest'),n=B.seq[k];
+ if(!B.boxes[n]&&playing){let e=k;while(e<B.seq.length&&!B.boxes[B.seq[e]])e++;rest.style.display='block';rest.textContent=`🎵 쉬는 중 · ${n}마디 (${B.seq[e-1]}마디까지)`}
+ else rest.style.display='none'}
+function buildTape(){const tin=$('tapeIn');tin.innerHTML='';tiles=[];if(!cur||!B.seq.length)return;
+ const sh=$('sheet'),W=sh.clientWidth,H=sh.clientHeight;tapeW=W;
+ const G=tgeo(),maxA=G.maxA,maxB=G.maxB;
+ const U=Math.min(W/(X1-X0)*1.15,H*0.96/(maxA+maxB)),TH=(maxA+maxB)*U,top0=Math.max(0,(H-TH)/2);
+ const ws=B.seq.map(n=>B.boxes[n]?(B.boxes[n].x1-B.boxes[n].x0)*U:0).filter(Boolean).sort((a,b)=>a-b),rw=(ws[ws.length>>1]||W/4)*0.6;
+ let x=0;
+ B.seq.forEach((n,k)=>{const b=B.boxes[n],w=b?(b.x1-b.x0)*U:rw,d=mkTile(k,x,w,U,G);tin.appendChild(d);tiles.push({x,w,el:d});x+=w});
+ Object.assign(tin.style,{width:x+'px',height:TH+'px',top:top0+'px'});
+ Object.assign($('tapePh').style,{top:top0+'px',height:TH+'px',left:W*0.3+'px'})}
+let tapeNow=null;
+function drawTape(){if(!tiles.length)return;const k=Math.min(pos,tiles.length-1),t=tiles[k];
+ tapeX=tapeW*0.3-(t.x+t.w*frac);$('tapeIn').style.transform=`translate3d(${tapeX+(tapeDrag?tapeDrag.dx:0)}px,0,0)`;
+ if(tapeNow!==t.el){if(tapeNow)tapeNow.classList.remove('now');t.el.classList.add('now');tapeNow=t.el}
+ const rest=$('rest'),n=B.seq[k];
+ if(!B.boxes[n]&&playing){let e=k;while(e<B.seq.length&&!B.boxes[B.seq[e]])e++;rest.style.display='block';rest.textContent=`🎵 쉬는 중 · ${n}마디 (${B.seq[e-1]}마디까지)`}
+ else rest.style.display='none'}
+// 띠를 손가락으로 밀어 위치 고르기(멈춰 있을 때)
+function tapeAt(px){const x=tapeW*0.3-px;let k=tiles.findIndex(t=>x<t.x+t.w);return k<0?tiles.length-1:Math.max(0,k)}
 function show(){if(!cur||mode!=='page')return;i=Math.max(0,Math.min(i,imgs.length-1));if(two)i-=i%2;
  st.className=two?'two':'';st.innerHTML='';
  for(let k=i;k<i+step()&&k<imgs.length;k++){const d=document.createElement('div');d.className='pg';d.dataset.p=k;
   const im=document.createElement('img');im.src=imgs[k];im.draggable=false;d.appendChild(im);st.appendChild(d)}
  draw()}
 function flash(id){const e=$(id);e.classList.add('flash');setTimeout(()=>e.classList.remove('flash'),250)}
-function go(d){if(mode!=='page'){strip.scrollBy({top:d*strip.clientHeight*0.85,behavior:'smooth'});return}
+function go(d){if(lin()){if(playing)return;pos=Math.max(0,Math.min(B.seq.length-1,pos+d*4));frac=0;draw();return}
+ if(mode!=='page'){strip.scrollBy({top:d*strip.clientHeight*0.85,behavior:'smooth'});return}
  const n=i+d*step();if(n>=imgs.length||n<0){toast(n<0?'첫 쪽이에요':'마지막 쪽이에요',900);return}
  i=n;show();flash(d>0?'R':'L');
  if(!playing){const k=B.seq.findIndex(n=>B.boxes[n]&&B.boxes[n].p>=i);if(k>=0){pos=k;frac=0;draw()}}}
@@ -390,7 +461,8 @@ function placeRect(el,si,x0,y0,x1,y1){
   Object.assign(el.style,{left:x0*100+'%',top:y0*100+'%',width:Math.max(0,x1-x0)*100+'%',height:Math.max(0,y1-y0)*100+'%'});d.appendChild(el);return}
  const d=strip.children[si],g=bands[si];if(!d||!g)return;const W=X1-X0,H=g.bot-g.top;
  Object.assign(el.style,{left:(x0-X0)/W*100+'%',top:(y0-g.top)/H*100+'%',width:Math.max(0,x1-x0)/W*100+'%',height:Math.max(0,y1-y0)/H*100+'%'});d.appendChild(el)}
-function draw(){(mode==='page'?st:strip).querySelectorAll('.cur,.ph,.mn,.sysbox').forEach(e=>e.remove());if(!cur)return;
+function draw(){if(lin()&&!fixing){if(cur)(mode==='tape'?drawTape:drawWipe)();return}
+ (mode==='page'?st:strip).querySelectorAll('.cur,.ph,.mn,.sysbox').forEach(e=>e.remove());if(!cur)return;
  if(fixing){cur.systems.forEach((s,si)=>{s.bars.forEach((b,q)=>{const e=document.createElement('div');e.className='mn'+(q?'':' first');
    e.textContent=s.first+q;placeRect(e,si,(b.x0+b.x1)/2,s.y0,(b.x0+b.x1)/2,s.y0);e.style.width=e.style.height=''});
   const bx=document.createElement('div');bx.className='sysbox';placeRect(bx,si,s.bars[0].x0,s.y0,s.bars[s.bars.length-1].x1,s.y1)});return}
@@ -404,7 +476,9 @@ function draw(){(mode==='page'?st:strip).querySelectorAll('.cur,.ph,.mn,.sysbox'
  const h=document.createElement('div');h.className='ph';const x=b.x0+(b.x1-b.x0)*f;placeRect(h,b.si,x,b.y0,x,b.y1);h.style.width=''}
 // 지금 마디가 보이게: 원본=쪽 넘김, 흐름=지금 줄을 위에서 1/5 지점으로 부드럽게, 넘김=화면 밖으로 나가면 한 화면 넘김
 let lastSi=-1;
-function follow(force){let k=pos;while(k<B.seq.length&&!B.boxes[B.seq[k]])k++;if(k>=B.seq.length)return;const b=B.boxes[B.seq[k]];
+function follow(force){if(mode==='tape'){if(force)buildTape();drawTape();return}
+ if(mode==='wipe'){if(force)buildWipe();drawWipe();return}
+ let k=pos;while(k<B.seq.length&&!B.boxes[B.seq[k]])k++;if(k>=B.seq.length)return;const b=B.boxes[B.seq[k]];
  if(mode==='page'){if(b.p<i||b.p>=i+step()){i=b.p;show()}return}
  if(b.si===lastSi&&!force)return;lastSi=b.si;const el=strip.children[b.si];if(!el)return;
  const top=el.offsetTop,bot=top+el.offsetHeight,vh=strip.clientHeight;
@@ -443,11 +517,11 @@ function setBpm(v){v=Math.max(30,Math.min(300,Math.round(v)||cur.bpm));if(v===cu
 $('dn').onclick=()=>setBpm(cur.bpm-2);$('up').onclick=()=>setBpm(cur.bpm+2);$('bpm').onchange=()=>setBpm(+$('bpm').value);
 $('beat').onclick=()=>{if(playing){toast('멈춘 다음 바꿔 주세요');return}cur.beats={4:3,3:2,2:6,6:4}[cur.beats]||4;sPut(cur);ui();if(room)roomPatch({beats:cur.beats})};
 $('clk').onclick=()=>{clk=!clk;LS.set('clk',clk);ui()};
-$('mode').onclick=()=>{mode={flow:'fixed',fixed:'page',page:'flow'}[mode];LS.set('mode',mode);if(mode==='page'){const b=B.boxes[B.seq[pos]];if(b)i=b.p}layout();toast(MODES[mode]+({flow:' · 줄이 흘러가요',fixed:' · 한 화면씩 넘어가요',page:' · 원본 쪽 그대로 (톡 = 넘김)'})[mode],1500)};
+$('mode').onclick=()=>{mode={wipe:'tape',tape:'flow',flow:'fixed',fixed:'page',page:'wipe'}[mode];LS.set('mode3',mode);if(mode==='page'){const b=B.boxes[B.seq[pos]];if(b)i=b.p}layout();toast(MODES[mode]+({wipe:' · 지나간 자리에 다음 마디가 미리 나와요',tape:' · 악보가 옆으로 흘러와요 (밀어서 위치 고르기)',flow:' · 줄이 흘러가요',fixed:' · 한 화면씩 넘어가요',page:' · 원본 쪽 그대로 (톡 = 넘김)'})[mode],1500)};
 $('back').onclick=closeView;
 $('fs').onclick=()=>{const d=document;if(d.fullscreenElement||d.webkitFullscreenElement)(d.exitFullscreen||d.webkitExitFullscreen).call(d);
  else{const e=d.documentElement;(e.requestFullscreen||e.webkitRequestFullscreen||function(){toast('아이패드는 사파리 공유 버튼 → 「홈 화면에 추가」로 열면 꽉 찬 화면이 돼요',3500)}).call(e)}};
-$('fix').onclick=()=>{if(playing)return;fixing=true;$('fixbar').classList.remove('hide');draw()};
+$('fix').onclick=()=>{if(playing)return;if(lin()){mode='flow';LS.set('mode3',mode);layout()}fixing=true;$('fixbar').classList.remove('hide');draw()};
 $('fixDone').onclick=()=>{fixing=false;$('fixbar').classList.add('hide');B=build(cur);sPut(cur);draw()};
 
 // ── 카메라·녹화 ──
@@ -496,13 +570,19 @@ let hold=null,held=false,downAt=null;
 $('sheet').addEventListener('pointerdown',ev=>{if(ev.target.closest('#fixbar'))return;if(mode==='page')ev.preventDefault();held=false;
  downAt={x:ev.clientX,y:ev.clientY,t:ev.target};
  if(fixing)return;
- hold=setTimeout(()=>{if(!downAt)return;held=true;const h=hit(downAt.x,downAt.y,downAt.t);if(!h)return;const k=B.seq.indexOf(h.n);if(k<0)return;
+ hold=setTimeout(()=>{if(!downAt)return;held=true;let k;
+  if(lin()){const tl=downAt.t.closest&&downAt.t.closest('.tile');if(!tl)return;k=+tl.dataset.k}
+  else{const h=hit(downAt.x,downAt.y,downAt.t);if(!h)return;k=B.seq.indexOf(h.n);if(k<0)return}
+  const h={n:B.seq[k]};
   if(navigator.vibrate)navigator.vibrate(20);
   if(room){roomSeek(k,playing);return}
   const was=playing;stopLocal();pos=k;frac=0;draw();if(was)play();else toast(h.n+'마디부터',900)},500)});
-$('sheet').addEventListener('pointermove',ev=>{if(downAt&&Math.hypot(ev.clientX-downAt.x,ev.clientY-downAt.y)>12){clearTimeout(hold);if(mode!=='page')downAt=null}});
-$('sheet').addEventListener('pointercancel',()=>{clearTimeout(hold);downAt=null});
-$('sheet').addEventListener('pointerup',ev=>{if(ev.target.closest('#fixbar'))return;clearTimeout(hold);if(held||!downAt)return;
+$('sheet').addEventListener('pointermove',ev=>{
+ if(mode==='tape'&&downAt&&!playing&&!room){const dx=ev.clientX-downAt.x;if(Math.abs(dx)>12){clearTimeout(hold);tapeDrag={dx};drawTape()}return}
+ if(downAt&&Math.hypot(ev.clientX-downAt.x,ev.clientY-downAt.y)>12){clearTimeout(hold);if(mode!=='page')downAt=null}});
+$('sheet').addEventListener('pointercancel',()=>{clearTimeout(hold);downAt=null;if(tapeDrag){tapeDrag=null;drawTape()}});
+$('sheet').addEventListener('pointerup',ev=>{if(ev.target.closest('#fixbar'))return;clearTimeout(hold);
+ if(tapeDrag){const k=tapeAt(tapeX+tapeDrag.dx);tapeDrag=null;downAt=null;pos=k;frac=0;drawTape();return}if(held||!downAt)return;
  if(fixing){const h=hit(downAt.x,downAt.y,downAt.t);downAt=null;if(!h){return}
   const v=prompt(`이 줄의 첫 마디 번호 (지금 ${h.s.first})`,h.s.first);if(v==null)return;const n=parseInt(v);
   if(n>0){h.s.fix=n;B=build(cur);draw()}return}
@@ -513,7 +593,7 @@ document.addEventListener('keydown',e=>{if($('view').classList.contains('hide')|
  if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(-1)}
  if(e.key==='Escape'&&!fixing)closeView()});
 $('view').addEventListener('contextmenu',e=>e.preventDefault());
-addEventListener('resize',()=>{draw();follow(true)});
+addEventListener('resize',()=>{if(!cur)return;draw();follow(true)});
 
 // ════════ 합주 방 (RTDB REST + 실시간 스트림) ════════
 // band_play/{코드} = {song, bpm, beats, run:{on, at(서버 ms, 카운트 시작), from:{n,k}, ci}, m/{cid}:{name,part,t}}
