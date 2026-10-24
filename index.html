@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#111827">
+<title>모두의 합주 악보</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111827'/%3E%3Cg stroke='%23cbd5e1' stroke-width='2'%3E%3Cpath d='M10 20h44M10 28h44M10 36h44M10 44h44'/%3E%3C/g%3E%3Crect x='30' y='12' width='5' height='40' rx='2' fill='%23ef4444'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{--bg:#f8fafc;--card:#fff;--ink:#111827;--sub:#64748b;--line:#cbd5e1;--acc:#dc2626;--blue:#2563eb}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:500 17px/1.45 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;-webkit-tap-highlight-color:transparent}
+button{font:inherit;cursor:pointer}
+.hide{display:none!important}
+/* ── 목록 화면 ── */
+#home{max-width:760px;margin:0 auto;padding:18px 16px 80px}
+h1{font-size:26px;margin:6px 0 2px}
+.lead{color:var(--sub);margin:0 0 16px;font-size:15px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:12px 0}
+.box h2{font-size:18px;margin:0 0 8px}
+.btn{border:0;border-radius:12px;padding:12px 16px;background:var(--ink);color:#fff;font-weight:700}
+.btn.ghost{background:#e2e8f0;color:var(--ink)}
+.btn.red{background:var(--acc)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);min-width:0}
+.song{margin:14px 0 6px;font-weight:800;font-size:19px}
+.part{display:flex;align-items:center;gap:10px;padding:14px;border:1.5px solid var(--line);border-radius:14px;background:#fff;margin:8px 0;cursor:pointer}
+.part:active{background:#dbeafe}
+.part b{flex:1}.part small{color:var(--sub)}
+.part .x{border:0;background:none;color:#94a3b8;font-size:20px;padding:4px 8px}
+.tag{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:8px;padding:2px 8px;font-size:14px;font-weight:700}
+#roomInfo{font-weight:700}
+.code{font:800 30px ui-monospace,monospace;letter-spacing:4px;color:var(--acc)}
+.mem{display:inline-block;margin:3px 4px 0 0;padding:3px 9px;border-radius:999px;background:#f1f5f9;font-size:14px}
+#prog{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;z-index:50}
+#prog div{background:#fff;border-radius:16px;padding:22px 26px;font-weight:700;max-width:86vw;text-align:center}
+/* ── 악보 화면 ── */
+#view{position:fixed;inset:0;background:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:none}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.pg{position:relative;line-height:0}
+.pg img{max-height:100vh;max-height:100dvh;max-width:100vw;display:block}
+#stage.two .pg img{max-width:50vw}
+.cur{position:absolute;background:#fde04760;border-radius:4px;pointer-events:none}
+.ph{position:absolute;width:4px;margin-left:-2px;background:var(--acc);border-radius:2px;box-shadow:0 0 6px #dc2626aa;pointer-events:none}
+.mn{position:absolute;font:700 13px sans-serif;color:#fff;background:#2563ebdd;border-radius:6px;padding:2px 5px;line-height:1.2;transform:translate(-50%,-100%);pointer-events:none}
+.mn.first{background:#dc2626;font-size:15px}
+.sysbox{position:absolute;border:2px dashed #2563eb88;border-radius:6px;pointer-events:none}
+.hint{position:absolute;top:0;bottom:0;width:33%;display:flex;align-items:center;justify-content:center;font:700 64px sans-serif;color:#0000;transition:color .25s;pointer-events:none}
+#L{left:0}#R{right:0}.hint.flash{color:#2563eb55}
+#bar{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:8px;align-items:flex-end;opacity:.3;transition:opacity .3s;z-index:5}
+#bar:hover,#bar.show{opacity:1}
+#bar .row{flex-wrap:nowrap;justify-content:flex-end}
+#bar button,#bar span{font:600 17px sans-serif;padding:10px 14px;border:0;border-radius:10px;background:#1f2937;color:#fff;white-space:nowrap}
+#bar input{width:62px;padding:9px 4px;text-align:center;font:700 17px sans-serif;border:2px solid #1f2937;border-radius:10px}
+#bar button.on{background:var(--acc)}
+#top{position:absolute;left:10px;top:8px;display:flex;gap:6px;align-items:center;z-index:5;font:700 15px sans-serif}
+#top span{background:#111827cc;color:#fff;border-radius:8px;padding:4px 10px}
+#top .live{background:#dc2626}
+#cnt{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font:800 170px sans-serif;color:#dc2626cc;display:none;pointer-events:none;z-index:6}
+#rest{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:#111827e6;color:#fff;font:700 20px sans-serif;padding:8px 18px;border-radius:12px;display:none;z-index:6}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:12px;font-weight:700;z-index:60;display:none;max-width:90vw;text-align:center}
+#fixbar{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:#2563eb;color:#fff;border-radius:12px;padding:8px 14px;font:700 16px sans-serif;z-index:7;display:flex;gap:10px;align-items:center}
+#fixbar button{border:0;border-radius:8px;padding:6px 12px;background:#fff;color:#2563eb;font-weight:800}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0b1120;--card:#111827;--ink:#e5e7eb;--sub:#94a3b8;--line:#334155}
+ :root:not([data-theme=light]) .part,:root:not([data-theme=light]) input,:root:not([data-theme=light]) select{background:#0f172a;color:#e5e7eb}
+ :root:not([data-theme=light]) .btn{background:#e5e7eb;color:#111827}
+ :root:not([data-theme=light]) .btn.ghost{background:#1e293b;color:#e5e7eb}
+ :root:not([data-theme=light]) .btn.red{background:#dc2626;color:#fff}
+ :root:not([data-theme=light]) .mem{background:#1e293b}}
+</style></head><body>
+
+<div id="home">
+ <h1>🎸 모두의 합주 악보</h1>
+ <p class="lead">각자 자기 파트 악보(PDF)를 넣고, 같은 방에 들어오면 ▶ 한 번에 모두의 재생바가 같은 박자로 지나가요.</p>
+
+ <div class="box">
+  <h2>🎤 합주 방</h2>
+  <div id="roomOff">
+   <div class="row" style="margin-bottom:8px"><input id="myName" type="text" placeholder="내 이름" maxlength="10" style="flex:1"></div>
+   <div class="row"><button class="btn red" id="mkRoom">방 만들기</button>
+    <input id="joinCode" type="text" inputmode="numeric" maxlength="4" placeholder="코드 4자리" style="width:130px">
+    <button class="btn" id="joinBtn">들어가기</button></div>
+  </div>
+  <div id="roomOn" class="hide">
+   <div class="row"><span>방 코드</span><span class="code" id="roomCode"></span>
+    <button class="btn ghost" id="leave">나가기</button></div>
+   <div id="roomInfo" style="margin-top:6px"></div>
+   <div id="members"></div>
+  </div>
+ </div>
+
+ <div class="box">
+  <h2>📄 내 악보</h2>
+  <div class="row"><button class="btn" id="addBtn">＋ 악보 PDF 넣기</button>
+   <input type="file" id="file" accept="application/pdf,.pdf" class="hide"></div>
+  <div id="addForm" class="hide" style="margin-top:12px">
+   <div class="row" style="margin-bottom:8px"><input id="fTitle" type="text" placeholder="곡 제목" style="flex:1"></div>
+   <div class="row"><select id="fPart"></select><input id="fPartEtc" type="text" placeholder="파트 이름" class="hide" style="width:130px">
+    <button class="btn red" id="fGo">넣기</button><button class="btn ghost" id="fCancel">취소</button></div>
+  </div>
+  <div id="list"></div>
+  <p class="lead" style="margin-top:12px">악보 PDF는 <b>이 기기 안에만</b> 저장돼요(인터넷에 안 올라가요). 멤버마다 자기 기기에 자기 파트를 넣어 주세요. 같은 곡은 <b>제목을 똑같이</b> 써야 방에서 함께 맞춰져요.</p>
+ </div>
+
+ <div class="box">
+  <h2>❓ 쓰는 법</h2>
+  <p class="lead" style="margin:0">악보 화면: 오른쪽 톡 = 다음 쪽 · 왼쪽 톡 = 이전 쪽 · <b>마디를 꾹(0.5초)</b> = 거기서부터 · ▶ = 한 마디 세고 출발 · 🔢 = 마디 번호 확인/고치기 · 방에 있으면 누가 ▶·⏸·템포를 바꿔도 모두 같이 바뀌어요.</p>
+ </div>
+</div>
+
+<div id="view" class="hide">
+ <div id="stage"></div><div id="L" class="hint">‹</div><div id="R" class="hint">›</div>
+ <div id="top"><span id="vTitle"></span><span id="vLive" class="live hide">● 합주 중</span></div>
+ <div id="cnt"></div><div id="rest"></div>
+ <div id="fixbar" class="hide"><span>빨간 숫자(줄 첫 마디)를 누르면 번호를 고칠 수 있어요</span><button id="fixDone">다 됐어요</button></div>
+ <div id="bar">
+  <div class="row"><button id="play">▶ 재생</button><button id="home0">⏮</button></div>
+  <div class="row"><button id="dn">−</button><input id="bpm" type="number" min="30" max="300"><button id="up">+</button></div>
+  <div class="row"><button id="beat">4박</button><button id="clk">🔔</button><button id="fix">🔢</button></div>
+  <div class="row"><button id="back">☰ 목록</button><button id="two">1쪽/2쪽</button></div>
+  <div class="row"><span id="num"></span><button id="fs">⛶</button></div>
+ </div>
+</div>
+<div id="prog" class="hide"><div id="progT">악보 읽는 중…</div></div>
+<div id="toast"></div>
+
+<script>
+const APPVER='20261024a';
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const PDFOPT={cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'};
+const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/';
+const PARTS=['보컬','보컬1','보컬2','기타1','기타2','베이스','드럼','키보드1','키보드2','기타(직접 입력)'];
+const $=id=>document.getElementById(id);
+function toast(t,ms=2200){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',ms)}
+const LS={get(k,d){try{const v=localStorage.getItem('band_play_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+ set(k,v){try{localStorage.setItem('band_play_'+k,JSON.stringify(v))}catch(e){}}};
+const norm=s=>(s||'').replace(/\s+/g,'').toLowerCase();
+
+// ── IndexedDB: 악보 저장 ──
+let idb=null;
+function dbOpen(){return idb||(idb=new Promise((ok,no)=>{const r=indexedDB.open('band_play',1);
+ r.onupgradeneeded=()=>r.result.createObjectStore('scores',{keyPath:'id'});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}))}
+async function tx(mode,fn){const d=await dbOpen();return new Promise((ok,no)=>{const t=d.transaction('scores',mode),s=t.objectStore('scores');
+ const r=fn(s);t.oncomplete=()=>ok(r&&r.result);t.onerror=()=>no(t.error)})}
+const sAll=()=>tx('readonly',s=>s.getAll()), sGet=id=>tx('readonly',s=>s.get(id)),
+ sPut=o=>tx('readwrite',s=>s.put(o)), sDel=id=>tx('readwrite',s=>s.delete(id));
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+
+// ════════ 악보 인식: 오선(5줄/TAB 6줄) → 마디선 → 줄(시스템) → 마디 번호 ════════
+const RW=2000; // 인식용 렌더 폭(px)
+function findStaves(bin,W,H){
+ const rows=[];for(let y=0;y<H;y++){let c=0;const o=y*W;for(let x=0;x<W;x++)c+=bin[o+x];rows.push(c)}
+ const lines=[];for(let y=0;y<H;y++)if(rows[y]>W*0.35){const l=lines[lines.length-1];
+  if(l&&y-l.e<=1){l.e=y;if(rows[y]>rows[l.m])l.m=y}else lines.push({s:y,e:y,m:y})}
+ // 줄 위에 글자가 많이 붙으면(타브 0 0 0…) 두껍게 잡히므로 가장 진한 행을 줄 위치로
+ const ys=lines.map(l=>l.e-l.s>3?l.m:(l.s+l.e)/2),st=[];let k=0;
+ while(k+4<ys.length){let ok=0;
+  for(const n of [6,5]){if(k+n>ys.length)continue;const g=ys.slice(k,k+n),d=[];for(let j=1;j<n;j++)d.push(g[j]-g[j-1]);
+   const mn=Math.min(...d),mx=Math.max(...d),av=d.reduce((a,b)=>a+b)/d.length;
+   if(mx-mn<Math.max(4,av*0.2)&&av>8&&av<45){st.push({t:Math.round(g[0]),b:Math.round(g[n-1]),gap:av,n,ys:g});k+=n;ok=1;break}}
+  if(!ok)k++}
+ return st}
+function staffBars(bin,W,H,st,up,dn){
+ const t=st.t+3,b=st.b-2,h=b-t,cols=[];
+ for(let x=0;x<W;x++){let c=0;for(let y=t;y<b;y++)c+=bin[y*W+x];cols.push(c/h)}
+ // 마디선은 오선 위아래로 삐져나오지 않거나(혼자), 옆 오선까지 이어짐(묶음). 음표 기둥은 한쪽으로 조금 삐져나옴
+ const ext=(x,y,d,lim)=>{let n=0;while(n<lim){const yy=y+d*(n+1);if(yy<0||yy>=H)break;
+   if(!(bin[yy*W+x]||bin[yy*W+x-1]||bin[yy*W+x+1]))break;n++}return n};
+ // 삐져나온 끝에 음표 머리·빔(가로로 넓은 덩어리)이 있으면 음표 기둥
+ const g=st.gap,wide=(x,y)=>{let best=0;for(let yy=Math.round(y-g*.6);yy<=y+g*.6;yy++){if(yy<0||yy>=H)continue;
+   let l=x,r=x;while(l>0&&x-l<g*2&&bin[yy*W+l-1])l--;while(r<W-1&&r-x<g*2&&bin[yy*W+r+1])r++;best=Math.max(best,r-l)}return best>g*.9};
+ const okCol=x=>{const u=ext(x,st.t,-1,up?st.t-up.b+2:Math.round(g*5)),v=ext(x,st.b,1,dn?dn.t-st.b+2:Math.round(g*5));
+  const cu=u<=4||(up&&u>=st.t-up.b-3)||!wide(x,st.t-u),cv=v<=4||(dn&&v>=dn.t-st.b-3)||!wide(x,st.b+v);
+  return cu&&cv};
+ let bars=[];for(let x=1;x<W-1;x++)if(cols[x]>0.95&&okCol(x)){const l=bars[bars.length-1];if(l&&x-l[1]<=12)l[1]=x;else bars.push([x,x])}
+ // 오선 안에서 기둥 옆에 음표 머리가 붙어 있으면(가로로 두꺼운 덩어리가 여러 줄) 음표 기둥
+ const onLine=y=>st.ys.some(v=>Math.abs(v-y)<=2);
+ bars=bars.filter(([x0,x1])=>{let fat=0;for(let y=st.t+1;y<st.b;y++){if(onLine(y))continue;
+   let l=x0,r=x1;while(l>0&&x0-l<g*2&&bin[y*W+l-1])l--;while(r<W-1&&r-x1<g*2&&bin[y*W+r+1])r++;
+   if((x0-l)+(r-x1)>g*0.6)fat++}return fat<g*0.4});
+ const gapInk=(c0,c1,q)=>{let s=0;const y0=Math.round(st.ys[q]+3),y1=Math.round(st.ys[q+1]-2);
+  for(let y=y0;y<y1;y++)for(let x=Math.max(0,c0);x<c1;x++)s+=bin[y*W+x];return s};
+ const dots=(c0,c1)=>{const n=st.n-1,g=[];for(let q=0;q<n;q++)g.push(gapInk(c0,c1,q));
+  const mid=st.n===6?[1,2]:[1,2],other=g.reduce((a,v,q)=>a+(mid.includes(q)?0:v),0);
+  return g[mid[0]]>8&&g[mid[1]]>8&&other<4};
+ // 너무 좁은 조각(줄 앞 도돌이 시작 앞의 빈칸 등)은 버림
+ while(bars.length>2){const w=[];for(let j=0;j<bars.length-1;j++)w.push(bars[j+1][0]-bars[j][1]);
+  const med=[...w].sort((a,b)=>a-b)[w.length>>1];let j=0;w.forEach((v,q)=>{if(v<w[j])j=q});
+  const lim=(j===0&&bars[1][1]-bars[1][0]>=8?0.7:0.45)*med;if(w[j]>=lim)break;
+  bars.splice(j===0?0:(j+1<bars.length-1?j+1:j),1)}
+ const out=[];for(let j=0;j<bars.length-1;j++){const l=bars[j],r=bars[j+1];
+  out.push({x0:l[1],x1:r[0],rs:l[1]-l[0]>=6&&dots(l[1]+3,l[1]+17),re:r[1]-r[0]>=6&&dots(r[0]-16,r[0]-2)})}
+ return out}
+async function analyze(pdf,onp){
+ const pages=[];let systems=[];
+ for(let p=1;p<=pdf.numPages;p++){onp&&onp(p,pdf.numPages);
+  const pg=await pdf.getPage(p),vp0=pg.getViewport({scale:1}),sc=RW/vp0.width,vp=pg.getViewport({scale:sc});
+  const cv=document.createElement('canvas');cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);
+  const cx=cv.getContext('2d',{willReadFrequently:true});cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);
+  await pg.render({canvasContext:cx,viewport:vp}).promise;
+  const W=cv.width,H=cv.height,d=cx.getImageData(0,0,W,H).data,bin=new Uint8Array(W*H);
+  for(let i=0,j=0;j<bin.length;i+=4,j++)bin[j]=(d[i]*.3+d[i+1]*.59+d[i+2]*.11)<128?1:0;
+  // 마디 번호 후보: PDF 안의 숫자 글자
+  const tc=await pg.getTextContent(),nums=[];
+  for(const it of tc.items){const s=(it.str||'').trim();if(!/^\d{1,3}$/.test(s))continue;
+   const [x,y]=vp.convertToViewportPoint(it.transform[4],it.transform[5]);
+   // 잘려서 안 보이는 글자(숨은 텍스트)는 버림: 글자 자리에 잉크가 있어야
+   const w=Math.max(4,(it.width||0)*sc),h=Math.max(6,Math.abs(it.transform[3])*sc*0.7);let ink=0,tot=0;
+   for(let yy=Math.round(y-h);yy<y;yy++)for(let xx=Math.round(x);xx<x+w;xx++){if(yy<0||yy>=H||xx<0||xx>=W)continue;tot++;ink+=bin[yy*W+xx]}
+   if(tot&&ink/tot>0.06)nums.push({n:+s,x,y})}
+  if(window.__dbg&&p===(window.__dbg|0))console.log('NUMS',JSON.stringify(nums.map(c=>[c.n,Math.round(c.x),Math.round(c.y)]).slice(0,40)));
+  const st=findStaves(bin,W,H);let prev=null;
+  st.forEach((s,q)=>{s.bars=staffBars(bin,W,H,s,st[q-1],st[q+1])});
+  if(window.__dbg&&p===(window.__dbg|0))console.log('STAVES',JSON.stringify(st.map(s=>[s.t,s.b,s.n,s.bars.map(b=>b.x0+'-'+b.x1).join(' ')])));
+  const live=st.filter(s=>s.bars.length);if(!live.length){pages.push({w:W,h:H});continue}
+  const Lmin=Math.min(...live.map(s=>s.bars[0].x0));
+  live.forEach(s=>{const sh=s.b-s.t,L=s.bars[0].x0;
+   // 마디 번호 = 줄 맨 왼쪽 위의 숫자(오선 바로 위)
+   s.cand=nums.filter(c=>c.x>=Lmin-W*0.06&&c.x<=L+W*0.012&&c.y>=s.t-sh*1.4&&c.y<=s.t+2).sort((x,y)=>y.y-x.y).map(c=>c.n)});
+  const pageNum=live.some(s=>s.cand.length);
+  for(const s of live){
+   // 번호 없는 오선 = 위 줄에 딸린 오선(보컬 아래 기타, 키보드 큰보표 등). 번호가 아예 없는 악보면 오선마다 한 줄
+   if(prev&&prev.p===p-1&&pageNum&&!s.cand.length){prev.staves.push(s);prev.yb=s.b+s.gap*0.6;continue}
+   prev={p:p-1,yt:s.t-s.gap*1.6,yb:s.b+s.gap*0.6,staves:[s],cand:s.cand,W,H};systems.push(prev)}
+  pages.push({w:W,h:H})}
+ // 여러 오선의 마디선을 모아 절반 이상이 동의하는 위치만 마디선으로(붙임줄·음표 기둥 오인 걸러냄)
+ systems.forEach(sy=>{const S=sy.staves,need=Math.ceil(S.length/2),cl=[];
+  S.forEach(s=>s.bars.forEach((b,q)=>{let c=cl.find(c=>Math.abs(c.x-b.x1)<14);if(!c){c={x:b.x1,n:0,st:new Set(),nx:[],rs:false,re:false};cl.push(c)}
+   if(!c.st.has(s)){c.st.add(s);c.n++}if(b.re)c.re=true;const nb=s.bars[q+1];if(nb){c.nx.push(nb.x0);if(nb.rs)c.rs=true}}));
+  const keep=cl.filter(c=>c.n>=need).sort((a,b)=>a.x-b.x);
+  const firsts=S.map(s=>s.bars[0]),start=Math.min(...firsts.map(b=>b.x0)),rs0=firsts.some(b=>b.rs);
+  sy.bars=[];let x0=start,rs=rs0;
+  keep.forEach(c=>{if(c.x-x0>sy.W*0.02)sy.bars.push({x0,x1:c.x,rs,re:c.re});const nx=c.nx.sort((a,b)=>a-b);x0=nx.length?nx[nx.length>>1]:c.x+4;rs=c.rs})});
+ systems=systems.filter(s=>s.bars.length);
+ // 번호 고르기: 앞 줄에서 이어지는 번호가 후보에 있으면 그것, 아니면 다음 줄이 뒷받침하는 더 큰 번호(쉬는 마디 건너뜀)
+ let exp=1;systems.forEach((s,k)=>{const c=s.cand||[],nx=systems[k+1];s.auto=null;
+  if(c.includes(exp))s.auto=exp;
+  else{const ok=c.filter(n=>n>exp&&n<exp+60&&(!nx||(nx.cand||[]).includes(n+s.bars.length)||(nx.cand||[]).some(m=>m>n+s.bars.length&&m<n+s.bars.length+3))).sort((a,b)=>a-b);
+   if(ok.length)s.auto=ok[0]}
+  exp=(s.auto??exp)+s.bars.length});
+ // 마디선 하나를 놓친 줄: 다음 줄 번호와 모자라는 만큼, 유난히 넓은 칸을 반으로 나눔
+ systems.forEach((s,k)=>{const nx=systems[k+1];if(s.auto==null||!nx||nx.auto==null)return;
+  let lack=nx.auto-s.auto-s.bars.length;
+  while(lack>0&&s.bars.length>1){const w=s.bars.map(b=>b.x1-b.x0),srt=[...w].sort((a,b)=>a-b),med=srt[srt.length>>1];
+   let j=0;w.forEach((v,q)=>{if(v>w[j])j=q});if(w[j]<med*1.3)break;
+   const b=s.bars[j],mid=Math.round((b.x0+b.x1)/2);s.bars.splice(j,1,{x0:b.x0,x1:mid,rs:b.rs,re:false},{x0:mid,x1:b.x1,rs:false,re:b.re});lack--}});
+ systems=systems.map(s=>({p:s.p,y0:+(s.yt/s.H).toFixed(4),y1:+(s.yb/s.H).toFixed(4),auto:s.auto,fix:null,
+  bars:s.bars.map(b=>({x0:+(b.x0/s.W).toFixed(4),x1:+(b.x1/s.W).toFixed(4),rs:!!b.rs,re:!!b.re}))}));
+ return {pages,systems}}
+
+// 줄 목록 → 마디 번호가 붙은 마디 상자 + 연주 순서
+function build(sc){
+ const boxes={};let next=1,lo=1e9,hi=0;const sys=sc.systems;
+ sys.forEach(s=>{let f=s.fix??s.auto;
+  // 번호가 앞 줄과 맞지 않게 작으면(인식 실수) 무시하고 이어 붙임
+  if(f==null||f<next)f=next;s.first=f;
+  s.bars.forEach((b,q)=>{const n=f+q;boxes[n]={p:s.p,x0:b.x0,x1:b.x1,y0:s.y0,y1:s.y1,rs:b.rs,re:b.re,n};lo=Math.min(lo,n);hi=Math.max(hi,n)});
+  next=f+s.bars.length});
+ if(!hi)return {boxes,seq:[]};
+ const seq=[];let start=1;const done=new Set();
+ for(let n=1;n<=hi;n++){const b=boxes[n];if(b&&b.rs)start=n;seq.push(n);
+  if(b&&b.re&&!done.has(n)){done.add(n);n=start-1}}
+ return {boxes,seq}}
+
+// ════════ 목록 화면 ════════
+let scores=[];
+async function refresh(){scores=(await sAll()).sort((a,b)=>a.title.localeCompare(b.title,'ko')||a.part.localeCompare(b.part,'ko'));
+ const by={};scores.forEach(s=>{(by[s.title]=by[s.title]||[]).push(s)});
+ const L=$('list');L.innerHTML='';
+ if(!scores.length){L.innerHTML='<p class="lead" style="margin-top:12px">아직 악보가 없어요. 위 버튼으로 PDF를 넣어 주세요.</p>'}
+ Object.keys(by).forEach(t=>{const h=document.createElement('div');h.className='song';h.textContent='🎵 '+t;L.appendChild(h);
+  by[t].forEach(s=>{const d=document.createElement('div');d.className='part';
+   const nm=build(s).seq.length;
+   d.innerHTML=`<span class="tag"></span><b></b><small>${s.pageCount}쪽 · ${nm}마디 · ♩${s.bpm}</small><button class="x" title="지우기">✕</button>`;
+   d.querySelector('.tag').textContent=s.part;d.querySelector('b').textContent=s.title;
+   d.onclick=e=>{if(e.target.classList.contains('x'))return;openScore(s.id)};
+   d.querySelector('.x').onclick=async()=>{if(!confirm(`「${s.title} · ${s.part}」 악보를 이 기기에서 지울까요?`))return;await sDel(s.id);refresh()};
+   L.appendChild(d)})});
+ renderRoom()}
+$('fPart').innerHTML=PARTS.map(p=>`<option>${p}</option>`).join('');
+$('fPart').value=LS.get('part','기타1');
+$('fPart').onchange=()=>$('fPartEtc').classList.toggle('hide',$('fPart').value!=='기타(직접 입력)');
+let pending=null;
+$('addBtn').onclick=()=>$('file').click();
+$('file').onchange=async()=>{const f=$('file').files[0];$('file').value='';if(!f)return;
+ const buf=await f.arrayBuffer();pending={buf,name:f.name};
+ let t=f.name.replace(/\.pdf$/i,'').replace(/[_-]?(기타|보컬|베이스|드럼|키보드|건반)\d?.*$/,'').replace(/_/g,' ').trim();
+ try{const pdf=await pdfjsLib.getDocument({...PDFOPT,data:buf.slice(0)}).promise;const tc=await (await pdf.getPage(1)).getTextContent();
+  const big=tc.items.filter(i=>(i.str||'').trim().length>1).sort((a,b)=>Math.abs(b.transform[3])-Math.abs(a.transform[3]))[0];
+  if(big&&Math.abs(big.transform[3])>14)t=big.str.split('·')[0].trim()}catch(e){}
+ $('fTitle').value=t;$('addForm').classList.remove('hide');$('fTitle').focus()};
+$('fCancel').onclick=()=>{pending=null;$('addForm').classList.add('hide')};
+$('fGo').onclick=async()=>{if(!pending)return;const title=$('fTitle').value.trim();if(!title){toast('곡 제목을 써 주세요');return}
+ let part=$('fPart').value;if(part==='기타(직접 입력)')part=$('fPartEtc').value.trim()||'파트';LS.set('part',$('fPart').value);
+ $('prog').classList.remove('hide');
+ try{const pdf=await pdfjsLib.getDocument({...PDFOPT,data:pending.buf.slice(0)}).promise;
+  const a=await analyze(pdf,(p,n)=>$('progT').textContent=`악보 읽는 중… ${p} / ${n}쪽`);
+  let bpm=100;try{const tc=await (await pdf.getPage(1)).getTextContent();const all=tc.items.map(i=>i.str).join(' ');
+   const m=all.match(/(?:tempo|♩|=)\s*(\d{2,3})(?:\s*~\s*(\d{2,3}))?/i);if(m)bpm=Math.round((+m[1]+(+m[2]||+m[1]))/2)}catch(e){}
+  const old=scores.find(s=>norm(s.title)===norm(title)&&s.part===part);
+  const sc={id:old?old.id:Date.now().toString(36),title,part,pdf:pending.buf,pageCount:pdf.numPages,pages:a.pages,systems:a.systems,bpm,beats:4,at:Date.now()};
+  await sPut(sc);pending=null;$('addForm').classList.add('hide');await refresh();
+  const nb=build(sc);toast(`${nb.seq.length}마디 찾았어요 · 🔢 로 번호를 확인해 보세요`,3500)}
+ catch(e){console.error(e);toast('PDF를 읽지 못했어요: '+e.message,4000)}
+ $('prog').classList.add('hide')};
+
+// ════════ 악보 화면 ════════
+let cur=null,B=null,imgs=[],i=0,two=LS.get('two',false),fixing=false;
+let playing=false,pos=0,frac=0,t0=0,raf=0,countIn=false,ac=null,beatAt=0,beatN=0,clk=LS.get('clk',true);
+const st=$('stage');
+async function openScore(id){const sc=await sGet(id);if(!sc)return;cur=sc;B=build(sc);
+ $('prog').classList.remove('hide');$('progT').textContent='악보 펼치는 중…';
+ try{const pdf=await pdfjsLib.getDocument({...PDFOPT,data:sc.pdf.slice(0)}).promise;imgs.forEach(u=>URL.revokeObjectURL(u));imgs=[];
+  const want=Math.min(2400,Math.max(1200,Math.round(Math.max(screen.width,screen.height)*(devicePixelRatio||1)*(two?0.5:1)*0.8)));
+  for(let p=1;p<=pdf.numPages;p++){const pg=await pdf.getPage(p),v0=pg.getViewport({scale:1}),vp=pg.getViewport({scale:want/v0.width});
+   const cv=document.createElement('canvas');cv.width=Math.round(vp.width);cv.height=Math.round(vp.height);const cx=cv.getContext('2d');
+   cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);await pg.render({canvasContext:cx,viewport:vp}).promise;
+   imgs.push(URL.createObjectURL(await new Promise(r=>cv.toBlob(r,'image/jpeg',0.9))))}}
+ catch(e){toast('악보를 펼치지 못했어요');$('prog').classList.add('hide');return}
+ $('prog').classList.add('hide');LS.set('last_'+norm(sc.title),sc.id);
+ $('home').classList.add('hide');$('view').classList.remove('hide');$('vTitle').textContent=sc.title+' · '+sc.part;
+ i=0;pos=0;frac=0;fixing=false;$('fixbar').classList.add('hide');ui();show();
+ if(room)syncFromRoom(true)}
+function closeView(){stopLocal();$('view').classList.add('hide');$('home').classList.remove('hide');cur=null;refresh()}
+function step(){return two?2:1}
+function show(){if(!cur)return;i=Math.max(0,Math.min(i,imgs.length-1));if(two)i-=i%2;
+ st.className=two?'two':'';st.innerHTML='';
+ for(let k=i;k<i+step()&&k<imgs.length;k++){const d=document.createElement('div');d.className='pg';d.dataset.p=k;
+  const im=document.createElement('img');im.src=imgs[k];im.draggable=false;d.appendChild(im);st.appendChild(d)}
+ const last=Math.min(i+step(),imgs.length);$('num').textContent=(two&&last>i+1?(i+1)+'–'+last:(i+1))+' / '+imgs.length;draw()}
+function flash(id){const e=$(id);e.classList.add('flash');setTimeout(()=>e.classList.remove('flash'),250)}
+function go(d){const n=i+d*step();if(n>=imgs.length||n<0){toast(n<0?'첫 쪽이에요':'마지막 쪽이에요',900);return}
+ i=n;show();flash(d>0?'R':'L');
+ if(!playing){const k=B.seq.findIndex(n=>B.boxes[n]&&B.boxes[n].p>=i);if(k>=0){pos=k;frac=0;draw()}}}
+function place(el,b,props){const d=st.querySelector('.pg[data-p="'+b.p+'"]');if(!d)return;Object.assign(el.style,props);d.appendChild(el)}
+function draw(){st.querySelectorAll('.cur,.ph,.mn,.sysbox').forEach(e=>e.remove());if(!cur)return;
+ if(fixing){cur.systems.forEach(s=>{s.bars.forEach((b,q)=>{const e=document.createElement('div');e.className='mn'+(q?'':' first');
+   e.textContent=s.first+q;place(e,{p:s.p},{left:((b.x0+b.x1)/2*100)+'%',top:(s.y0*100)+'%'})});
+  const bx=document.createElement('div');bx.className='sysbox';
+  place(bx,{p:s.p},{left:s.bars[0].x0*100+'%',width:(s.bars[s.bars.length-1].x1-s.bars[0].x0)*100+'%',top:s.y0*100+'%',height:(s.y1-s.y0)*100+'%'})});return}
+ if(!B.seq.length)return;const n=B.seq[Math.min(pos,B.seq.length-1)];let b=B.boxes[n],f=frac;
+ const rest=$('rest');
+ if(!b){ // 이 파트가 쉬는 마디(악보에 오선이 없음)
+  let k=pos;while(k>=0&&!B.boxes[B.seq[k]])k--;let e=pos;while(e<B.seq.length&&!B.boxes[B.seq[e]])e++;
+  rest.style.display=playing?'block':'none';rest.textContent=`🎵 쉬는 중 · ${n}마디 (${B.seq[e-1]}마디까지)`;
+  if(k<0)return;b=B.boxes[B.seq[k]];f=1}else rest.style.display='none';
+ const c=document.createElement('div');c.className='cur';
+ place(c,b,{left:b.x0*100+'%',width:(b.x1-b.x0)*100+'%',top:b.y0*100+'%',height:(b.y1-b.y0)*100+'%'});
+ const h=document.createElement('div');h.className='ph';
+ place(h,b,{left:(b.x0+(b.x1-b.x0)*f)*100+'%',top:b.y0*100+'%',height:(b.y1-b.y0)*100+'%'})}
+function follow(){let k=pos;while(k<B.seq.length&&!B.boxes[B.seq[k]])k++;if(k>=B.seq.length)return;
+ const p=B.boxes[B.seq[k]].p;if(p<i||p>=i+step()){i=p;show()}}
+function ui(){if(!cur)return;$('bpm').value=cur.bpm;$('beat').textContent=cur.beats+'박';$('clk').textContent=clk?'🔔':'🔕';
+ $('play').textContent=playing?'⏸ 멈춤':'▶ 재생';$('play').classList.toggle('on',playing);$('bar').classList.toggle('show',!playing);
+ $('vLive').classList.toggle('hide',!room)}
+const mdur=()=>cur.beats*60/cur.bpm;
+function tick(at,hi){if(!clk||!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=hi?1600:1000;
+ g.gain.setValueAtTime(.45,at);g.gain.exponentialRampToValueAtTime(.001,at+.06);o.connect(g).connect(ac.destination);o.start(at);o.stop(at+.07)}
+function audio(){if(!ac)try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}if(ac&&ac.state==='suspended')ac.resume()}
+// 재생: t0 = (카운트 포함) 출발 시각(performance 시계), from = 시작 위치(seq 번호), ci = 카운트 마디 수
+let run=null;
+function startLocal(r){if(!cur||!B.seq.length)return;audio();run=r;playing=true;
+ if(ac){const lead=(r.t0-performance.now())/1000;beatAt=ac.currentTime+Math.max(0,lead);beatN=0;
+  if(lead<0){const per=60/cur.bpm,passed=Math.ceil(-lead/per);beatAt=ac.currentTime+(passed*per+lead);beatN=passed}}
+ ui();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
+function stopLocal(){playing=false;run=null;cancelAnimationFrame(raf);$('cnt').style.display='none';$('rest').style.display='none';ui();draw()}
+function loop(now){if(!playing)return;const el=(now-run.t0)/1000,md=mdur(),ce=$('cnt');
+ if(el<0){ce.style.display='none'}
+ else if(el<run.ci*md){const left=cur.beats-Math.floor((el%md)/(60/cur.bpm));ce.style.display='block';ce.textContent=left}
+ else{ce.style.display='none';const m=(el-run.ci*md)/md,k=run.from+Math.floor(m);
+  if(k>=B.seq.length){pos=B.seq.length-1;frac=1;stopLocal();if(room&&isMine())roomStop(true);return}
+  if(k!==pos){pos=k;follow()}frac=m-Math.floor(m);draw()}
+ if(ac&&clk){while(beatAt<ac.currentTime+.12){tick(beatAt,beatN%cur.beats===0);beatN++;beatAt+=60/cur.bpm}}
+ raf=requestAnimationFrame(loop)}
+let lastMine=0;const isMine=()=>Date.now()-lastMine<1e9;
+function play(){if(room){roomPlay();return}const ci=frac===0?1:0;startLocal({t0:performance.now()+80-(frac*mdur()*1000),from:pos,ci})}
+function pause(){if(room){roomStop();return}const r=run;stopLocal()}
+$('play').onclick=()=>{audio();playing?pause():play()};
+$('home0').onclick=()=>{const was=playing;if(room){roomSeek(0,was);return}stopLocal();pos=0;frac=0;follow();draw();if(was)play()};
+function setBpm(v){v=Math.max(30,Math.min(300,Math.round(v)||cur.bpm));if(v===cur.bpm)return;
+ if(room){roomTempo(v);return}
+ const was=playing;if(was){const keep=pos,f=frac;stopLocal();cur.bpm=v;pos=keep;frac=f;startLocal({t0:performance.now()-f*mdur()*1000,from:keep,ci:0})}
+ else cur.bpm=v;sPut(cur);ui()}
+$('dn').onclick=()=>setBpm(cur.bpm-2);$('up').onclick=()=>setBpm(cur.bpm+2);$('bpm').onchange=()=>setBpm(+$('bpm').value);
+$('beat').onclick=()=>{if(playing){toast('멈춘 다음 바꿔 주세요');return}cur.beats={4:3,3:2,2:6,6:4}[cur.beats]||4;sPut(cur);ui();if(room)roomPatch({beats:cur.beats})};
+$('clk').onclick=()=>{clk=!clk;LS.set('clk',clk);ui()};
+$('back').onclick=closeView;
+$('two').onclick=async()=>{two=!two;LS.set('two',two);show()};
+$('fs').onclick=()=>{const d=document;if(d.fullscreenElement||d.webkitFullscreenElement)(d.exitFullscreen||d.webkitExitFullscreen).call(d);
+ else{const e=d.documentElement;(e.requestFullscreen||e.webkitRequestFullscreen||function(){toast('이 기기는 전체 화면을 지원하지 않아요 · 홈 화면에 추가해 보세요')}).call(e)}};
+$('fix').onclick=()=>{if(playing)return;fixing=true;$('fixbar').classList.remove('hide');draw()};
+$('fixDone').onclick=()=>{fixing=false;$('fixbar').classList.add('hide');B=build(cur);sPut(cur);draw()};
+
+// 터치: 짧게 = 쪽 넘김, 꾹 = 그 마디부터 (번호 고치기 모드에선 줄 첫 번호 고치기)
+function hit(x,y,target){const d=target.closest&&target.closest('.pg');if(!d)return null;const r=d.getBoundingClientRect();
+ const fx=(x-r.left)/r.width,fy=(y-r.top)/r.height,p=+d.dataset.p;let best=null,bd=1e9;
+ cur.systems.forEach(s=>{if(s.p!==p)return;s.bars.forEach((b,q)=>{if(fx<b.x0||fx>b.x1)return;
+  const dy=fy<s.y0?s.y0-fy:fy>s.y1?fy-s.y1:0;if(dy<bd){bd=dy;best={s,q,n:s.first+q}}})});return bd<0.03?best:null}
+let hold=null,held=false,downAt=null;
+$('view').addEventListener('pointerdown',ev=>{if(ev.target.closest('#bar,#fixbar'))return;ev.preventDefault();held=false;
+ downAt={x:ev.clientX,y:ev.clientY,t:ev.target};
+ if(fixing)return;
+ hold=setTimeout(()=>{held=true;const h=hit(downAt.x,downAt.y,downAt.t);if(!h)return;const k=B.seq.indexOf(h.n);if(k<0)return;
+  if(room){roomSeek(k,playing);return}
+  const was=playing;stopLocal();pos=k;frac=0;draw();if(was)play();else toast(h.n+'마디부터',900)},500)});
+$('view').addEventListener('pointerup',ev=>{if(ev.target.closest('#bar,#fixbar'))return;clearTimeout(hold);if(held||!downAt)return;
+ if(fixing){const h=hit(downAt.x,downAt.y,downAt.t);downAt=null;if(!h){return}
+  const v=prompt(`이 줄의 첫 마디 번호 (지금 ${h.s.first})`,h.s.first);if(v==null)return;const n=parseInt(v);
+  if(n>0){h.s.fix=n;B=build(cur);draw()}return}
+ downAt=null;go(ev.clientX<innerWidth/3?-1:1)});
+document.addEventListener('keydown',e=>{if($('view').classList.contains('hide')||e.target.tagName==='INPUT')return;
+ if(e.key===' '||e.key==='Enter'){e.preventDefault();$('play').click();return}
+ if(['ArrowRight','ArrowDown','PageDown'].includes(e.key)){e.preventDefault();go(1)}
+ if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(-1)}
+ if(e.key==='Escape'&&!fixing)closeView()});
+$('view').addEventListener('contextmenu',e=>e.preventDefault());
+addEventListener('resize',draw);
+
+// ════════ 합주 방 (RTDB REST + 실시간 스트림) ════════
+// band_play/{코드} = {song, bpm, beats, run:{on, at(서버 ms, 카운트 시작), from:{n,k}, ci}, m/{cid}:{name,part,t}}
+let room=null,R={},es=null,offset=0,cid=LS.get('cid',null);
+if(!cid){cid=Math.random().toString(36).slice(2,10);LS.set('cid',cid)}
+$('myName').value=LS.get('name','');
+const sNow=()=>Date.now()+offset;
+async function clockSync(){let best=1e9;for(let k=0;k<4;k++){try{const a=Date.now();
+  const r=await fetch(DB+room+'/ping/'+cid+'.json',{method:'PUT',body:'{".sv":"timestamp"}'});const v=await r.json();const b=Date.now();
+  if(b-a<best){best=b-a;offset=v-(a+b)/2}}catch(e){}}}
+async function rput(path,v){try{await fetch(DB+room+path+'.json',{method:'PUT',body:JSON.stringify(v)})}catch(e){toast('⚠️ 인터넷 연결을 확인해 주세요')}}
+async function roomPatch(o){try{await fetch(DB+room+'.json',{method:'PATCH',body:JSON.stringify(o)})}catch(e){toast('⚠️ 인터넷 연결을 확인해 주세요')}}
+function posKey(k){const n=B.seq[k];let c=0;for(let j=0;j<=k;j++)if(B.seq[j]===n)c++;return {n,k:c}}
+function keyPos(f){if(!f)return 0;let c=0;for(let j=0;j<B.seq.length;j++)if(B.seq[j]===f.n&&++c===f.k)return j;
+ const j=B.seq.indexOf(f.n);return j<0?0:j}
+function roomPlay(){if(!cur)return;lastMine=Date.now();const ci=frac===0?1:0;
+ roomPatch({song:cur.title,bpm:cur.bpm,beats:cur.beats,run:{on:true,at:Math.round(sNow()+700-frac*mdur()*1000),from:posKey(pos),ci,by:cid}})}
+function roomStop(silent){lastMine=Date.now();const f=posKey(pos);rput('/run',{on:false,from:f,by:cid})}
+function roomSeek(k,keep){lastMine=Date.now();
+ if(keep)roomPatch({run:{on:true,at:Math.round(sNow()+700),from:posKey(k),ci:1,by:cid}});else rput('/run',{on:false,from:posKey(k),by:cid})}
+function roomTempo(v){lastMine=Date.now();
+ if(playing){const nb=pos+1;cur.bpm=v;const at=Math.round(sNow()+500);
+  roomPatch({bpm:v,run:{on:true,at,from:posKey(Math.min(nb,B.seq.length-1)),ci:0,by:cid}})}
+ else roomPatch({bpm:v})}
+function syncFromRoom(open){if(!room)return;
+ if(!cur)return renderRoom();
+ if(R.song&&norm(R.song)!==norm(cur.title)){
+  const alt=scores.find(s=>s.id===LS.get('last_'+norm(R.song)))||scores.find(s=>norm(s.title)===norm(R.song));
+  if(alt){toast(`곡이 「${R.song}」(으)로 바뀌었어요`);openScore(alt.id);return}
+  toast(`방 곡은 「${R.song}」인데 이 기기에 그 악보가 없어요`,4000)}
+ let ch=false;if(R.bpm&&R.bpm!==cur.bpm){cur.bpm=R.bpm;ch=true}if(R.beats&&R.beats!==cur.beats){cur.beats=R.beats;ch=true}if(ch)sPut(cur);
+ const r=R.run;if(!r){ui();return}
+ const from=keyPos(r.from);
+ if(r.on){const t0=performance.now()+(r.at-sNow());stopLocal();pos=from;frac=0;follow();startLocal({t0,from,ci:r.ci||0})}
+ else{stopLocal();pos=from;frac=0;follow();draw()}
+ ui()}
+function listen(){if(es)es.close();es=new EventSource(DB+room+'.json');
+ const on=e=>{const m=JSON.parse(e.data);if(!m)return;const p=m.path,d=m.data;
+  if(p==='/'){R=d||{}}else{const ks=p.split('/').filter(Boolean);let o=R;for(let j=0;j<ks.length-1;j++){o=o[ks[j]]=o[ks[j]]||{}}
+   if(d==null)delete o[ks[ks.length-1]];else o[ks[ks.length-1]]=d}
+  const top=p==='/'?'':p.split('/')[1];
+  if(top===''||top==='run'||top==='bpm'||top==='beats'||top==='song'){if(cur)syncFromRoom();else renderRoom()}
+  if(top===''||top==='m')renderRoom()};
+ es.addEventListener('put',on);es.addEventListener('patch',e=>{const m=JSON.parse(e.data);const base=m.path==='/'?'':m.path;
+  Object.entries(m.data||{}).forEach(([k,v])=>on({data:JSON.stringify({path:base+'/'+k,data:v})}))})}
+let beatT=null;
+async function enter(code,fresh){const name=$('myName').value.trim();if(!name){toast('내 이름을 먼저 써 주세요');$('myName').focus();return}
+ LS.set('name',name);room=code;LS.set('room',code);await clockSync();
+ if(fresh)await rput('',{made:{'.sv':'timestamp'},bpm:120,beats:4});
+ const r=await fetch(DB+code+'.json').then(r=>r.json()).catch(()=>null);
+ if(!r){toast('그런 방이 없어요. 코드를 확인해 주세요');room=null;LS.set('room',null);return}
+ R=r;heartbeat();clearInterval(beatT);beatT=setInterval(heartbeat,30000);listen();renderRoom();toast('방 '+code+'에 들어왔어요')}
+function myPart(){const s=cur||scores.find(x=>x.id===LS.get('lastAny'));return s?s.part:LS.get('part','')}
+function heartbeat(){if(room)rput('/m/'+cid,{name:LS.get('name','?'),part:myPart(),t:{'.sv':'timestamp'}})}
+function leave(){if(room){fetch(DB+room+'/m/'+cid+'.json',{method:'DELETE'}).catch(()=>{});fetch(DB+room+'/ping/'+cid+'.json',{method:'DELETE'}).catch(()=>{})}
+ if(es)es.close();es=null;clearInterval(beatT);room=null;R={};LS.set('room',null);if(cur)stopLocal();renderRoom()}
+$('mkRoom').onclick=async()=>{let code;for(let k=0;k<6;k++){code=String(1000+Math.floor(Math.random()*9000));
+  const r=await fetch(DB+code+'.json').then(r=>r.json()).catch(()=>null);if(!r||!r.made||Date.now()-r.made>864e5)break}
+ enter(code,true)};
+$('joinBtn').onclick=()=>{const c=$('joinCode').value.trim();if(!/^\d{4}$/.test(c)){toast('코드 4자리를 넣어 주세요');return}enter(c,false)};
+$('leave').onclick=leave;
+function renderRoom(){$('roomOff').classList.toggle('hide',!!room);$('roomOn').classList.toggle('hide',!room);if(cur)ui();if(!room)return;
+ $('roomCode').textContent=room;
+ const mine=R.song?scores.filter(s=>norm(s.title)===norm(R.song)):[];
+ $('roomInfo').innerHTML=R.song?`지금 곡: 🎵 <span></span> · ♩${R.bpm} ${mine.length?'':'<br><span style="color:#dc2626">이 기기에 이 곡 악보가 없어요 — 같은 제목으로 넣어 주세요</span>'}`:'아직 곡이 안 정해졌어요 — 누구든 아래 악보를 열면 그 곡으로 맞춰져요';
+ const sp=$('roomInfo').querySelector('span');if(sp)sp.textContent=R.song;
+ const now=sNow(),ms=Object.values(R.m||{}).filter(m=>m&&now-(m.t||0)<90000);
+ $('members').innerHTML='';ms.forEach(m=>{const e=document.createElement('span');e.className='mem';e.textContent=(m.part?m.part+' · ':'')+m.name;$('members').appendChild(e)})}
+// 악보를 열면 방의 곡도 그 곡으로(멈춰 있을 때만)
+const _open=openScore;openScore=async id=>{await _open(id);if(!cur)return;LS.set('lastAny',cur.id);heartbeat();
+ if(room&&!(R.run&&R.run.on)&&norm(R.song||'')!==norm(cur.title)){lastMine=Date.now();roomPatch({song:cur.title,bpm:cur.bpm,beats:cur.beats,run:{on:false,from:{n:B.seq[0]||1,k:1}}})}};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&room){clockSync().then(()=>{if(cur)syncFromRoom()})}});
+
+// 시험용: ?t=악보주소 로 바로 넣기
+(async()=>{await refresh();const q=new URLSearchParams(location.search);
+ if(LS.get('room',null)&&$('myName').value){enter(LS.get('room'),false)}
+ if(q.get('t')){const buf=await fetch(q.get('t')).then(r=>r.arrayBuffer());pending={buf,name:q.get('t')};$('fTitle').value=q.get('title')||'시험';$('fPart').value=q.get('part')||'기타1';await $('fGo').onclick();
+  window.__done=JSON.stringify(scores.map(s=>({t:s.title,sys:s.systems.map(x=>[x.p,x.auto,x.first,x.bars.length,x.bars.filter(b=>b.rs).length,x.bars.filter(b=>b.re).length])})))}
+})();
+</script></body></html>
