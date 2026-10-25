@@ -18,11 +18,37 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 #camBox b{position:absolute;left:8px;top:6px;background:#dc2626;color:#fff;font:800 14px ui-monospace,monospace;padding:2px 8px;border-radius:6px}
 #camBox .cb{position:absolute;bottom:6px;border:0;border-radius:8px;padding:6px 10px;font:700 14px sans-serif;color:#fff;background:#0008}
 #rec.on{background:#dc2626}#saveRec{background:#16a34a!important}
+#spl{position:fixed;inset:0;background:#3B0A57;z-index:100000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:-apple-system,"Helvetica Neue",sans-serif;transition:opacity .45s}
+#spl .w{font:900 min(19vw,120px)/1 -apple-system,"Helvetica Neue",sans-serif;letter-spacing:-.03em;display:flex}#spl .t{color:#5EC4BE}
+#spl .sw{display:inline-grid;overflow:hidden;height:1.08em}#spl .sw>span{grid-area:1/1}#spl .sw span{display:block;transition:transform .5s cubic-bezier(.3,1.4,.5,1),opacity .4s}
+#spl .sw .b{transform:translateY(100%);opacity:0}#spl.s2 .sw .a{transform:translateY(-100%);opacity:0}#spl.s2 .sw .b{transform:none;opacity:1}
+#spl .em{display:flex;gap:min(4vw,26px);font-size:min(11vw,64px);margin-top:28px;height:1.3em}
+#spl .em i{font-style:normal;opacity:0;transform:translateY(40px) scale(.4)}#spl.s3 .em i{animation:pop .5s cubic-bezier(.3,1.6,.5,1) forwards,bob 1s ease-in-out infinite alternate}
+@keyframes pop{to{opacity:1;transform:none}}@keyframes bob{from{translate:0 0;rotate:-8deg}to{translate:0 -12px;rotate:8deg}}
+#spl .ko{font-weight:800;font-size:22px;letter-spacing:.3em;margin-top:22px;opacity:0;transition:opacity .5s}#spl.s4 .ko{opacity:.85}#spl small{position:absolute;bottom:40px;opacity:.5;font-weight:600}
+#home{position:fixed;inset:0;background:#3B0A57ee;z-index:99999;display:none;align-items:center;justify-content:center;padding:16px;font-family:-apple-system,sans-serif}#home.on{display:flex}
+#home .card{background:#fff;color:#1e1030;border-radius:22px;padding:22px;width:min(440px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 50px #0007}
+#home h2{margin:0 0 4px;font-size:24px}#home p{margin:6px 0;color:#5b4a6b;font-size:15px}
+#home button{display:block;width:100%;margin-top:10px;font:800 18px -apple-system,sans-serif;padding:14px;border:0;border-radius:14px;background:#efe7f6;color:#3B0A57}
+#home button.pri{background:#3B0A57;color:#fff}#home button.sm{font-size:15px;padding:10px;background:none;color:#7a6890}
+#home input,#home select{width:100%;box-sizing:border-box;font-size:18px;padding:12px;margin-top:8px;border:2px solid #e4d8ef;border-radius:12px;background:#fff;color:#1e1030}
+#home .mem{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}#home .mem span{background:#f4eefa;border-radius:999px;padding:6px 12px;font-weight:700;font-size:15px}#home .mem span.on::before{content:'● ';color:#16a34a}
+#home .code{font:900 34px ui-monospace,monospace;letter-spacing:.2em;color:#3B0A57}
 .at-cursor-bar{background:#fde68a55}.at-cursor-beat{background:#dc2626;width:3px}
 .at-highlight *{fill:#dc2626;stroke:#dc2626}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.min.js"></script></head><body>
-<div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="sg"></select><select id="pt"></select><button id="rm">👥 합주 방</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="rec">⏺ 녹화</button><button id="fs" title="꽉 찬 화면">⛶</button><span id="st">불러오는 중…</span></div>
+<div id="spl"><div class="w"><span class="t">We</span><span class="sw"><span class="a">Play</span><span class="b"><span style="color:#FF3B47;display:inline">Ba</span>nd</span></span></div>
+<div class="em"><i>🎸</i><i>🎹</i><i>🥁</i><i>🎸</i><i>🎤</i></div><div class="ko">위밴드</div><small>by WePlay</small></div>
+<div id="home"><div class="card" id="hc"></div></div>
+<script>
+// 🎬 켤 때 인트로(10/26 «위리처럼 WePlay → Band, 세션 악기·마이크 이모지 움직이게») — 곡 바꿀 때 페이지가 다시 열리니 한 번 본 창에선 생략, 탭하면 바로 넘김
+(()=>{const e=document.getElementById('spl');let seen=false;try{seen=sessionStorage.getItem('wb_spl')}catch(x){}
+ const end=()=>{e.style.opacity=0;setTimeout(()=>e.remove(),450)};
+ if(seen||/[?&]nosplash/.test(location.search)){e.remove();return}try{sessionStorage.setItem('wb_spl',1)}catch(x){}
+ e.onclick=end;e.querySelectorAll('.em i').forEach((x,i)=>x.style.animationDelay=(i*0.12)+'s,'+(0.5+i*0.12)+'s');
+ setTimeout(()=>e.classList.add('s2'),1000);setTimeout(()=>e.classList.add('s3'),1500);setTimeout(()=>e.classList.add('s4'),2300);setTimeout(end,3400)})();
+</script><div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="sg"></select><select id="pt"></select><button id="rm">👥 합주 방</button><button id="md" hidden>🎧 개인 연습</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="rec">⏺ 녹화</button><button id="fs" title="꽉 찬 화면">⛶</button><span id="st">불러오는 중…</span></div>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
  <div><button id="o1">◀ 0.05초</button> <button id="o2">0.05초 ▶</button></div><small id="yinfo">원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요</small></div></div>
@@ -105,9 +131,9 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    const now=lastPos.t+(performance.now()-lastPos.at)*(run.sp||1),d=now-want();
    if(Math.abs(d)>250){if(++miss>=2){api.timePosition=want();miss=0;lastPos=null}}else miss=0},1000)}
  let lastPos=null;api.playerPositionChanged.on(e=>{lastPos={t:e.currentTime,at:performance.now()}});
- async function join(c){room=c;LSet('room',c);$('rbox').hidden=true;$('rm').textContent='👥 '+c;$('rm').classList.add('on');await clockSync();
+ async function join(c){room=c;LSet('room',c);$('rbox').hidden=true;if(typeof barName==='function')barName();else{$('rm').textContent='👥 '+c;$('rm').classList.add('on')}await clockSync();
   if(es)es.close();es=new EventSource(RDB+c+'/at.json');es.addEventListener('put',e=>{const m=JSON.parse(e.data);if(m.path==='/')run=m.data;else if(run){run[m.path.slice(1)]=m.data}apply()})}
- function leave(){if(es)es.close();es=null;room=null;run=null;LSet('room',null);clearTimeout(startT);clearInterval(drift);$('rm').textContent='👥 합주 방';$('rm').classList.remove('on')}
+ function leave(){if(es)es.close();es=null;room=null;run=null;LSet('room',null);clearTimeout(startT);clearInterval(drift);if(typeof barName==='function')barName()}
  $('rm').onclick=()=>{if(room){leave();return}const b=$('rbox');b.hidden=!b.hidden;if(!b.hidden){$('rcode').value=LG('room')||'';$('rcode').focus()}};
  $('rgo').onclick=()=>{const c=$('rcode').value.trim();if(!/^\d{4}$/.test(c)){$('st').textContent='코드 4자리를 넣어 주세요';return}join(c)};
  const go=(tp,sp2)=>put({on:true,at:Math.round(sNow()+900),tp:Math.max(0,tp),sp:sp2,song:SONG,by:cid});
@@ -115,7 +141,62 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  $('h').onclick=()=>{if(!room)return api.stop();put({on:false,tp:0,song:SONG,by:cid})};
  const S0=S;S=d=>{S0(d);if(room&&run&&run.on)go(want(),sp)};
  $('dn').onclick=()=>S(-0.05);$('up').onclick=()=>S(0.05);
- const r0=q.get('r')||LG('room');if(r0&&/^\d{4}$/.test(r0))join(r0);
+ // ── 🎸 밴드(10/26 «밴드 개설하고 가입하면 매번 방 번호 넣을 필요 없잖아») — 밴드 = 늘 같은 합주 방. 한 번 가입하면 열 때마다 자동 입장
+ //   band_play/{코드}/band = {name, made, k} · 멤버 = band_play/{코드}/m/{기기} = {name, part, t}
+ let band=LG('band');const H=$('hc'),esc=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+ const partOpts=v=>Object.entries(PN).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('');
+ const myPart=()=>(q.get('s')||'').split('_')[1]||localStorage.getItem('at_part')||'g1';
+ const link=c=>location.origin+location.pathname+'?k='+q.get('k')+'&b='+c;
+ const J=(u,o)=>fetch(RDB+u+'.json',o).then(r=>r.json());
+ function hello(){if(band)J(band.code+'/m/'+cid,{method:'PUT',body:JSON.stringify({name:band.me,part:band.part,t:{'.sv':'timestamp'}})}).catch(()=>{})}
+ setInterval(hello,60000);
+ function barName(){$('rm').textContent=band?'🎸 '+band.name:room?'👥 '+room:'🎸 밴드';$('rm').classList.toggle('on',!!(band||room));
+  // 개인 연습 ↔ 합주(10/26 «개인연습도 가능하게 하고 합주도 가능하게»): 합주일 때만 ▶가 멤버 모두에게 같이 걸린다
+  $('md').hidden=!band;const jam=!!room;$('md').textContent=jam?'👥 합주 중':'🎧 개인 연습';$('md').classList.toggle('on',jam)}
+ function setMode(m){LSet('mode',m);if(m==='jam'){if(band&&room!==band.code)join(band.code)}else if(room){leave()}barName();
+  $('st').textContent=m==='jam'?'👥 합주 모드 — ▶를 누르면 멤버 모두 같이 시작해요':'🎧 개인 연습 — 나만 재생돼요';setTimeout(()=>$('st').textContent='',3000)}
+ $('md').onclick=()=>setMode(room?'solo':'jam');
+ function toPart(p){LSet('band',band);if(p&&p!==PART){const k=SONG+'_'+p;if([...$('pt').options].some(o=>o.value===k)){q.set('s',k);location.search=q.toString();return true}}return false}
+ function enter(b){band=b;LSet('band',b);try{localStorage.setItem('at_part',b.part)}catch(e){}if(LG('mode')==='jam'){if(room!==b.code)join(b.code)}else if(room)leave();hello();barName();$('home').classList.remove('on');toPart(b.part)}
+ async function members(){if(!band)return;const m=await J(band.code+'/m').catch(()=>null)||{},now=sNow();const el=$('mem');if(!el)return;
+  el.innerHTML=Object.values(m).filter(x=>x&&x.name&&x.t).sort((a,b)=>b.t-a.t).map(x=>`<span class="${now-x.t<150000?'on':''}">${esc(x.name)} · ${esc((PN[x.part]||'').replace(/^\S+ /,''))}</span>`).join('')||'<p>아직 아무도 없어요</p>'}
+ let memT=0;
+ function home(view){clearInterval(memT);$('home').classList.add('on');
+  if(band&&!view){H.innerHTML=`<h2>🎸 ${esc(band.name)}</h2><p>밴드 코드 <span class="code">${band.code}</span></p><p><b>멤버</b> (● 지금 접속 중)</p><div class="mem" id="mem"></div>
+   <p>나: <b>${esc(band.me)}</b></p><select id="hp">${partOpts(band.part)}</select>
+   <button class="pri" id="hj">👥 합주하기</button><button id="hs">🎧 혼자 연습하기</button><button id="hi">📨 멤버 초대 링크 보내기</button><button class="sm" id="hx">밴드 나가기</button>`;
+   members();memT=setInterval(members,10000);
+   const pick=m=>{band.part=$('hp').value;hello();$('home').classList.remove('on');clearInterval(memT);setMode(m);toPart(band.part)};$('hs').onclick=()=>pick('solo');$('hj').onclick=()=>pick('jam');
+   $('hi').onclick=async()=>{const u=link(band.code),t=`🎸 «${band.name}» 위밴드 합주방 초대\n누르고 이름·파트만 넣으면 끝!\n${u}`;
+    try{if(navigator.share){await navigator.share({title:'위밴드 초대',text:t});return}}catch(e){if(e.name==='AbortError')return}
+    try{await navigator.clipboard.writeText(t);$('hi').textContent='✅ 복사됨 — 단톡방에 붙여넣기'}catch(e){prompt('복사해서 보내세요',u)}};
+   $('hx').onclick=()=>{if(!confirm(`«${band.name}»에서 나갈까요?`))return;fetch(RDB+band.code+'/m/'+cid+'.json',{method:'DELETE'}).catch(()=>{});band=null;LSet('band',null);leave();barName();home()};return}
+  if(view==='make'){H.innerHTML=`<h2>🎸 밴드 만들기</h2><input id="bn" placeholder="밴드 이름" maxlength="30"><input id="bm" placeholder="내 이름" maxlength="20"><select id="bp">${partOpts(myPart())}</select>
+   <button class="pri" id="bk">만들기</button><button class="sm" id="bb">← 뒤로</button>`;$('bb').onclick=()=>home('start');
+   $('bk').onclick=async()=>{const n=$('bn').value.trim(),me=$('bm').value.trim();if(!n||!me){$('bk').textContent='밴드 이름과 내 이름을 넣어 주세요';return}
+    $('bk').disabled=true;$('bk').textContent='만드는 중…';let c=null;
+    for(let i=0;i<15&&!c;i++){const t=String(1000+Math.floor(Math.random()*9000));const o=await fetch(RDB+t+'.json?shallow=true').then(r=>r.json()).catch(()=>1);if(o===null)c=t}
+    if(!c){$('bk').disabled=false;$('bk').textContent='⚠️ 다시 눌러 주세요';return}
+    await J(c+'/band',{method:'PUT',body:JSON.stringify({name:n,made:{'.sv':'timestamp'},k:q.get('k')})}).catch(()=>{});
+    enter({code:c,name:n,me,part:$('bp').value});home()};return}
+  if(view==='join'||view&&view.code){const c0=view.code||'';H.innerHTML=`<h2>🔗 밴드 가입</h2><input id="jc" inputmode="numeric" maxlength="4" placeholder="밴드 코드 4자리" value="${c0}"><p id="jn"></p>
+   <input id="jm" placeholder="내 이름" maxlength="20"><select id="jp">${partOpts(myPart())}</select><button class="pri" id="jk">가입하기</button><button class="sm" id="jb">← 뒤로</button>`;
+   let found=null;const look=async()=>{const c=$('jc').value.trim();found=null;$('jn').textContent='';if(!/^\d{4}$/.test(c))return;
+    const b=await J(c+'/band').catch(()=>null);if(b&&b.name){found={c,...b};$('jn').innerHTML=`🎸 <b>${esc(b.name)}</b> 밴드예요`}else $('jn').textContent='그런 밴드가 없어요 — 코드를 확인해 주세요'};
+   $('jc').oninput=look;look();$('jb').onclick=()=>home('start');
+   $('jk').onclick=()=>{const me=$('jm').value.trim();if(!found){$('jk').textContent='밴드 코드를 확인해 주세요';return}if(!me){$('jk').textContent='내 이름을 넣어 주세요';return}
+    const b={code:found.c,name:found.name,me,part:$('jp').value};
+    if(found.k&&found.k!==q.get('k')){try{localStorage.setItem('at_k',found.k)}catch(e){}LSet('band',b);q.set('k',found.k);q.delete('b');location.search=q.toString();return}
+    enter(b);home()};return}
+  H.innerHTML=`<h2>🎸 위밴드</h2><p>밴드를 만들거나 가입하면, 다음부터는 열기만 해도 우리 밴드 합주방에 들어가요.</p>
+   <button class="pri" id="h1">🎸 밴드 만들기</button><button id="h2">🔗 초대받은 밴드 가입</button><button class="sm" id="h3">그냥 혼자 연습할게요</button>`;
+  $('h1').onclick=()=>home('make');$('h2').onclick=()=>home('join');$('h3').onclick=()=>{LSet('solo',1);$('home').classList.remove('on')}}
+ $('rm').onclick=()=>home();
+ const b0=q.get('b');
+ if(b0&&/^\d{4}$/.test(b0)&&!(band&&band.code===b0)){q.delete('b');history.replaceState(null,'','?'+q.toString());home({code:b0})}
+ else if(band){if(b0){q.delete('b');history.replaceState(null,'','?'+q.toString())}enter(band)}
+ else{const r0=q.get('r')||LG('room');if(r0&&/^\d{4}$/.test(r0))join(r0);else if(!LG('solo'))home()}
+ barName();
  // ── 원곡(유튜브) 맞춰 틀기: 악보 커서가 영상 시간을 따라감. 기준점(🎯)은 곡마다 이 기기에 저장(10/25 «대표 음원 하나 맞춰 틀어 놓고»)
  const YT_ID=q.get('yt')||({butterfly:'1cMKPc3Yors'})[SONG],MARK=+(q.get('mark')||({butterfly:16,redsunset:7})[SONG]||1),OK='at_off_'+SONG;
  $('mk').textContent=MARK;if(!YT_ID)$('ytb').style.display='none';let yp=null,off=null,sync=0;try{const v=localStorage.getItem(OK)??localStorage.getItem('at_off_'+q.get('s'));if(v!=null)off=+v}catch(e){}
