@@ -6,7 +6,7 @@
 body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--fg)}
 #bar{position:sticky;top:0;background:#111;color:#fff;padding:8px max(10px,env(safe-area-inset-left));z-index:9;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 #bar button{font-size:17px;padding:7px 14px;border:0;border-radius:10px;background:#2b2b2b;color:#fff}
-#bar button.on{background:#dc2626}#bar b{font-size:15px}#pt{font-size:16px;padding:6px;border-radius:10px;background:#2b2b2b;color:#fff;border:0}#pt:empty{display:none}#st{font-size:13px;opacity:.75}
+#bar button.on{background:#dc2626}#bar b{font-size:15px}#pt,#sg{font-size:16px;padding:6px;border-radius:10px;background:#2b2b2b;color:#fff;border:0}#pt:empty{display:none}#st{font-size:13px;opacity:.75}
 #at{padding:0 6px}
 #yt{display:none;background:#000;position:sticky;top:52px;z-index:8}#yt.on{display:flex;gap:8px;align-items:center;padding:6px;flex-wrap:wrap}
 #ytbox{width:min(320px,45vw);aspect-ratio:16/9}#ytbox iframe{width:100%;height:100%}
@@ -22,7 +22,7 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 .at-highlight *{fill:#dc2626;stroke:#dc2626}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.min.js"></script></head><body>
-<div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="pt"></select><button id="rm">👥 합주 방</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="rec">⏺ 녹화</button><button id="fs" title="꽉 찬 화면">⛶</button><span id="st">불러오는 중…</span></div>
+<div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="sg"></select><select id="pt"></select><button id="rm">👥 합주 방</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="rec">⏺ 녹화</button><button id="fs" title="꽉 찬 화면">⛶</button><span id="st">불러오는 중…</span></div>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
  <div><button id="o1">◀ 0.05초</button> <button id="o2">0.05초 ▶</button></div><small id="yinfo">원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요</small></div></div>
@@ -31,6 +31,12 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 // 새로 그린 악보(alphaTex) — 음표 하나하나에 박자가 들어 있어 커서가 정확히 따라감(10/25 사용자 «너가 악보를 새로 그리는 게 정확하겠다»)
 // 구매 악보를 옮긴 것이라 저장소엔 넣지 않고 방 악보함(band_play_lib/{키}/tex)에서 읽는다
 const q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
+// 한 주소로 여러 곡(10/25): 악보함 키·마지막 곡/파트를 기억해서 ?k 없이 at.html 만 열어도 됨
+{const g=k=>{try{return localStorage.getItem('at_'+k)}catch(e){return null}},p=(k,v)=>{try{localStorage.setItem('at_'+k,v)}catch(e){}};
+ if(!q.get('k')&&g('k'))q.set('k',g('k'));if(q.get('k'))p('k',q.get('k'));
+ if(!q.get('s'))q.set('s',g('s')||'butterfly_g1');p('s',q.get('s'));
+ const part=q.get('s').split('_')[1];if(part)p('part',part);
+ if(location.search.slice(1)!==q.toString())history.replaceState(null,'','?'+q.toString())}
 // 아이폰: 무음 스위치가 켜져 있으면 웹오디오(악보 소리)가 안 남 → 오디오 세션을 «재생»으로 바꾸고, 첫 터치에 무음 오디오를 틀어 풀어 줌
 try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
 let unl=false;const unlock=()=>{if(unl)return;unl=true;try{const au=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');au.loop=true;au.volume=0.01;au.play().catch(()=>{})}catch(e){}
@@ -40,8 +46,13 @@ let api=null;
 const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play_lib/';
 // 같은 곡의 다른 파트(곡_파트 이름)를 골라 보기 — 원곡 기준점은 곡 단위로 공유
 const SONG=(q.get('s')||'').split('_')[0],PN={vocal:'🎤 보컬',g1:'🎸 기타1',g2:'🎸 기타2',bass:'🎸 베이스',keys:'🎹 키보드',drums:'🥁 드럼'};
-fetch(DB+q.get('k')+'/tex.json?shallow=true').then(r=>r.json()).then(o=>{const ks=Object.keys(o||{}).filter(k=>k.split('_')[0]===SONG);if(ks.length<2)return;
- const order=Object.keys(PN);ks.sort((a,b)=>order.indexOf(a.split('_')[1])-order.indexOf(b.split('_')[1]));
+const SN={butterfly:'🦋 버터플라이',redsunset:'🌅 붉은노을',smileboy:'😊 Smile Boy'};
+fetch(DB+q.get('k')+'/tex.json?shallow=true').then(r=>r.json()).then(o=>{const all=Object.keys(o||{}),order=Object.keys(PN);
+ const songs=[...new Set(all.map(k=>k.split('_')[0]))].sort((a,b)=>(Object.keys(SN).indexOf(a)+99)%99-(Object.keys(SN).indexOf(b)+99)%99);
+ $('sg').innerHTML=songs.map(x=>`<option value="${x}"${x===SONG?' selected':''}>${SN[x]||x}</option>`).join('');
+ $('sg').onchange=()=>{const x=$('sg').value,want=localStorage.getItem('at_part')||'g1',ks=all.filter(k=>k.split('_')[0]===x);
+  q.set('s',ks.includes(x+'_'+want)?x+'_'+want:ks.includes(x+'_g1')?x+'_g1':ks[0]);location.search=q.toString()};
+ const ks=all.filter(k=>k.split('_')[0]===SONG);ks.sort((a,b)=>order.indexOf(a.split('_')[1])-order.indexOf(b.split('_')[1]));
  $('pt').innerHTML=ks.map(k=>`<option value="${k}"${k===q.get('s')?' selected':''}>${PN[k.split('_')[1]]||k}</option>`).join('');
  $('pt').onchange=()=>{q.set('s',$('pt').value);location.search=q.toString()}}).catch(()=>{});
 const CDN='https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/';
