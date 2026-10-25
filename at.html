@@ -106,8 +106,8 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  $('dn').onclick=()=>S(-0.05);$('up').onclick=()=>S(0.05);
  const r0=q.get('r')||LG('room');if(r0&&/^\d{4}$/.test(r0))join(r0);
  // ── 원곡(유튜브) 맞춰 틀기: 악보 커서가 영상 시간을 따라감. 기준점(🎯)은 곡마다 이 기기에 저장(10/25 «대표 음원 하나 맞춰 틀어 놓고»)
- const YT_ID=q.get('yt')||'1cMKPc3Yors',MARK=+(q.get('mark')||16),OK='at_off_'+SONG;
- $('mk').textContent=MARK;let yp=null,off=null,sync=0;try{const v=localStorage.getItem(OK)??localStorage.getItem('at_off_'+q.get('s'));if(v!=null)off=+v}catch(e){}
+ const YT_ID=q.get('yt')||({butterfly:'1cMKPc3Yors'})[SONG],MARK=+(q.get('mark')||({butterfly:16,redsunset:7})[SONG]||1),OK='at_off_'+SONG;
+ $('mk').textContent=MARK;if(!YT_ID)$('ytb').style.display='none';let yp=null,off=null,sync=0;try{const v=localStorage.getItem(OK)??localStorage.getItem('at_off_'+q.get('s'));if(v!=null)off=+v}catch(e){}
  const barMs=n=>{let t=0;const mb=api.score.masterBars;for(let i=0;i<n-1;i++){const m=mb[i];t+=m.calculateDuration()*60000/960/(api.score.tempo)}return t}; // 앞 마디들 길이(반복 없는 첫 회)
  const info=()=>$('yinfo').textContent=off==null?'원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요':`맞춤 완료 (영상 ${off.toFixed(2)}초 = 1마디). 영상을 움직이면 악보가 따라가요`;
  function follow(){if(!yp||off==null||!yp.getCurrentTime)return;const st=yp.getPlayerState(),want=(yp.getCurrentTime()-off)*1000;
