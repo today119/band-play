@@ -13,11 +13,16 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 #ytc{color:#fff;font-size:14px;display:flex;flex-direction:column;gap:6px}#ytc button{font-size:15px;padding:6px 10px;border:0;border-radius:8px;background:#333;color:#fff}
 #ytc .tap{background:#2563eb;font-size:16px}#ytc small{opacity:.75}@media(max-height:500px){#ytbox{width:190px}#ytc small{display:none}}
 #rbox input{width:96px;font-size:16px;padding:6px 8px;border-radius:10px;border:0}#rm.on{background:#16a34a}
+#camBox{position:fixed;right:max(10px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));width:min(34vw,360px);aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;z-index:20;box-shadow:0 6px 20px #0006;display:none}
+#camBox video{width:100%;height:100%;object-fit:cover}#camBox video.mirror{transform:scaleX(-1)}
+#camBox b{position:absolute;left:8px;top:6px;background:#dc2626;color:#fff;font:800 14px ui-monospace,monospace;padding:2px 8px;border-radius:6px}
+#camBox .cb{position:absolute;bottom:6px;border:0;border-radius:8px;padding:6px 10px;font:700 14px sans-serif;color:#fff;background:#0008}
+#rec.on{background:#dc2626}#saveRec{background:#16a34a!important}
 .at-cursor-bar{background:#fde68a55}.at-cursor-beat{background:#dc2626;width:3px}
 .at-highlight *{fill:#dc2626;stroke:#dc2626}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.min.js"></script></head><body>
-<div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="pt"></select><button id="rm">👥 합주 방</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="fs" title="꽉 찬 화면">⛶</button><span id="st">불러오는 중…</span></div>
+<div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="pt"></select><button id="rm">👥 합주 방</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="rec">⏺ 녹화</button><button id="fs" title="꽉 찬 화면">⛶</button><span id="st">불러오는 중…</span></div>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
  <div><button id="o1">◀ 0.05초</button> <button id="o2">0.05초 ▶</button></div><small id="yinfo">원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요</small></div></div>
@@ -121,4 +126,33 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
 </script><script>
 document.getElementById('fs').onclick=()=>{const d=document;if(d.fullscreenElement||d.webkitFullscreenElement)(d.exitFullscreen||d.webkitExitFullscreen).call(d);
  else{const e=d.documentElement,f=e.requestFullscreen||e.webkitRequestFullscreen;if(f)f.call(e);else document.getElementById('st').textContent=('사파리 공유 버튼 → 「홈 화면에 추가」로 열면 주소창 없이 꽉 찬 화면이 돼요')}};
+</script><div id="camBox"><video id="vid" playsinline muted autoplay></video><b id="recT">● 0:00</b><button class="cb" id="flip" style="left:6px">🔄</button><button class="cb" id="camX" style="right:6px">✕</button></div>
+<script>
+// 📷 내 연주 녹화(10/25 «이 앱에 촬영 버튼») — 악보를 보면서 카메라(+마이크)로 찍고, 끝나면 💾 저장(공유 시트 → 사진 앱)
+(()=>{const $=id=>document.getElementById(id);let stream=null,rec=null,chunks=[],t0=0,tm=0,file=null,facing='user';
+ try{facing=localStorage.getItem('band_play_facing')?JSON.parse(localStorage.getItem('band_play_facing')):'user'}catch(e){}
+ const st=t=>{$('st').textContent=t};
+ async function cam(){if(stream)return true;try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1920},height:{ideal:1080}},audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}})}
+  catch(e){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:true})}catch(e2){st('카메라를 쓸 수 없어요 — 설정에서 사파리 카메라·마이크 허용을 확인해 주세요');return false}}
+  const v=$('vid');v.srcObject=stream;v.classList.toggle('mirror',facing==='user');$('camBox').style.display='block';try{await v.play()}catch(e){}return true}
+ function camOff(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('vid').srcObject=null;$('camBox').style.display='none'}
+ const type=()=>['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9,opus','video/webm'].find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||'';
+ async function start(){if(!(await cam()))return;if(!window.MediaRecorder){st('이 기기는 녹화를 지원하지 않아요');return}
+  const ty=type();chunks=[];rec=new MediaRecorder(stream,ty?{mimeType:ty,videoBitsPerSecond:6e6}:undefined);
+  rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+  rec.onstop=()=>{const t=rec.mimeType||ty||'video/mp4',d=new Date(),q=new URLSearchParams(location.search),sel=$('pt').selectedOptions[0];
+   const nm=((q.get('s')||'합주')+'_'+(sel?sel.textContent.replace(/[^가-힣A-Za-z0-9]/g,''):'')).replace(/[\\/:*?"<>|\s]+/g,'_');
+   file=new File(chunks,`${nm}_${d.getMonth()+1}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}.${/mp4/.test(t)?'mp4':'webm'}`,{type:t.split(';')[0]});
+   rec=null;$('rec').textContent='💾 저장';$('rec').classList.remove('on');$('rec').id='rec';$('rec').dataset.save='1';st('녹화 끝! 💾 저장을 누르면 사진 앱에 넣을 수 있어요')};
+  rec.start(1000);t0=Date.now();$('rec').textContent='⏹ 녹화 끝';$('rec').classList.add('on');$('recT').style.display='block';
+  clearInterval(tm);tm=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);$('recT').textContent=`● ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`},500)}
+ function stop(){if(rec&&rec.state!=='inactive')rec.stop();clearInterval(tm);$('recT').style.display='none'}
+ async function save(){if(!file)return;try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:file.name});done();return}}catch(e){if(e.name==='AbortError')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=file.name;document.body.appendChild(a);a.click();a.remove();done()}
+ function done(){file=null;delete $('rec').dataset.save;$('rec').textContent='⏺ 녹화';st('')}
+ $('recT').style.display='none';
+ $('rec').onclick=()=>{if($('rec').dataset.save)return save();rec?stop():start()};
+ $('camX').onclick=()=>{if(rec){st('녹화 중엔 끌 수 없어요');return}camOff()};
+ $('flip').onclick=async()=>{if(rec){st('녹화 중엔 바꿀 수 없어요');return}facing=facing==='user'?'environment':'user';try{localStorage.setItem('band_play_facing',JSON.stringify(facing))}catch(e){}camOff();await cam()};
+})();
 </script></body></html>
