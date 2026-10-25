@@ -5,7 +5,7 @@
 body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--fg)}
 #bar{position:sticky;top:0;background:#111;color:#fff;padding:8px max(10px,env(safe-area-inset-left));z-index:9;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 #bar button{font-size:17px;padding:7px 14px;border:0;border-radius:10px;background:#2b2b2b;color:#fff}
-#bar button.on{background:#dc2626}#bar b{font-size:15px}#st{font-size:13px;opacity:.75}
+#bar button.on{background:#dc2626}#bar b{font-size:15px}#pt{font-size:16px;padding:6px;border-radius:10px;background:#2b2b2b;color:#fff;border:0}#pt:empty{display:none}#st{font-size:13px;opacity:.75}
 #at{padding:0 6px}
 #yt{display:none;background:#000;position:sticky;top:52px;z-index:8}#yt.on{display:flex;gap:8px;align-items:center;padding:6px;flex-wrap:wrap}
 #ytbox{width:min(320px,45vw);aspect-ratio:16/9}#ytbox iframe{width:100%;height:100%}
@@ -15,7 +15,7 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 .at-highlight *{fill:#dc2626;stroke:#dc2626}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.min.js"></script></head><body>
-<div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><span id="st">불러오는 중…</span></div>
+<div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="pt"></select><span id="st">불러오는 중…</span></div>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
  <div><button id="o1">◀ 0.05초</button> <button id="o2">0.05초 ▶</button></div><small id="yinfo">원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요</small></div></div>
@@ -25,6 +25,12 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 // 구매 악보를 옮긴 것이라 저장소엔 넣지 않고 방 악보함(band_play_lib/{키}/tex)에서 읽는다
 const q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
 const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play_lib/';
+// 같은 곡의 다른 파트(곡_파트 이름)를 골라 보기 — 원곡 기준점은 곡 단위로 공유
+const SONG=(q.get('s')||'').split('_')[0],PN={g1:'🎸 기타1',g2:'🎸 기타2',bass:'🎸 베이스',keys:'🎹 키보드',drums:'🥁 드럼'};
+fetch(DB+q.get('k')+'/tex.json?shallow=true').then(r=>r.json()).then(o=>{const ks=Object.keys(o||{}).filter(k=>k.split('_')[0]===SONG);if(ks.length<2)return;
+ const order=Object.keys(PN);ks.sort((a,b)=>order.indexOf(a.split('_')[1])-order.indexOf(b.split('_')[1]));
+ $('pt').innerHTML=ks.map(k=>`<option value="${k}"${k===q.get('s')?' selected':''}>${PN[k.split('_')[1]]||k}</option>`).join('');
+ $('pt').onchange=()=>{q.set('s',$('pt').value);location.search=q.toString()}}).catch(()=>{});
 const CDN='https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/';
 fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(tex=>{
  if(!tex){$('st').textContent='악보를 못 찾았어요';return}
@@ -44,8 +50,8 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(tex=>{
  $('mt').onclick=()=>{mute=!mute;api.masterVolume=mute?0:1;$('mt').textContent=mute?'🔇 소리':'🔊 소리'};
 
  // ── 원곡(유튜브) 맞춰 틀기: 악보 커서가 영상 시간을 따라감. 기준점(🎯)은 곡마다 이 기기에 저장(10/25 «대표 음원 하나 맞춰 틀어 놓고»)
- const YT_ID=q.get('yt')||'1cMKPc3Yors',MARK=+(q.get('mark')||16),OK='at_off_'+q.get('s');
- $('mk').textContent=MARK;let yp=null,off=null,sync=0;try{const v=localStorage.getItem(OK);if(v!=null)off=+v}catch(e){}
+ const YT_ID=q.get('yt')||'1cMKPc3Yors',MARK=+(q.get('mark')||16),OK='at_off_'+SONG;
+ $('mk').textContent=MARK;let yp=null,off=null,sync=0;try{const v=localStorage.getItem(OK)??localStorage.getItem('at_off_'+q.get('s'));if(v!=null)off=+v}catch(e){}
  const barMs=n=>{let t=0;const mb=api.score.masterBars;for(let i=0;i<n-1;i++){const m=mb[i];t+=m.calculateDuration()*60000/960/(api.score.tempo)}return t}; // 앞 마디들 길이(반복 없는 첫 회)
  const info=()=>$('yinfo').textContent=off==null?'원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요':`맞춤 완료 (영상 ${off.toFixed(2)}초 = 1마디). 영상을 움직이면 악보가 따라가요`;
  function follow(){if(!yp||off==null||!yp.getCurrentTime)return;const st=yp.getPlayerState(),want=(yp.getCurrentTime()-off)*1000;
