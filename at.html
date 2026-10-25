@@ -76,8 +76,8 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(tex=>{
   const d=run.at-sNow();
   if(d>0){if(api.playerState===1)api.pause();api.timePosition=run.tp;$('st').textContent='🎵 함께 시작!';startT=setTimeout(()=>{api.timePosition=want();api.play();$('st').textContent=''},d)}
   else{api.timePosition=want();api.play()}
-  // 기기마다 조금씩 밀리는 것 바로잡기(80ms 넘게 어긋나면 맞춤)
-  drift=setInterval(()=>{if(run&&run.on&&sNow()>run.at+300&&api.playerState===1&&Math.abs(api.timePosition-want())>80)api.timePosition=want()},1000)}
+  // 기기마다 조금씩 밀리는 것 바로잡기(0.12초 넘게 어긋나면 맞춤)
+  drift=setInterval(()=>{if(run&&run.on&&sNow()>run.at+300&&api.playerState===1&&Math.abs(api.timePosition-want())>120)api.timePosition=want()},1000)}
  async function join(c){room=c;LSet('room',c);$('rbox').hidden=true;$('rm').textContent='👥 '+c;$('rm').classList.add('on');await clockSync();
   if(es)es.close();es=new EventSource(RDB+c+'/at.json');es.addEventListener('put',e=>{const m=JSON.parse(e.data);if(m.path==='/')run=m.data;else if(run){run[m.path.slice(1)]=m.data}apply()})}
  function leave(){if(es)es.close();es=null;room=null;run=null;LSet('room',null);clearTimeout(startT);clearInterval(drift);$('rm').textContent='👥 합주 방';$('rm').classList.remove('on')}
