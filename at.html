@@ -1,0 +1,39 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>새로 그린 악보 · 모두의 밴드</title>
+<style>
+:root{--bg:#fff;--fg:#111}
+body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+#bar{position:sticky;top:0;background:#111;color:#fff;padding:8px max(10px,env(safe-area-inset-left));z-index:9;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#bar button{font-size:17px;padding:7px 14px;border:0;border-radius:10px;background:#2b2b2b;color:#fff}
+#bar button.on{background:#dc2626}#bar b{font-size:15px}#st{font-size:13px;opacity:.75}
+#at{padding:0 6px}
+.at-cursor-bar{background:#fde68a55}.at-cursor-beat{background:#dc2626;width:3px}
+.at-highlight *{fill:#dc2626;stroke:#dc2626}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.min.js"></script></head><body>
+<div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><span id="st">불러오는 중…</span></div>
+<div id="at"></div>
+<script>
+// 새로 그린 악보(alphaTex) — 음표 하나하나에 박자가 들어 있어 커서가 정확히 따라감(10/25 사용자 «너가 악보를 새로 그리는 게 정확하겠다»)
+// 구매 악보를 옮긴 것이라 저장소엔 넣지 않고 방 악보함(band_play_lib/{키}/tex)에서 읽는다
+const q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
+const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play_lib/';
+const CDN='https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/';
+fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(tex=>{
+ if(!tex){$('st').textContent='악보를 못 찾았어요';return}
+ const narrow=innerWidth<700;
+ const api=new alphaTab.AlphaTabApi($('at'),{core:{fontDirectory:CDN+'font/',tex:true},
+  display:{staveProfile:'Tab',scale:narrow?0.95:1.15,layoutMode:'page'},
+  notation:{rhythmMode:alphaTab.TabRhythmMode.ShowWithBars},
+  player:{enablePlayer:true,enableCursor:true,enableAnimatedBeatCursor:true,soundFont:CDN+'soundfont/sonivox.sf2',scrollElement:document.scrollingElement,scrollOffsetY:-90}});
+ window.api=api;let mute=true,sp=1;api.masterVolume=0;
+ api.error.on(e=>{$('st').textContent='오류: '+(e.message||e)});
+ api.renderFinished.on(()=>{$('st').textContent='';window.__done=1});
+ api.playerStateChanged.on(e=>{const on=e.state===1;$('p').textContent=on?'⏸ 멈춤':'▶ 재생';$('p').classList.toggle('on',on)});
+ api.tex(tex);
+ $('p').onclick=()=>api.playPause();$('h').onclick=()=>api.stop();
+ const S=d=>{sp=Math.max(0.5,Math.min(1.5,Math.round((sp+d)*20)/20));api.playbackSpeed=sp;$('sp').textContent=Math.round(sp*100)+'%'};
+ $('dn').onclick=()=>S(-0.05);$('up').onclick=()=>S(0.05);
+ $('mt').onclick=()=>{mute=!mute;api.masterVolume=mute?0:1;$('mt').textContent=mute?'🔇 소리':'🔊 소리'};
+}).catch(e=>{$('st').textContent='불러오기 실패'});
+</script></body></html>
