@@ -34,17 +34,23 @@ let unl=false;const unlock=()=>{if(unl)return;unl=true;try{const au=new Audio('d
 let api=null;
 const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play_lib/';
 // 같은 곡의 다른 파트(곡_파트 이름)를 골라 보기 — 원곡 기준점은 곡 단위로 공유
-const SONG=(q.get('s')||'').split('_')[0],PN={g1:'🎸 기타1',g2:'🎸 기타2',bass:'🎸 베이스',keys:'🎹 키보드',drums:'🥁 드럼'};
+const SONG=(q.get('s')||'').split('_')[0],PN={vocal:'🎤 보컬',g1:'🎸 기타1',g2:'🎸 기타2',bass:'🎸 베이스',keys:'🎹 키보드',drums:'🥁 드럼'};
 fetch(DB+q.get('k')+'/tex.json?shallow=true').then(r=>r.json()).then(o=>{const ks=Object.keys(o||{}).filter(k=>k.split('_')[0]===SONG);if(ks.length<2)return;
  const order=Object.keys(PN);ks.sort((a,b)=>order.indexOf(a.split('_')[1])-order.indexOf(b.split('_')[1]));
  $('pt').innerHTML=ks.map(k=>`<option value="${k}"${k===q.get('s')?' selected':''}>${PN[k.split('_')[1]]||k}</option>`).join('');
  $('pt').onchange=()=>{q.set('s',$('pt').value);location.search=q.toString()}}).catch(()=>{});
 const CDN='https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/';
-fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(tex=>{
+// 원본 밴드 악보처럼 맨 위에 보컬 줄(멜로디+가사)을 같이 보여 줌 — 보컬 소리는 끔(10/25 «각 악보에 노래 가사도»)
+const PART=(q.get('s')||'').split('_')[1]||'',STF={g1:'tabs',g2:'score tabs',bass:'score tabs',keys:'score',drums:'score'};
+const withVocal=tex=>PART==='vocal'||q.get('lyr')==='0'?Promise.resolve([tex,false]):fetch(DB+q.get('k')+'/tex/'+SONG+'_vocal.json').then(r=>r.json()).then(v=>{
+  if(!v)return [tex,false];let part=tex.slice(tex.indexOf('\\track')).replace('\n.\n','\n');
+  if(!/\\staff/.test(part.split('\n').slice(0,4).join('\n'))){const nl=part.indexOf('\n');part=part.slice(0,nl+1)+'\\staff {'+(STF[PART]||'score tabs')+'}\n'+part.slice(nl+1)}
+  return [tex.slice(0,tex.indexOf('\\track'))+v.slice(v.indexOf('\\track'))+'\n'+part,true]}).catch(()=>[tex,false]);
+fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?withVocal(t):[null,false]).then(([tex,voc])=>{
  if(!tex){$('st').textContent='악보를 못 찾았어요';return}
  const narrow=innerWidth<700;
  api=new alphaTab.AlphaTabApi($('at'),{core:{fontDirectory:CDN+'font/',tex:true},
-  display:{staveProfile:q.get('v')||({g1:'Tab',g2:'ScoreTab',bass:'ScoreTab',keys:'Score',drums:'Score'})[(q.get('s')||'').split('_')[1]]||'Tab',scale:narrow?0.95:1.15,layoutMode:'page'},
+  display:{staveProfile:voc&&!q.get('v')?'Default':q.get('v')||({vocal:'Score',g1:'Tab',g2:'ScoreTab',bass:'ScoreTab',keys:'Score',drums:'Score'})[(q.get('s')||'').split('_')[1]]||'Tab',scale:narrow?0.95:1.15,layoutMode:'page'},
   notation:{rhythmMode:alphaTab.TabRhythmMode.ShowWithBars},
   player:{enablePlayer:true,enableCursor:true,enableAnimatedBeatCursor:true,soundFont:CDN+'soundfont/sonivox.sf2',scrollElement:document.scrollingElement,scrollOffsetY:-90}});
  window.api=api;let mute=false,sp=1;api.masterVolume=1;$('mt').textContent='🔊 소리';
@@ -53,7 +59,8 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(tex=>{
  let ready=false;api.soundFontLoad.on(e=>{if(!ready&&e.total)$('st').textContent='소리 준비 '+Math.floor(e.loaded/e.total*100)+'%'});
  api.playerReady.on(()=>{ready=true;$('st').textContent=''});
  api.playerStateChanged.on(e=>{const on=e.state===1;$('p').textContent=on?'⏸ 멈춤':'▶ 재생';$('p').classList.toggle('on',on)});
- api.tex(tex);
+ api.tex(tex,voc?[0,1]:undefined);
+ if(voc)api.scoreLoaded.on(sc=>{try{api.changeTrackMute([sc.tracks[0]],true)}catch(e){}});
  $('p').onclick=()=>api.playPause();$('h').onclick=()=>api.stop();
  let S=d=>{sp=Math.max(0.5,Math.min(1.5,Math.round((sp+d)*20)/20));api.playbackSpeed=sp;$('sp').textContent=Math.round(sp*100)+'%'};
  $('dn').onclick=()=>S(-0.05);$('up').onclick=()=>S(0.05);
