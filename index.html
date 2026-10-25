@@ -163,7 +163,7 @@ input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border
 <div id="toast"></div>
 
 <script>
-const APPVER='20261025j';
+const APPVER='20261025k';
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const PDFOPT={cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'};
 const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/';
@@ -661,9 +661,9 @@ function hit(x,y,target){if(!target.closest)return null;let fx,fy,si=null,p=null
  let best=null,bd=1e9;
  cur.systems.forEach((s,k)=>{if(si!=null?k!==si:s.p!==p)return;s.bars.forEach((b,q)=>{if(fx<b.x0||fx>b.x1)return;
   const dy=fy<s.y0?s.y0-fy:fy>s.y1?fy-s.y1:0;if(dy<bd){bd=dy;best={s,q,n:s.first+q}}})});return bd<(si!=null?0.2:0.03)?best:null}
-let hold=null,held=false,downAt=null;
+let hold=null,held=false,downAt=null,swp=null;
 $('sheet').addEventListener('pointerdown',ev=>{if(ev.target.closest('#fixbar'))return;if(mode==='page')ev.preventDefault();held=false;
- downAt={x:ev.clientX,y:ev.clientY,t:ev.target};
+ downAt={x:ev.clientX,y:ev.clientY,t:ev.target};swp={x:ev.clientX,y:ev.clientY};
  if(fixing)return;
  hold=setTimeout(()=>{if(!downAt)return;held=true;let k;
   if(lin()){const tl=downAt.t.closest&&downAt.t.closest('.tile');if(!tl)return;k=+tl.dataset.k}
@@ -673,10 +673,17 @@ $('sheet').addEventListener('pointerdown',ev=>{if(ev.target.closest('#fixbar'))r
   if(room){roomSeek(k,playing);return}
   const was=playing;stopLocal();pos=k;frac=0;draw();if(was)play();else toast(h.n+'마디부터',900)},500)});
 $('sheet').addEventListener('pointermove',ev=>{
- if(mode==='tape'&&downAt&&!playing&&!room){const dx=ev.clientX-downAt.x;if(Math.abs(dx)>12){clearTimeout(hold);tapeDrag={dx};drawTape()}return}
+ if(mode==='tape'&&downAt&&!playing){const dx=ev.clientX-downAt.x;if(Math.abs(dx)>12){clearTimeout(hold);tapeDrag={dx};drawTape()}return}
  if(downAt&&Math.hypot(ev.clientX-downAt.x,ev.clientY-downAt.y)>12){clearTimeout(hold);if(mode!=='page')downAt=null}});
 $('sheet').addEventListener('pointercancel',()=>{clearTimeout(hold);downAt=null;if(tapeDrag){tapeDrag=null;drawTape()}});
 $('sheet').addEventListener('pointerup',ev=>{if(ev.target.closest('#fixbar'))return;clearTimeout(hold);
+ // 이어 보기: 멈춘 상태에서 옆으로 밀면 한 화면(칸 수만큼 줄)씩 넘김(10/25 사용자 «멈춤 상태에서 손으로 넘기면 넘어가면 좋겠다»)
+ const sw=swp;swp=null;
+ if(mode==='wipe'&&!playing&&!fixing&&sw&&W8.lines.length){const dx=ev.clientX-sw.x,dy=ev.clientY-sw.y;
+  if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.3){downAt=null;const l=W8.lineOf[Math.min(pos,B.seq.length-1)],
+   nl=Math.max(0,Math.min(W8.lines.length-1,l+(dx<0?1:-1)*W8.S));
+   if(nl===l){toast(dx<0?'마지막이에요':'처음이에요',800);return}
+   pos=W8.lines[nl].items[0].k;frac=0;drawWipe();flash(dx<0?'R':'L');toast(B.seq[pos]+'마디',700);return}}
  if(tapeDrag){const k=tapeAt(tapeX+tapeDrag.dx);tapeDrag=null;downAt=null;pos=k;frac=0;drawTape();return}if(held||!downAt)return;
  if(fixing){const h=hit(downAt.x,downAt.y,downAt.t);downAt=null;if(!h){return}
   const v=prompt(`이 줄의 첫 마디 번호 (지금 ${h.s.first})`,h.s.first);if(v==null)return;const n=parseInt(v);
