@@ -66,7 +66,7 @@ input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border
 .tile img{position:absolute;max-width:none;pointer-events:none}
 .tile.rest{display:flex;align-items:center;justify-content:center;color:#94a3b8;font:700 16px sans-serif;background:#f8fafc;border-left:1px solid #e2e8f0}
 .tile.now::after{content:'';position:absolute;inset:0;background:#fde04738;pointer-events:none}
-.tn{position:absolute;left:3px;top:2px;font:700 11px sans-serif;color:#2563eb;background:#ffffffcc;border-radius:4px;padding:0 3px;line-height:1.3}
+.tn{position:absolute;left:3px;bottom:2px;font:700 11px sans-serif;color:#2563eb;background:#ffffffcc;border-radius:4px;padding:0 3px;line-height:1.3}
 #tapePh{position:absolute;width:4px;margin-left:-2px;background:#dc2626;box-shadow:0 0 8px #dc2626aa;border-radius:2px;pointer-events:none;z-index:3}
 #strip{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:4px 0 40vh}
 .band{position:relative;line-height:0;border-bottom:1px solid #f1f5f9}
@@ -163,7 +163,7 @@ input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border
 <div id="toast"></div>
 
 <script>
-const APPVER='20261025g';
+const APPVER='20261025h';
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const PDFOPT={cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'};
 const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/';
@@ -390,13 +390,13 @@ const MODES={wipe:'🔁 이어 보기',tape:'🎞 가로 흐름',flow:'🌊 흐�
 // view: 'inst'(보컬 오선만 빼기) · 'g1'(기타1+TAB1) · 'g2'(기타2+TAB2). 오선 위치(s.st)가 없거나 모양이 다르면 줄 전체
 function slices(s,g,view){const st=s.st;if(!view||!st||!st.length)return null;
  if(st.length===1){const V=st[0],gv=V[3]; // 내 파트가 쉬는 줄(보컬만): 코드·가사만
-  const L=[[Math.max(g.top,V[0]-gv*3.4),V[0]-gv*1.55],[V[1]+gv*0.3,g.bot]].filter(q=>q[1]-q[0]>0.002);return L.length===2?{L,top:V[1]+gv*0.3}:null}
+  const L=[[Math.max(g.top,V[0]-gv*4.3),V[0]-gv*1.55],[V[1]+gv*0.3,g.bot]].filter(q=>q[1]-q[0]>0.002);return L.length===2?{L,top:V[1]+gv*0.3}:null}
  const V=st[0],gv=V[3],ins=st.slice(1),I0=ins[0],gi=I0[3];
  let a=I0[0]-gi*1.3,b=g.bot,top=I0[0];
  if(view==='g1'||view==='g2'){const five=ins.filter(x=>x[2]===5);
   const G2=five.length>=2?five[1]:(ins.length>=2&&ins[0][2]===6&&ins[1][2]===6?ins[1]:(ins.length>=3?ins[2]:null));
   if(G2){const cut=G2[0]-G2[3]*1.9;if(view==='g1')b=cut;else{a=cut;top=G2[0]}}}
- const L=[[Math.max(g.top,V[0]-gv*3.4),V[0]-gv*1.55],[V[1]+gv*0.3,I0[0]-gi*1.3],[a,b]].filter(q=>q[1]-q[0]>0.002);
+ const L=[[Math.max(g.top,V[0]-gv*4.3),V[0]-gv*1.55],[V[1]+gv*0.3,I0[0]-gi*1.3],[a,b]].filter(q=>q[1]-q[0]>0.002);
  if(L.length<2||L.some(q=>q[0]<g.top-0.001||q[1]>g.bot+0.001))return null;
  return {L,top}}
 // 원본 쪽의 y(비율) → 이어 붙인 띠 안의 y(비율)
@@ -466,7 +466,11 @@ function buildWipe(){const box=$('wipe');box.innerHTML='';W8={slots:[],lines:[],
  let U=Math.min(Math.max(W/(X1-X0),Math.min(W/2,170)/mb),H*0.96/per,W*0.98/bw[bw.length-1]||1e9);
  // ★ 폰 가로처럼 낮은 화면: 한 줄만 들어가면 다음 줄을 못 봄 → 마디가 110px 이상 유지되는 한 두 줄이 들어가게 줄임(10/25 «화면 이거 맞아?»)
  const U2=(H-gap)/(2*per);if(U>U2&&U2*mb>=110)U=U2;
- const TH=per*U,R=Math.max(1,Math.floor((H+gap)/(TH+gap))),C=R>=2?1:2,sw=(W-(C-1)*gap)/C;
+ // ★ 그래도 두 줄이면 한 줄이 화면 절반 높이 → 음표·가사가 깨알(10/25 «여백 아깝고 음표 작아, 가사 안 보여»)
+ //   한 줄을 화면 높이 가득 + 좌우 두 칸(칸마다 마디 2개, 오른쪽 칸이 «다음»)으로 키울 수 있으면 그쪽을 쓴다
+ const U1=Math.min(H*0.97/per,(W-gap)/2/(2*mb),(W-gap)/2*0.98/bw[Math.floor(bw.length*0.9)]||1e9);
+ const R0=Math.floor((H+gap)/(per*U+gap)+1e-6);if(R0<=2&&U1>U)U=U1;
+ const TH=per*U,R=Math.max(1,Math.floor((H+gap)/(TH+gap)+1e-6)),C=R>=2?1:2,sw=(W-(C-1)*gap)/C;
  const ws=bw.map(w=>w*U),rw=(ws[ws.length>>1]||W/4)*0.6;
  // 마디를 칸 너비만큼씩 줄로 담는다(한 마디가 칸보다 넓으면 그 마디 혼자 한 줄)
  let L=null;B.seq.forEach((n,k)=>{const b=B.boxes[n],w=b?(b.x1-b.x0)*U:rw;
@@ -665,6 +669,8 @@ document.addEventListener('keydown',e=>{if($('view').classList.contains('hide')|
  if(e.key==='Escape'&&!fixing)closeView()});
 $('view').addEventListener('contextmenu',e=>e.preventDefault());
 addEventListener('resize',()=>{if(!cur)return;draw();follow(true)});
+// ★ 카메라 칸이 접히거나 툴바 줄이 바뀌어 악보 칸 크기만 변해도 다시 짠다(창 크기는 그대로라 resize가 안 옴 → 옛 높이로 짠 작은 악보가 남던 문제, 10/25)
+let roT=0,roWH='';if(window.ResizeObserver)new ResizeObserver(()=>{const sh=$('sheet'),k=sh.clientWidth+'x'+sh.clientHeight;if(!cur||k===roWH||!sh.clientHeight)return;roWH=k;clearTimeout(roT);roT=setTimeout(()=>{draw();follow(true)},120)}).observe($('sheet'));
 
 // ════════ 합주 방 (RTDB REST + 실시간 스트림) ════════
 // band_play/{코드} = {song, bpm, beats, run:{on, at(서버 ms, 카운트 시작), from:{n,k}, ci}, m/{cid}:{name,part,t}}
