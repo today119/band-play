@@ -24,7 +24,7 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 #spl .ln span{display:inline-block;opacity:0}
 #spl .en{font:900 min(15vw,96px)/1 -apple-system,"Helvetica Neue",sans-serif;letter-spacing:-.03em}
 #spl .en .x{position:absolute;left:0;top:0;display:flex;opacity:1}
-#spl .ko{font:900 min(24vw,150px)/1 "Apple SD Gothic Neo",-apple-system,sans-serif;letter-spacing:-.04em}
+#spl .ko{clip-path:inset(-20% 120% -20% -20%);font:900 min(24vw,150px)/1 "Apple SD Gothic Neo",-apple-system,sans-serif;letter-spacing:-.04em}
 #spl .em{position:absolute;left:0;top:min(18vw,110px);transform:translateX(-50%);display:flex;gap:min(4vw,24px);font-size:min(9vw,52px)}
 #spl .em i{font-style:normal;opacity:0;display:inline-block}
 #spl .pp{position:absolute;left:0;top:0;width:12px;height:12px;margin:-6px;border-radius:50%;pointer-events:none}
@@ -69,21 +69,28 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
  enS.forEach((x,i)=>A(x,up,{delay:150+i*70,duration:420}));
  A(en,[{transform:'translate(-50%,-50%)'},{transform:`translate(calc(-50% - ${(wB-wP)/2}px),-50%)`}],{delay:1000,duration:380});
  enS.slice(2).forEach((x,i)=>A(x,[{opacity:1,transform:'none'},{opacity:0,transform:'translateY(-22px)'}],{delay:950+i*50,duration:260}));
- bS.forEach((x,i)=>A(x,[{opacity:0,transform:'translateY(26px) scale(.8)'},{opacity:1,transform:'translateY(-4px) scale(1.06)',offset:.7},{opacity:1,transform:'none'}],{delay:1080+i*60,duration:380}));
+ bS.forEach((x,i)=>A(x,up,{delay:1080+i*60,duration:400}));  // 뿅 효과 없이(10/26 «과해서»)
  const C=['#5EC4BE','#FF3B47','#FFC53D','#fff','#c084fc'];
  const burst=(at,n,r,y)=>setTimeout(()=>{for(let k=0;k<n;k++){const d=document.createElement('i'),a=Math.PI*2*k/n+Math.random()*.5,R=r*(.65+Math.random()*.5);
   d.className='pp';d.style.background=C[k%C.length];d.style.top=y+'px';stg.appendChild(d);
   d.animate([{transform:'translate(0,0) scale(.3)',opacity:0},{transform:`translate(${Math.cos(a)*R*.6}px,${Math.sin(a)*R*.6}px) scale(1)`,opacity:1,offset:.3},{transform:`translate(${Math.cos(a)*R}px,${Math.sin(a)*R+26}px) scale(.3)`,opacity:0}],{duration:900,easing:'cubic-bezier(.15,.7,.3,1)',fill:'forwards'}).onfinish=()=>d.remove()}},at);
- burst(1180,14,150,0);
  emS.forEach((x,i)=>{A(x,[{opacity:0,transform:'translateY(20px) scale(.6)'},{opacity:1,transform:'none'}],{delay:1550+i*90,duration:380});
   x.animate([{transform:'translateY(0) rotate(-6deg)'},{transform:'translateY(-8px) rotate(6deg)'}],{delay:1950+i*90,duration:520,direction:'alternate',iterations:Infinity,easing:'ease-in-out',composite:'add'})});
- // ④ 영문 → 부제(아래로 작게), 이모지는 살짝 내려가 흐려짐, 큰 위밴드
- const sub=Math.min(innerWidth*.15,96);
- A(en,[{opacity:1},{opacity:.85,transform:`translate(calc(-50% - ${(wB-wP)/2*.36}px), ${sub*0.95}px) scale(.36)`}],{delay:2450,duration:520,composite:'replace'});
- A(em,[{opacity:1,transform:'translateX(-50%)'},{opacity:.0,transform:'translateX(-50%) translateY(30px)'}],{delay:2400,duration:420});
- koS.forEach((x,i)=>A(x,[{opacity:0,transform:'translateY(30px) scale(.85)'},{opacity:1,transform:'none'}],{delay:2550+i*90,duration:480}));
- burst(2700,20,210,-10);
- setTimeout(()=>end(),4100)})();
+ // ④ 위리처럼 빨간 띠가 쓸고 지나가며 영문 WeBand 를 닦아내고, 같은 크기의 한글 「위밴드」가 드러남(10/26 «영문 닦아내면서, 크기 맞춰서»)
+ setTimeout(()=>{const sr=stg.getBoundingClientRect(),rs=[enS[0],enS[1],...bS].map(x=>x.getBoundingClientRect());
+  const L=Math.min(...rs.map(r=>r.left)),R=Math.max(...rs.map(r=>r.right)),T=Math.min(...rs.map(r=>r.top)),B=Math.max(...rs.map(r=>r.bottom));
+  const kw=ko.getBoundingClientRect().width,kh=ko.getBoundingClientRect().height,sc=(R-L)/kw;
+  ko.style.fontSize=(parseFloat(getComputedStyle(ko).fontSize)*sc)+'px';ko.style.left=((L+R)/2-sr.left)+'px';ko.style.top=((T+B)/2-sr.top)+'px';
+  koS.forEach(x=>x.style.opacity=1);
+  const W=R-L+40,x0=L-20-sr.left,bar=document.createElement('i');bar.style.cssText=`position:absolute;top:${T-sr.top-12}px;left:${x0}px;width:10px;height:${B-T+24}px;background:#FF3B47;border-radius:3px`;stg.appendChild(bar);
+  const d=520,o={duration:d,easing:'cubic-bezier(.45,.05,.35,1)',fill:'forwards'};
+  en.style.clipPath='inset(-20% -20% -20% -20%)';
+  en.animate([{clipPath:'inset(-20% -20% -20% -20%)'},{clipPath:'inset(-20% -20% -20% 120%)'}],o);
+  ko.animate([{clipPath:'inset(-20% 120% -20% -20%)'},{clipPath:'inset(-20% -20% -20% -20%)'}],o);
+  bar.animate([{transform:'translateX(0)',opacity:1},{transform:`translateX(${W}px)`,opacity:1,offset:.95},{transform:`translateX(${W}px)`,opacity:0}],o).onfinish=()=>bar.remove();
+  A(em,[{opacity:1},{opacity:.0}],{delay:200,duration:400});
+},2500);
+ setTimeout(()=>end(),4200)})();
 </script><div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="sg"></select><select id="pt"></select><button id="rm">👥 합주 방</button><button id="md" hidden>🎧 개인 연습</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="rec">⏺ 녹화</button><button id="fs" title="꽉 찬 화면">⛶</button><span id="st">불러오는 중…</span></div>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
