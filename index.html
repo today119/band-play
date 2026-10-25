@@ -388,7 +388,9 @@ const MODES={wipe:'🔁 이어 보기',tape:'🎞 가로 흐름',flow:'🌊 흐�
 // 줄(시스템)마다 잘라낼 띠 범위: 위아래 이웃 줄과의 가운데까지(코드·가사 포함)
 // ── 파트 보기: 세션 악보(맨 위 보컬 + 악기 줄들)에서 «코드·가사 + 내 악기 줄»만 이어 붙여 보여 줌 ──
 // view: 'inst'(보컬 오선만 빼기) · 'g1'(기타1+TAB1) · 'g2'(기타2+TAB2). 오선 위치(s.st)가 없거나 모양이 다르면 줄 전체
-function slices(s,g,view){const st=s.st;if(!view||!st||st.length<2)return null;
+function slices(s,g,view){const st=s.st;if(!view||!st||!st.length)return null;
+ if(st.length===1){const V=st[0],gv=V[3]; // 내 파트가 쉬는 줄(보컬만): 코드·가사만
+  const L=[[Math.max(g.top,V[0]-gv*3.4),V[0]-gv*1.55],[V[1]+gv*0.3,g.bot]].filter(q=>q[1]-q[0]>0.002);return L.length===2?{L,top:V[1]+gv*0.3}:null}
  const V=st[0],gv=V[3],ins=st.slice(1),I0=ins[0],gi=I0[3];
  let a=I0[0]-gi*1.3,b=g.bot,top=I0[0];
  if(view==='g1'||view==='g2'){const five=ins.filter(x=>x[2]===5);
