@@ -18,14 +18,20 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 #camBox b{position:absolute;left:8px;top:6px;background:#dc2626;color:#fff;font:800 14px ui-monospace,monospace;padding:2px 8px;border-radius:6px}
 #camBox .cb{position:absolute;bottom:6px;border:0;border-radius:8px;padding:6px 10px;font:700 14px sans-serif;color:#fff;background:#0008}
 #rec.on{background:#dc2626}#saveRec{background:#16a34a!important}
-#spl{position:fixed;inset:0;background:#3B0A57;z-index:100000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:-apple-system,"Helvetica Neue",sans-serif;transition:opacity .45s}
-#spl .w{font:900 min(19vw,120px)/1 -apple-system,"Helvetica Neue",sans-serif;letter-spacing:-.03em;display:flex}#spl .t{color:#5EC4BE}
-#spl .sw{display:inline-grid;overflow:hidden;height:1.08em}#spl .sw>span{grid-area:1/1}#spl .sw span{display:block;transition:transform .5s cubic-bezier(.3,1.4,.5,1),opacity .4s}
-#spl .sw .b{transform:translateY(100%);opacity:0}#spl.s2 .sw .a{transform:translateY(-100%);opacity:0}#spl.s2 .sw .b{transform:none;opacity:1}
-#spl .em{display:flex;gap:min(4vw,26px);font-size:min(11vw,64px);margin-top:28px;height:1.3em}
+#spl{position:fixed;inset:0;background:radial-gradient(120% 80% at 50% 42%,#5a1683 0%,#3B0A57 60%,#2a0640 100%);z-index:100000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:-apple-system,"Apple SD Gothic Neo","Helvetica Neue",sans-serif;transition:opacity .45s;overflow:hidden}
+#spl .st{position:relative;display:flex;flex-direction:column;align-items:center}
+#spl .w{font:900 min(17vw,110px)/1 -apple-system,"Helvetica Neue",sans-serif;letter-spacing:-.03em;display:flex;transition:transform .45s cubic-bezier(.3,1.2,.5,1),opacity .35s}#spl .t{color:#5EC4BE}
+#spl .sw{display:inline-grid;overflow:hidden;height:1.08em}#spl .sw>span{grid-area:1/1;transition:transform .45s cubic-bezier(.3,1.5,.5,1),opacity .3s}
+#spl .sw .b{transform:translateY(100%) scale(.6);opacity:0}#spl.s2 .sw .a{transform:translateY(-100%);opacity:0}#spl.s2 .sw .b{transform:none;opacity:1}
+#spl .ko{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.3);opacity:0;font:900 min(24vw,150px)/1 "Apple SD Gothic Neo",-apple-system,sans-serif;letter-spacing:-.04em;white-space:nowrap;transition:transform .5s cubic-bezier(.3,1.7,.5,1),opacity .25s}
+#spl .ko b{color:#5EC4BE}#spl .ko i{font-style:normal;color:#FF3B47}
+#spl.s4 .w{transform:translateY(min(-26vw,-160px)) scale(.42);opacity:.9}#spl.s4 .ko{transform:translate(-50%,-50%) scale(1);opacity:1}
+#spl .em{display:flex;gap:min(4vw,26px);font-size:min(10vw,58px);margin-top:26px;height:1.3em;transition:transform .45s,opacity .3s}
 #spl .em i{font-style:normal;opacity:0;transform:translateY(40px) scale(.4)}#spl.s3 .em i{animation:pop .5s cubic-bezier(.3,1.6,.5,1) forwards,bob 1s ease-in-out infinite alternate}
+#spl.s4 .em{transform:translateY(min(18vw,110px))}
 @keyframes pop{to{opacity:1;transform:none}}@keyframes bob{from{translate:0 0;rotate:-8deg}to{translate:0 -12px;rotate:8deg}}
-#spl .ko{font-weight:800;font-size:22px;letter-spacing:.3em;margin-top:22px;opacity:0;transition:opacity .5s}#spl.s4 .ko{opacity:.85}#spl small{position:absolute;bottom:40px;opacity:.5;font-weight:600}
+#spl .pp{position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px;border-radius:50%;pointer-events:none}
+#spl small{position:absolute;bottom:40px;opacity:.5;font-weight:600}
 #home{position:fixed;inset:0;background:#3B0A57ee;z-index:99999;display:none;align-items:center;justify-content:center;padding:16px;font-family:-apple-system,sans-serif}#home.on{display:flex}
 #home .card{background:#fff;color:#1e1030;border-radius:22px;padding:22px;width:min(440px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 50px #0007}
 #home h2{margin:0 0 4px;font-size:24px}#home p{margin:6px 0;color:#5b4a6b;font-size:15px}
@@ -38,16 +44,23 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 .at-highlight *{fill:#dc2626;stroke:#dc2626}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.min.js"></script></head><body>
-<div id="spl"><div class="w"><span class="t">We</span><span class="sw"><span class="a">Play</span><span class="b"><span style="color:#FF3B47;display:inline">Ba</span>nd</span></span></div>
-<div class="em"><i>🎸</i><i>🎹</i><i>🥁</i><i>🎸</i><i>🎤</i></div><div class="ko">위밴드</div><small>by WePlay</small></div>
+<div id="spl"><div class="st"><div class="w"><span class="t">We</span><span class="sw"><span class="a">Play</span><span class="b"><span style="color:#FF3B47;display:inline">Ba</span>nd</span></span></div>
+<div class="ko"><b>위</b><i>밴</i>드</div></div>
+<div class="em"><i>🎸</i><i>🎹</i><i>🥁</i><i>🎸</i><i>🎤</i></div><small>by WePlay</small></div>
 <div id="home"><div class="card" id="hc"></div></div>
 <script>
 // 🎬 켤 때 인트로(10/26 «위리처럼 WePlay → Band, 세션 악기·마이크 이모지 움직이게») — 곡 바꿀 때 페이지가 다시 열리니 한 번 본 창에선 생략, 탭하면 바로 넘김
 (()=>{const e=document.getElementById('spl');let seen=false;try{seen=sessionStorage.getItem('wb_spl')}catch(x){}
+ // 순서(10/26 «WePlay → WeBand 뿅(효과) → 한글로 위밴드, 모스처럼»): WePlay → Play가 Band로 뿅(불꽃 튐) → 악기들 등장 → 영문이 위로 작아지며 큰 「위밴드」 뿅
  const end=()=>{e.style.opacity=0;setTimeout(()=>e.remove(),450)};
  if(seen||/[?&]nosplash/.test(location.search)){e.remove();return}try{sessionStorage.setItem('wb_spl',1)}catch(x){}
- e.onclick=end;e.querySelectorAll('.em i').forEach((x,i)=>x.style.animationDelay=(i*0.12)+'s,'+(0.5+i*0.12)+'s');
- setTimeout(()=>e.classList.add('s2'),1000);setTimeout(()=>e.classList.add('s3'),1500);setTimeout(()=>e.classList.add('s4'),2300);setTimeout(end,3400)})();
+ e.onclick=end;e.querySelectorAll('.em i').forEach((x,i)=>x.style.animationDelay=(i*0.1)+'s,'+(0.5+i*0.1)+'s');
+ const st=e.querySelector('.st'),C=['#5EC4BE','#FF3B47','#FFC53D','#fff','#c084fc'];
+ const burst=(n,r)=>{if(!st.animate)return;for(let k=0;k<n;k++){const d=document.createElement('i'),a=Math.PI*2*k/n+Math.random()*.4,R=r*(.7+Math.random()*.5);
+  d.className='pp';d.style.background=C[k%C.length];if(k%3==0){d.style.borderRadius='2px';d.style.transform='rotate(45deg)'}st.appendChild(d);
+  d.animate([{transform:'translate(0,0) scale(.4)',opacity:1},{transform:`translate(${Math.cos(a)*R}px,${Math.sin(a)*R}px) scale(1)`,opacity:1,offset:.6},{transform:`translate(${Math.cos(a)*R*1.15}px,${Math.sin(a)*R*1.15+20}px) scale(.2)`,opacity:0}],{duration:700,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'}).onfinish=()=>d.remove()}};
+ setTimeout(()=>{e.classList.add('s2');burst(14,130)},950);setTimeout(()=>e.classList.add('s3'),1400);
+ setTimeout(()=>{e.classList.add('s4');burst(22,190)},2300);setTimeout(end,3900)})();
 </script><div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="sg"></select><select id="pt"></select><button id="rm">👥 합주 방</button><button id="md" hidden>🎧 개인 연습</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="rec">⏺ 녹화</button><button id="fs" title="꽉 찬 화면">⛶</button><span id="st">불러오는 중…</span></div>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
