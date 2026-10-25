@@ -163,7 +163,7 @@ input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border
 <div id="toast"></div>
 
 <script>
-const APPVER='20261025e';
+const APPVER='20261025f';
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const PDFOPT={cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'};
 const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/';
@@ -274,7 +274,9 @@ async function analyze(pdf,onp){
    // 번호 없는 오선 = 위 줄에 딸린 오선(보컬 아래 기타, 키보드 큰보표 등). 번호가 아예 없는 악보면 오선마다 한 줄
    // 번호 글자가 없는 악보(악보바다 원본 등 글자가 그림)는 줄 왼쪽 세로선이 위 오선까지 이어지면 같은 줄
    // 보컬 오선이 작게 따로 있는 악보(악보바다 세션 악보): 작은 오선에서 새 줄이 시작. 번호를 못 읽은 줄이 앞 줄에 붙는 것도 막아 줌
-   const tail=prev&&prev.p===p-1&&(mixed?s.gap>=gmax*0.82:pageNum?!s.cand.length:(joined(bin,W,prev.staves[prev.staves.length-1],s)||aligned(prev.staves,s,W)));
+   // 밖에서 «줄 시작 오선»을 정해 줬으면(세션 악보 미리 분석) 그대로 따름
+   const GS=window.__G&&window.__G[p-1];
+   const tail=prev&&prev.p===p-1&&(GS?!GS.some(y=>Math.abs(y-s.t/H)<0.006):(mixed?s.gap>=gmax*0.82:pageNum?!s.cand.length:(joined(bin,W,prev.staves[prev.staves.length-1],s)||aligned(prev.staves,s,W))));
    if(tail){prev.staves.push(s);prev.yb=s.b+s.gap*0.6;continue}
    prev={p:p-1,yt:s.t-s.gap*1.6,yb:s.b+s.gap*0.6,staves:[s],cand:s.cand,W,H};systems.push(prev)}
   pages.push({w:W,h:H})}
@@ -306,6 +308,7 @@ async function analyze(pdf,onp){
    const b=s.bars[j],mid=Math.round((b.x0+b.x1)/2);s.bars.splice(j,1,{x0:b.x0,x1:mid,rs:b.rs,re:false},{x0:mid,x1:b.x1,rs:false,re:b.re});lack--}});
  systems=systems.map(s=>({p:s.p,y0:+(s.yt/s.H).toFixed(4),y1:+(s.yb/s.H).toFixed(4),auto:s.auto,fix:null,
   yi:s.staves.length>1?+((s.staves[1].t-s.staves[1].gap*2.4)/s.H).toFixed(4):null,
+  st:s.staves.map(x=>[+(x.t/s.H).toFixed(4),+(x.b/s.H).toFixed(4),x.n,+(x.gap/s.H).toFixed(5)]),
   bars:s.bars.map(b=>({x0:+(b.x0/s.W).toFixed(4),x1:+(b.x1/s.W).toFixed(4),rs:!!b.rs,re:!!b.re}))}));
  return {pages,systems}}
 
@@ -383,20 +386,34 @@ const st=$('stage'),strip=$('strip');
 // wipe = 왼→오 재생바, 지나간 자리(앞 절반·윗줄)에 다음 마디가 미리 들어온다(10/25 사용자 «4마디 전쯤 다음 16박이 나와서 다시 왼쪽»)
 const MODES={wipe:'🔁 이어 보기',tape:'🎞 가로 흐름',flow:'🌊 흐름',fixed:'📄 넘김',page:'🗒 원본'};
 // 줄(시스템)마다 잘라낼 띠 범위: 위아래 이웃 줄과의 가운데까지(코드·가사 포함)
-function bandGeom(sys){const byP={};sys.forEach((s,k)=>{(byP[s.p]=byP[s.p]||[]).push(k)});
+// ── 파트 보기: 세션 악보(맨 위 보컬 + 악기 줄들)에서 «코드·가사 + 내 악기 줄»만 이어 붙여 보여 줌 ──
+// view: 'inst'(보컬 오선만 빼기) · 'g1'(기타1+TAB1) · 'g2'(기타2+TAB2). 오선 위치(s.st)가 없거나 모양이 다르면 줄 전체
+function slices(s,g,view){const st=s.st;if(!view||!st||st.length<2)return null;
+ const V=st[0],gv=V[3],ins=st.slice(1),I0=ins[0],gi=I0[3];
+ let a=I0[0]-gi*1.3,b=g.bot,top=I0[0];
+ if(view==='g1'||view==='g2'){const five=ins.filter(x=>x[2]===5);
+  const G2=five.length>=2?five[1]:(ins.length>=2&&ins[0][2]===6&&ins[1][2]===6?ins[1]:(ins.length>=3?ins[2]:null));
+  if(G2){const cut=G2[0]-G2[3]*1.9;if(view==='g1')b=cut;else{a=cut;top=G2[0]}}}
+ const L=[[Math.max(g.top,V[0]-gv*3.4),V[0]-gv*1.55],[V[1]+gv*0.3,I0[0]-gi*1.3],[a,b]].filter(q=>q[1]-q[0]>0.002);
+ if(L.length<2||L.some(q=>q[0]<g.top-0.001||q[1]>g.bot+0.001))return null;
+ return {L,top}}
+// 원본 쪽의 y(비율) → 이어 붙인 띠 안의 y(비율)
+function ymap(g,y){if(!g.sl)return (y-g.top)/(g.bot-g.top);let acc=0;const tot=g.sl.L.reduce((t,q)=>t+q[1]-q[0],0);
+ for(const q of g.sl.L){if(y<=q[1])return (acc+Math.max(0,y-q[0]))/tot;acc+=q[1]-q[0]}return 1}
+function bandGeom(sys,view){const byP={};sys.forEach((s,k)=>{(byP[s.p]=byP[s.p]||[]).push(k)});
  const gaps=[];Object.values(byP).forEach(l=>{l.sort((a,b)=>sys[a].y0-sys[b].y0);for(let j=1;j<l.length;j++)gaps.push(sys[l[j]].y0-sys[l[j-1]].y1)});
  gaps.sort((a,b)=>a-b);const half=Math.min(0.05,Math.max(0.015,(gaps[gaps.length>>1]||0.05)/2));
  const g=sys.map(()=>({}));
  Object.values(byP).forEach(l=>l.forEach((k,j)=>{const s=sys[k],pv=sys[l[j-1]],nx=sys[l[j+1]];
   g[k]={top:Math.max(0,pv?(pv.y1+s.y0)/2:s.y0-half*1.2),bot:Math.min(1,nx?(s.y1+nx.y0)/2:s.y1+half)};
-  if(noVoc&&s.yi!=null)g[k].top=s.yi}));
+  if(noVoc&&!view&&s.yi!=null)g[k].top=s.yi}));
  X0=Math.max(0,Math.min(...sys.map(s=>s.bars[0].x0))-0.035);X1=Math.min(1,Math.max(...sys.map(s=>s.bars[s.bars.length-1].x1))+0.012);
  return g}
 async function openScore(id){const sc=await sGet(id);if(!sc)return;cur=sc;B=build(sc);
  $('prog').classList.remove('hide');$('progT').textContent='악보 펼치는 중…';
  try{const pdf=await pdfjsLib.getDocument({...PDFOPT,data:sc.pdf.slice(0)}).promise;
   imgs.forEach(u=>URL.revokeObjectURL(u));bandImgs.forEach(u=>u&&URL.revokeObjectURL(u));imgs=[];bandImgs=[];
-  const g=bandGeom(sc.systems);bands=g;
+  const g=bandGeom(sc.systems,sc.view);bands=g;
   const want=Math.min(2200,Math.max(1400,Math.round(Math.max(screen.width,screen.height)*(devicePixelRatio||1)*0.9)));
   for(let p=1;p<=pdf.numPages;p++){$('progT').textContent=`악보 펼치는 중… ${p} / ${pdf.numPages}쪽`;
    const pg=await pdf.getPage(p),v0=pg.getViewport({scale:1}),vp=pg.getViewport({scale:want/v0.width});
@@ -405,8 +422,11 @@ async function openScore(id){const sc=await sGet(id);if(!sc)return;cur=sc;B=buil
    imgs.push(URL.createObjectURL(await new Promise(r=>cv.toBlob(r,'image/jpeg',0.88))));
    for(let k=0;k<sc.systems.length;k++){if(sc.systems[k].p!==p-1)continue;const b=g[k];
     const sx=Math.round(X0*cv.width),sy=Math.round(b.top*cv.height),sw=Math.round((X1-X0)*cv.width),sh=Math.max(1,Math.round((b.bot-b.top)*cv.height));
-    const c2=document.createElement('canvas');c2.width=sw;c2.height=sh;const x2=c2.getContext('2d');x2.drawImage(cv,sx,sy,sw,sh,0,0,sw,sh);
-    bandWH[k]=[sw,sh];bandImgs[k]=URL.createObjectURL(await new Promise(r=>c2.toBlob(r,'image/jpeg',0.9)))}
+    const sl=slices(sc.systems[k],b,sc.view);b.sl=sl;const c2=document.createElement('canvas');c2.width=sw;
+    if(sl){const hs=sl.L.map(q=>Math.max(1,Math.round((q[1]-q[0])*cv.height)));c2.height=hs.reduce((t,v)=>t+v,0);const x2=c2.getContext('2d');let yy=0;
+     sl.L.forEach((q,j)=>{x2.drawImage(cv,sx,Math.round(q[0]*cv.height),sw,hs[j],0,yy,sw,hs[j]);yy+=hs[j]})}
+    else{c2.height=sh;c2.getContext('2d').drawImage(cv,sx,sy,sw,sh,0,0,sw,sh)}
+    bandWH[k]=[sw,c2.height];bandImgs[k]=URL.createObjectURL(await new Promise(r=>c2.toBlob(r,'image/jpeg',0.9)))}
    cv.width=cv.height=1}}
  catch(e){console.error(e);toast('악보를 펼치지 못했어요');$('prog').classList.add('hide');return}
  $('prog').classList.add('hide');LS.set('last_'+norm(sc.title),sc.id);
@@ -426,7 +446,7 @@ function layout(){if(!cur)return;$('mode').textContent=MODES[mode];
   const im=document.createElement('img');im.src=bandImgs[k]||'';im.draggable=false;d.appendChild(im);strip.appendChild(d)});
  lastSi=-1;draw();follow(true)}
 // 가로 띠: 줄마다 오선 첫 줄(y0)을 같은 높이에 맞춰, 마디 상자 하나 = 타일 하나
-function tgeo(){const geo=cur.systems.map((s,k)=>{const wh=bandWH[k]||[1,1],g=bands[k],hU=(X1-X0)*wh[1]/wh[0];return{hU,above:(Math.max(g.top,noVoc&&s.yi!=null?s.yi:s.y0)-g.top)/(g.bot-g.top)*hU}});
+function tgeo(){const geo=cur.systems.map((s,k)=>{const wh=bandWH[k]||[1,1],g=bands[k],hU=(X1-X0)*wh[1]/wh[0];return{hU,above:g.sl?ymap(g,g.sl.top)*hU:(Math.max(g.top,noVoc&&s.yi!=null?s.yi:s.y0)-g.top)/(g.bot-g.top)*hU}});
  // 줄 높이는 «대부분의 줄»(80%)에 맞춤 — 오선이 하나 더 붙은 몇 줄 때문에 전체가 작아지지 않게(넘치는 건 잘림)
  const pc=(a,f)=>{a=[...a].sort((x,y)=>x-y);return a[Math.min(a.length-1,Math.floor(a.length*f))]||0};
  return{geo,maxA:pc(geo.map(q=>q.above),0.8),maxB:pc(geo.map(q=>q.hU-q.above),0.8)}}
@@ -494,8 +514,8 @@ function go(d){if(lin()){if(playing)return;pos=Math.max(0,Math.min(B.seq.length-
 function placeRect(el,si,x0,y0,x1,y1){
  if(mode==='page'){const s=cur.systems[si],d=st.querySelector('.pg[data-p="'+s.p+'"]');if(!d)return;
   Object.assign(el.style,{left:x0*100+'%',top:y0*100+'%',width:Math.max(0,x1-x0)*100+'%',height:Math.max(0,y1-y0)*100+'%'});d.appendChild(el);return}
- const d=strip.children[si],g=bands[si];if(!d||!g)return;const W=X1-X0,H=g.bot-g.top;
- Object.assign(el.style,{left:(x0-X0)/W*100+'%',top:(y0-g.top)/H*100+'%',width:Math.max(0,x1-x0)/W*100+'%',height:Math.max(0,y1-y0)/H*100+'%'});d.appendChild(el)}
+ const d=strip.children[si],g=bands[si];if(!d||!g)return;const W=X1-X0,t0=ymap(g,y0),t1=ymap(g,y1);
+ Object.assign(el.style,{left:(x0-X0)/W*100+'%',top:t0*100+'%',width:Math.max(0,x1-x0)/W*100+'%',height:Math.max(0,t1-t0)*100+'%'});d.appendChild(el)}
 function draw(){if(lin()&&!fixing){if(cur)(mode==='tape'?drawTape:drawWipe)();return}
  (mode==='page'?st:strip).querySelectorAll('.cur,.ph,.mn,.sysbox').forEach(e=>e.remove());if(!cur)return;
  if(fixing){cur.systems.forEach((s,si)=>{s.bars.forEach((b,q)=>{const e=document.createElement('div');e.className='mn'+(q?'':' first');
@@ -519,7 +539,7 @@ function follow(force){if(mode==='tape'){if(force)buildTape();drawTape();return}
  const top=el.offsetTop,bot=top+el.offsetHeight,vh=strip.clientHeight;
  if(mode==='flow')strip.scrollTo({top:Math.max(0,top-vh*0.2),behavior:force?'auto':'smooth'});
  else if(force||bot>strip.scrollTop+vh||top<strip.scrollTop)strip.scrollTo({top:Math.max(0,top-6),behavior:'auto'})}
-function ui(){if(!cur)return;$('bpm').value=cur.bpm;const hasV=cur.systems.some(s=>s.yi!=null);$('voc').classList.toggle('hide',!hasV);$('voc').textContent=noVoc?'🎤✕':'🎤';$('beat').textContent=cur.beats+'박';$('clk').textContent=clk?'🔔':'🔕';
+function ui(){if(!cur)return;$('bpm').value=cur.bpm;const hasV=!cur.view&&cur.systems.some(s=>s.yi!=null);$('voc').classList.toggle('hide',!hasV);$('voc').textContent=noVoc?'🎤✕':'🎤';$('beat').textContent=cur.beats+'박';$('clk').textContent=clk?'🔔':'🔕';
  $('play').textContent=playing?'⏸ 멈춤':'▶ 재생';$('play').classList.toggle('on',playing);$('live').classList.toggle('hide',!room)}
 const mdur=()=>cur.beats*60/cur.bpm;
 function tick(at,hi){if(!clk||!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=hi?1600:1000;
@@ -708,9 +728,12 @@ let libKey=null,libMeta=null,libBusy=false;
 const grp=p=>/기타/.test(p)?'기타':/건반|피아노|키보드|신스/.test(p)?'건반':/베이스/.test(p)?'베이스':/드럼/.test(p)?'드럼':/보컬/.test(p)?'보컬':p;
 const picon={기타:'🎸',건반:'🎹',베이스:'🎸',드럼:'🥁',보컬:'🎤'};
 async function loadLib(){libKey=R.lib||null;libMeta=null;
- if(libKey)libMeta=await fetch(LIB+libKey+'/meta.json').then(r=>r.json()).catch(()=>null);renderLib()}
+ if(libKey)libMeta=await fetch(LIB+libKey+'/meta.json').then(r=>r.json()).catch(()=>null);
+ // 악보함에서 빠진(교체된) 예전 받은 악보는 이 기기에서도 정리
+ if(libMeta){const old=scores.filter(s=>s.libId&&!libMeta[s.libId]);if(old.length){for(const s of old)await sDel(s.id);await refresh();return}}
+ renderLib()}
 function renderLib(){const b=$('libBox');if(!room||!libMeta){b.classList.add('hide');return}b.classList.remove('hide');
- const items=Object.entries(libMeta).map(([sid,m])=>({sid,...m})),got=m=>scores.some(s=>s.libId===m.sid);
+ const items=Object.entries(libMeta).map(([sid,m])=>({sid,...m})),got=m=>scores.some(s=>s.libId===m.sid&&(s.libV||0)>=(m.v||0));
  const mine=grp(LS.get('part','기타1')),parts=[...new Set(items.map(m=>grp(m.part)))].sort((a,b)=>(b===mine)-(a===mine));
  b.innerHTML=`<div class="libh">📚 방 악보함 <small>· ${[...new Set(items.map(m=>m.title))].join(' · ')}</small></div><p class="lead" style="margin:4px 0 0">내 파트를 누르면 곡 전부가 이 기기에 들어와요</p>`;
  const row=document.createElement('div');row.className='libparts';
@@ -721,11 +744,11 @@ function renderLib(){const b=$('libBox');if(!room||!libMeta){b.classList.add('hi
  b.appendChild(row)}
 async function libGet(list){if(libBusy||!list.length)return;libBusy=true;renderLib();$('prog').classList.remove('hide');
  try{let k=0;for(const m of list){$('progT').textContent=`방 악보 받는 중… ${++k} / ${list.length} (${m.title} · ${m.part})`;
-   const [b64,sy]=await Promise.all([fetch(LIB+libKey+'/pdf/'+m.sid+'.json').then(r=>r.json()),fetch(LIB+libKey+'/sys/'+m.sid+'.json').then(r=>r.json())]);
+   const [b64,sy]=await Promise.all([fetch(LIB+libKey+'/pdf/'+(m.src||m.sid)+'.json').then(r=>r.json()),fetch(LIB+libKey+'/sys/'+(m.src||m.sid)+'.json').then(r=>r.json())]);
    if(!b64||!sy)throw new Error('악보를 못 받았어요');
    const bin=atob(b64),u=new Uint8Array(bin.length);for(let j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);
    const old=scores.find(s=>s.libId===m.sid);
-   await sPut({id:old?old.id:'lib_'+m.sid,libId:m.sid,title:m.title,part:m.part,pdf:u.buffer,pageCount:m.pageCount,pages:sy.pages,systems:sy.systems,bpm:m.bpm||100,beats:4,at:Date.now()})}
+   await sPut({id:old?old.id:'lib_'+m.sid,libId:m.sid,title:m.title,part:m.part,pdf:u.buffer,pageCount:m.pageCount,pages:sy.pages,systems:sy.systems,view:m.view||null,libV:m.v||0,bpm:m.bpm||100,beats:4,at:Date.now()})}
   toast(`${list.length}개 악보를 넣었어요 🎉`,3000)}
  catch(e){console.error(e);toast('⚠️ '+e.message+' — 인터넷을 확인하고 다시 눌러 주세요',4000)}
  libBusy=false;$('prog').classList.add('hide');await refresh()}
@@ -745,6 +768,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 // 시험용: ?t=악보주소 로 바로 넣기
 (async()=>{await refresh();const q=new URLSearchParams(location.search);
  if(LS.get('room',null)&&$('myName').value){enter(LS.get('room'),false)}
+ if(q.get('gs'))window.__G=await fetch(q.get('gs')).then(r=>r.json());
  if(q.get('t')){const buf=await fetch(q.get('t')).then(r=>r.arrayBuffer());pending={buf,name:q.get('t')};$('fTitle').value=q.get('title')||'시험';$('fPart').value=q.get('part')||'기타1';await $('fGo').onclick();
   window.__done=JSON.stringify(scores.map(s=>({t:s.title,sys:s.systems.map(x=>[x.p,x.auto,x.first,x.bars.length,x.bars.filter(b=>b.rs).length,x.bars.filter(b=>b.re).length])})))}
 })();
