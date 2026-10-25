@@ -42,7 +42,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(tex=>{
  if(!tex){$('st').textContent='악보를 못 찾았어요';return}
  const narrow=innerWidth<700;
  api=new alphaTab.AlphaTabApi($('at'),{core:{fontDirectory:CDN+'font/',tex:true},
-  display:{staveProfile:'Tab',scale:narrow?0.95:1.15,layoutMode:'page'},
+  display:{staveProfile:q.get('v')||({g1:'Tab',g2:'ScoreTab',bass:'ScoreTab',keys:'Score',drums:'Score'})[(q.get('s')||'').split('_')[1]]||'Tab',scale:narrow?0.95:1.15,layoutMode:'page'},
   notation:{rhythmMode:alphaTab.TabRhythmMode.ShowWithBars},
   player:{enablePlayer:true,enableCursor:true,enableAnimatedBeatCursor:true,soundFont:CDN+'soundfont/sonivox.sf2',scrollElement:document.scrollingElement,scrollOffsetY:-90}});
  window.api=api;let mute=false,sp=1;api.masterVolume=1;$('mt').textContent='🔊 소리';
