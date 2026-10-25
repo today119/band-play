@@ -12,11 +12,12 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 #ytbox{width:min(320px,45vw);aspect-ratio:16/9}#ytbox iframe{width:100%;height:100%}
 #ytc{color:#fff;font-size:14px;display:flex;flex-direction:column;gap:6px}#ytc button{font-size:15px;padding:6px 10px;border:0;border-radius:8px;background:#333;color:#fff}
 #ytc .tap{background:#2563eb;font-size:16px}#ytc small{opacity:.75}@media(max-height:500px){#ytbox{width:190px}#ytc small{display:none}}
+#rbox input{width:96px;font-size:16px;padding:6px 8px;border-radius:10px;border:0}#rm.on{background:#16a34a}
 .at-cursor-bar{background:#fde68a55}.at-cursor-beat{background:#dc2626;width:3px}
 .at-highlight *{fill:#dc2626;stroke:#dc2626}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.min.js"></script></head><body>
-<div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="pt"></select><button id="fs" title="꽉 찬 화면">⛶</button><span id="st">불러오는 중…</span></div>
+<div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="pt"></select><button id="rm">👥 합주 방</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="fs" title="꽉 찬 화면">⛶</button><span id="st">불러오는 중…</span></div>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
  <div><button id="o1">◀ 0.05초</button> <button id="o2">0.05초 ▶</button></div><small id="yinfo">원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요</small></div></div>
@@ -49,15 +50,45 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(tex=>{
  window.api=api;let mute=false,sp=1;api.masterVolume=1;$('mt').textContent='🔊 소리';
  api.error.on(e=>{$('st').textContent='오류: '+(e.message||e)});
  api.renderFinished.on(()=>{$('st').textContent='';window.__done=1});
- let ready=false;api.soundFontLoad.on(e=>{if(!ready)$('st').textContent='소리 준비 '+Math.floor(e.loaded/e.total*100)+'%'});
+ let ready=false;api.soundFontLoad.on(e=>{if(!ready&&e.total)$('st').textContent='소리 준비 '+Math.floor(e.loaded/e.total*100)+'%'});
  api.playerReady.on(()=>{ready=true;$('st').textContent=''});
  api.playerStateChanged.on(e=>{const on=e.state===1;$('p').textContent=on?'⏸ 멈춤':'▶ 재생';$('p').classList.toggle('on',on)});
  api.tex(tex);
  $('p').onclick=()=>api.playPause();$('h').onclick=()=>api.stop();
- const S=d=>{sp=Math.max(0.5,Math.min(1.5,Math.round((sp+d)*20)/20));api.playbackSpeed=sp;$('sp').textContent=Math.round(sp*100)+'%'};
+ let S=d=>{sp=Math.max(0.5,Math.min(1.5,Math.round((sp+d)*20)/20));api.playbackSpeed=sp;$('sp').textContent=Math.round(sp*100)+'%'};
  $('dn').onclick=()=>S(-0.05);$('up').onclick=()=>S(0.05);
  $('mt').onclick=()=>{mute=!mute;api.masterVolume=mute?0:1;$('mt').textContent=mute?'🔇 소리':'🔊 소리'};
 
+
+ // ── 합주 방: 같은 방 코드면 누가 ▶를 눌러도 모두 같은 순간에 같은 자리에서 시작(각자 자기 파트 악보). 10/25 «합주하듯이 활용 가능?»
+ // band_play/{코드}/at = {on, at(서버 ms 시작 시각), tp(시작 위치 ms), sp(속도), song, by} — 기존 합주 화면(run)과 따로 둠
+ const RDB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/';
+ const LG=k=>{try{return JSON.parse(localStorage.getItem('band_play_'+k))}catch(e){return null}},LSet=(k,v)=>{try{localStorage.setItem('band_play_'+k,JSON.stringify(v))}catch(e){}};
+ let room=null,es=null,off2=0,run=null,startT=0,drift=0,cid=LG('cid');if(!cid){cid=Math.random().toString(36).slice(2,10);LSet('cid',cid)}
+ const sNow=()=>Date.now()+off2;
+ async function clockSync(){let best=1e9;for(let k=0;k<4;k++){try{const a=Date.now();const r=await fetch(RDB+room+'/ping/'+cid+'.json',{method:'PUT',body:'{".sv":"timestamp"}'});const v=await r.json(),b=Date.now();if(b-a<best){best=b-a;off2=v-(a+b)/2}}catch(e){}}}
+ const put=v=>fetch(RDB+room+'/at.json',{method:'PUT',body:JSON.stringify(v)}).catch(()=>{$('st').textContent='⚠️ 인터넷 연결을 확인해 주세요'});
+ const want=()=>run.tp+(sNow()-run.at)*run.sp;
+ function apply(){clearTimeout(startT);clearInterval(drift);if(!run)return;
+  if(run.song&&run.song!==SONG){$('st').textContent='방에서 다른 곡을 연주 중이에요';return}
+  if(!run.on){if(api.playerState===1)api.pause();api.timePosition=run.tp||0;$('st').textContent='';return}
+  sp=run.sp||1;api.playbackSpeed=sp;$('sp').textContent=Math.round(sp*100)+'%';
+  const d=run.at-sNow();
+  if(d>0){if(api.playerState===1)api.pause();api.timePosition=run.tp;$('st').textContent='🎵 함께 시작!';startT=setTimeout(()=>{api.timePosition=want();api.play();$('st').textContent=''},d)}
+  else{api.timePosition=want();api.play()}
+  // 기기마다 조금씩 밀리는 것 바로잡기(80ms 넘게 어긋나면 맞춤)
+  drift=setInterval(()=>{if(run&&run.on&&sNow()>run.at+300&&api.playerState===1&&Math.abs(api.timePosition-want())>80)api.timePosition=want()},1000)}
+ async function join(c){room=c;LSet('room',c);$('rbox').hidden=true;$('rm').textContent='👥 '+c;$('rm').classList.add('on');await clockSync();
+  if(es)es.close();es=new EventSource(RDB+c+'/at.json');es.addEventListener('put',e=>{const m=JSON.parse(e.data);if(m.path==='/')run=m.data;else if(run){run[m.path.slice(1)]=m.data}apply()})}
+ function leave(){if(es)es.close();es=null;room=null;run=null;LSet('room',null);clearTimeout(startT);clearInterval(drift);$('rm').textContent='👥 합주 방';$('rm').classList.remove('on')}
+ $('rm').onclick=()=>{if(room){leave();return}const b=$('rbox');b.hidden=!b.hidden;if(!b.hidden){$('rcode').value=LG('room')||'';$('rcode').focus()}};
+ $('rgo').onclick=()=>{const c=$('rcode').value.trim();if(!/^\d{4}$/.test(c)){$('st').textContent='코드 4자리를 넣어 주세요';return}join(c)};
+ const go=(tp,sp2)=>put({on:true,at:Math.round(sNow()+900),tp:Math.max(0,tp),sp:sp2,song:SONG,by:cid});
+ $('p').onclick=()=>{if(!room)return api.playPause();if(run&&run.on&&run.song===SONG)put({on:false,tp:Math.round(api.timePosition),song:SONG,by:cid});else go(api.timePosition,sp)};
+ $('h').onclick=()=>{if(!room)return api.stop();put({on:false,tp:0,song:SONG,by:cid})};
+ const S0=S;S=d=>{S0(d);if(room&&run&&run.on)go(want(),sp)};
+ $('dn').onclick=()=>S(-0.05);$('up').onclick=()=>S(0.05);
+ const r0=q.get('r')||LG('room');if(r0&&/^\d{4}$/.test(r0))join(r0);
  // ── 원곡(유튜브) 맞춰 틀기: 악보 커서가 영상 시간을 따라감. 기준점(🎯)은 곡마다 이 기기에 저장(10/25 «대표 음원 하나 맞춰 틀어 놓고»)
  const YT_ID=q.get('yt')||'1cMKPc3Yors',MARK=+(q.get('mark')||16),OK='at_off_'+SONG;
  $('mk').textContent=MARK;let yp=null,off=null,sync=0;try{const v=localStorage.getItem(OK)??localStorage.getItem('at_off_'+q.get('s'));if(v!=null)off=+v}catch(e){}
