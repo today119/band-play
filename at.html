@@ -1,4 +1,5 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#111">
 <title>새로 그린 악보 · 모두의 밴드</title>
 <style>
 :root{--bg:#fff;--fg:#111}
@@ -15,7 +16,7 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 .at-highlight *{fill:#dc2626;stroke:#dc2626}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.min.js"></script></head><body>
-<div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="pt"></select><span id="st">불러오는 중…</span></div>
+<div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="pt"></select><button id="fs" title="꽉 찬 화면">⛶</button><span id="st">불러오는 중…</span></div>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
  <div><button id="o1">◀ 0.05초</button> <button id="o2">0.05초 ▶</button></div><small id="yinfo">원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요</small></div></div>
@@ -75,4 +76,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(tex=>{
  $('o1').onclick=()=>{if(off==null)return;off-=0.05;try{localStorage.setItem(OK,off)}catch(e){}info()};
  $('o2').onclick=()=>{if(off==null)return;off+=0.05;try{localStorage.setItem(OK,off)}catch(e){}info()};
 }).catch(e=>{$('st').textContent='불러오기 실패'});
+</script><script>
+document.getElementById('fs').onclick=()=>{const d=document;if(d.fullscreenElement||d.webkitFullscreenElement)(d.exitFullscreen||d.webkitExitFullscreen).call(d);
+ else{const e=d.documentElement,f=e.requestFullscreen||e.webkitRequestFullscreen;if(f)f.call(e);else document.getElementById('st').textContent=('사파리 공유 버튼 → 「홈 화면에 추가」로 열면 주소창 없이 꽉 찬 화면이 돼요')}};
 </script></body></html>
