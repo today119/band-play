@@ -22,9 +22,9 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 #spl .stg{position:absolute;left:50%;top:44%;width:0;height:0}
 #spl .ln{position:absolute;left:0;top:0;transform:translate(-50%,-50%);white-space:nowrap;display:flex}
 #spl .ln span{display:inline-block;opacity:0}
-#spl .en{font:900 min(15vw,96px)/1 -apple-system,"Helvetica Neue",sans-serif;letter-spacing:-.03em}
+#spl .en{font:900 min(15vw,96px)/1 Pretendard,-apple-system,"Helvetica Neue",sans-serif;letter-spacing:-.03em}
 #spl .en .x{position:absolute;left:0;top:0;display:flex;opacity:1}
-#spl .ko{clip-path:inset(-20% 120% -20% -20%);font:900 min(24vw,150px)/1 "Apple SD Gothic Neo",-apple-system,sans-serif;letter-spacing:-.04em}
+#spl .ko{clip-path:inset(-20% 120% -20% -20%);font:900 min(15vw,96px)/1 Pretendard,"Apple SD Gothic Neo",-apple-system,sans-serif;letter-spacing:-.02em}
 #spl .em{position:absolute;left:0;top:min(18vw,110px);transform:translateX(-50%);display:flex;gap:min(4vw,24px);font-size:min(9vw,52px)}
 #spl .em i{font-style:normal;opacity:0;display:inline-block}
 #spl .pp{position:absolute;left:0;top:0;width:12px;height:12px;margin:-6px;border-radius:50%;pointer-events:none}
@@ -40,6 +40,7 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
 .at-cursor-bar{background:#fde68a55}.at-cursor-beat{background:#dc2626;width:3px}
 .at-highlight *{fill:#dc2626;stroke:#dc2626}
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard-subset.css">
 <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.min.js"></script></head><body>
 <div id="spl"><div class="stg">
  <div class="ln en" id="sEn"><span style="color:#5EC4BE">W</span><span style="color:#5EC4BE">e</span><span class="pl">P</span><span class="pl">l</span><span class="pl">a</span><span class="pl">y</span></div>
@@ -69,7 +70,7 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
  enS.forEach((x,i)=>A(x,up,{delay:150+i*70,duration:420}));
  A(en,[{transform:'translate(-50%,-50%)'},{transform:`translate(calc(-50% - ${(wB-wP)/2}px),-50%)`}],{delay:1000,duration:380});
  enS.slice(2).forEach((x,i)=>A(x,[{opacity:1,transform:'none'},{opacity:0,transform:'translateY(-22px)'}],{delay:950+i*50,duration:260}));
- bS.forEach((x,i)=>A(x,up,{delay:1080+i*60,duration:400}));  // 뿅 효과 없이(10/26 «과해서»)
+ bS.forEach((x,i)=>A(x,[{opacity:0,transform:'translateY(26px) scale(.8)'},{opacity:1,transform:'translateY(-4px) scale(1.06)',offset:.7},{opacity:1,transform:'none'}],{delay:1080+i*60,duration:380}));  // 색종이 없이, 글자만 살짝 튀어 오름(10/26 «Band 는 이전 효과가 더 좋아»)
  const C=['#5EC4BE','#FF3B47','#FFC53D','#fff','#c084fc'];
  const burst=(at,n,r,y)=>setTimeout(()=>{for(let k=0;k<n;k++){const d=document.createElement('i'),a=Math.PI*2*k/n+Math.random()*.5,R=r*(.65+Math.random()*.5);
   d.className='pp';d.style.background=C[k%C.length];d.style.top=y+'px';stg.appendChild(d);
@@ -79,7 +80,7 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
  // ④ 위리처럼 빨간 띠가 쓸고 지나가며 영문 WeBand 를 닦아내고, 같은 크기의 한글 「위밴드」가 드러남(10/26 «영문 닦아내면서, 크기 맞춰서»)
  setTimeout(()=>{const sr=stg.getBoundingClientRect(),rs=[enS[0],enS[1],...bS].map(x=>x.getBoundingClientRect());
   const L=Math.min(...rs.map(r=>r.left)),R=Math.max(...rs.map(r=>r.right)),T=Math.min(...rs.map(r=>r.top)),B=Math.max(...rs.map(r=>r.bottom));
-  const kw=ko.getBoundingClientRect().width,kh=ko.getBoundingClientRect().height,sc=(R-L)/kw;
+  const kh=ko.getBoundingClientRect().height,sc=Math.min((B-T)*1.02/kh,(R-L)*1.05/ko.getBoundingClientRect().width); // 영문 글자 높이에 맞춤(너비에 맞추면 한글이 너무 커짐)
   ko.style.fontSize=(parseFloat(getComputedStyle(ko).fontSize)*sc)+'px';ko.style.left=((L+R)/2-sr.left)+'px';ko.style.top=((T+B)/2-sr.top)+'px';
   koS.forEach(x=>x.style.opacity=1);
   const W=R-L+40,x0=L-20-sr.left,bar=document.createElement('i');bar.style.cssText=`position:absolute;top:${T-sr.top-12}px;left:${x0}px;width:10px;height:${B-T+24}px;background:#FF3B47;border-radius:3px`;stg.appendChild(bar);
