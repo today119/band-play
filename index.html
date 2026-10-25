@@ -62,6 +62,7 @@ input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border
 #tape{position:absolute;inset:0;overflow:hidden;background:#fff;touch-action:none}
 #tapeIn{position:absolute;left:0;will-change:transform}
 .tile{position:absolute;top:0;height:100%;overflow:hidden}
+.libh{font-weight:800;margin-top:14px}.libh small{color:#64748b;font-weight:600}.libparts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.libparts .btn{flex:1 1 40%}.libparts .btn:disabled{opacity:.55}
 .tile img{position:absolute;max-width:none;pointer-events:none}
 .tile.rest{display:flex;align-items:center;justify-content:center;color:#94a3b8;font:700 16px sans-serif;background:#f8fafc;border-left:1px solid #e2e8f0}
 .tile.now::after{content:'';position:absolute;inset:0;background:#fde04738;pointer-events:none}
@@ -116,6 +117,7 @@ input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border
     <button class="btn ghost" id="leave">나가기</button></div>
    <div id="roomInfo" style="margin-top:6px"></div>
    <div id="members"></div>
+   <div id="libBox" class="hide"></div>
   </div>
  </div>
 
@@ -161,7 +163,7 @@ input[type=text],input[type=number],select{font:inherit;padding:10px 12px;border
 <div id="toast"></div>
 
 <script>
-const APPVER='20261025d';
+const APPVER='20261025e';
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const PDFOPT={cMapUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',cMapPacked:true,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'};
 const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/';
@@ -680,7 +682,7 @@ function listen(){if(es)es.close();es=new EventSource(DB+room+'.json');
    if(d==null)delete o[ks[ks.length-1]];else o[ks[ks.length-1]]=d}
   const top=p==='/'?'':p.split('/')[1];
   if(top===''||top==='run'||top==='bpm'||top==='beats'||top==='song'){if(cur)syncFromRoom();else renderRoom()}
-  if(top===''||top==='m')renderRoom()};
+  if(top===''||top==='m'||top==='lib')renderRoom()};
  es.addEventListener('put',on);es.addEventListener('patch',e=>{const m=JSON.parse(e.data);const base=m.path==='/'?'':m.path;
   Object.entries(m.data||{}).forEach(([k,v])=>on({data:JSON.stringify({path:base+'/'+k,data:v})}))})}
 let beatT=null;
@@ -699,13 +701,42 @@ $('mkRoom').onclick=async()=>{let code;for(let k=0;k<6;k++){code=String(1000+Mat
  enter(code,true)};
 $('joinBtn').onclick=()=>{const c=$('joinCode').value.trim();if(!/^\d{4}$/.test(c)){toast('코드 4자리를 넣어 주세요');return}enter(c,false)};
 $('leave').onclick=leave;
+// ════════ 방 악보함: 방에 올려 둔 세션 악보를 한 번에 받기(분석 결과까지 같이 받아 바로 열림) ════════
+// band_play_lib/{비공개 키(추측 불가, 쓰기는 관리자만)}/meta/{sid}={title,part,bpm,pageCount} · sys/{sid}={pages,systems} · pdf/{sid}=base64. 방에는 키만(R.lib)
+const LIB=DB.replace(/band_play\/$/,'band_play_lib/');
+let libKey=null,libMeta=null,libBusy=false;
+const grp=p=>/기타/.test(p)?'기타':/건반|피아노|키보드|신스/.test(p)?'건반':/베이스/.test(p)?'베이스':/드럼/.test(p)?'드럼':/보컬/.test(p)?'보컬':p;
+const picon={기타:'🎸',건반:'🎹',베이스:'🎸',드럼:'🥁',보컬:'🎤'};
+async function loadLib(){libKey=R.lib||null;libMeta=null;
+ if(libKey)libMeta=await fetch(LIB+libKey+'/meta.json').then(r=>r.json()).catch(()=>null);renderLib()}
+function renderLib(){const b=$('libBox');if(!room||!libMeta){b.classList.add('hide');return}b.classList.remove('hide');
+ const items=Object.entries(libMeta).map(([sid,m])=>({sid,...m})),got=m=>scores.some(s=>s.libId===m.sid);
+ const mine=grp(LS.get('part','기타1')),parts=[...new Set(items.map(m=>grp(m.part)))].sort((a,b)=>(b===mine)-(a===mine));
+ b.innerHTML=`<div class="libh">📚 방 악보함 <small>· ${[...new Set(items.map(m=>m.title))].join(' · ')}</small></div><p class="lead" style="margin:4px 0 0">내 파트를 누르면 곡 전부가 이 기기에 들어와요</p>`;
+ const row=document.createElement('div');row.className='libparts';
+ parts.forEach(p=>{const all=items.filter(m=>grp(m.part)===p),left=all.filter(m=>!got(m));
+  const bt=document.createElement('button');bt.className='btn '+(p===mine&&left.length?'red':'ghost');
+  bt.textContent=`${picon[p]||'🎵'} ${p} — ${left.length?`받기 (${left.length})`:'✓ 받음'}`;bt.disabled=!left.length||libBusy;
+  bt.onclick=()=>libGet(left);row.appendChild(bt)});
+ b.appendChild(row)}
+async function libGet(list){if(libBusy||!list.length)return;libBusy=true;renderLib();$('prog').classList.remove('hide');
+ try{let k=0;for(const m of list){$('progT').textContent=`방 악보 받는 중… ${++k} / ${list.length} (${m.title} · ${m.part})`;
+   const [b64,sy]=await Promise.all([fetch(LIB+libKey+'/pdf/'+m.sid+'.json').then(r=>r.json()),fetch(LIB+libKey+'/sys/'+m.sid+'.json').then(r=>r.json())]);
+   if(!b64||!sy)throw new Error('악보를 못 받았어요');
+   const bin=atob(b64),u=new Uint8Array(bin.length);for(let j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);
+   const old=scores.find(s=>s.libId===m.sid);
+   await sPut({id:old?old.id:'lib_'+m.sid,libId:m.sid,title:m.title,part:m.part,pdf:u.buffer,pageCount:m.pageCount,pages:sy.pages,systems:sy.systems,bpm:m.bpm||100,beats:4,at:Date.now()})}
+  toast(`${list.length}개 악보를 넣었어요 🎉`,3000)}
+ catch(e){console.error(e);toast('⚠️ '+e.message+' — 인터넷을 확인하고 다시 눌러 주세요',4000)}
+ libBusy=false;$('prog').classList.add('hide');await refresh()}
 function renderRoom(){$('roomOff').classList.toggle('hide',!!room);$('roomOn').classList.toggle('hide',!room);if(cur)ui();if(!room)return;
  $('roomCode').textContent=room;
  const mine=R.song?scores.filter(s=>norm(s.title)===norm(R.song)):[];
  $('roomInfo').innerHTML=R.song?`지금 곡: 🎵 <span></span> · ♩${R.bpm} ${mine.length?'':'<br><span style="color:#dc2626">이 기기에 이 곡 악보가 없어요 — 같은 제목으로 넣어 주세요</span>'}`:'아직 곡이 안 정해졌어요 — 누구든 아래 악보를 열면 그 곡으로 맞춰져요';
  const sp=$('roomInfo').querySelector('span');if(sp)sp.textContent=R.song;
  const now=sNow(),ms=Object.values(R.m||{}).filter(m=>m&&now-(m.t||0)<90000);
- $('members').innerHTML='';ms.forEach(m=>{const e=document.createElement('span');e.className='mem';e.textContent=(m.part?m.part+' · ':'')+m.name;$('members').appendChild(e)})}
+ $('members').innerHTML='';ms.forEach(m=>{const e=document.createElement('span');e.className='mem';e.textContent=(m.part?m.part+' · ':'')+m.name;$('members').appendChild(e)});
+ if((R.lib||null)!==libKey)loadLib();else renderLib()}
 // 악보를 열면 방의 곡도 그 곡으로(멈춰 있을 때만)
 const _open=openScore;openScore=async id=>{await _open(id);if(!cur)return;LS.set('lastAny',cur.id);heartbeat();
  if(room&&!(R.run&&R.run.on)&&norm(R.song||'')!==norm(cur.title)){lastMine=Date.now();roomPatch({song:cur.title,bpm:cur.bpm,beats:cur.beats,run:{on:false,from:{n:B.seq[0]||1,k:1}}})}};
