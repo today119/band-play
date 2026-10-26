@@ -20,6 +20,7 @@ button,.btn{font:800 16px -apple-system,sans-serif;border:0;border-radius:14px;p
 .go{background:var(--p2);color:#fff;border-radius:10px;padding:8px 12px;font-weight:800;font-size:14px;text-decoration:none;white-space:nowrap}
 input,select,textarea{width:100%;font-size:17px;padding:11px;margin-top:8px;border:2px solid #e4d8ef;border-radius:12px;background:#fff;color:var(--fg);font-family:inherit}
 label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight:700}
+.btabs{position:sticky;top:0;z-index:6;background:#fff;display:flex;border-bottom:1px solid var(--ln);box-shadow:0 2px 8px #3b0a5712;top:env(safe-area-inset-top)}body::before{content:'';position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:var(--p);z-index:7}.btabs a{flex:1;text-align:center;padding:9px 2px 8px;font-size:13px;font-weight:700;color:#9a88ad;text-decoration:none;border-bottom:3px solid transparent}.btabs a b{display:block;font-size:19px;filter:grayscale(.6);opacity:.75}.btabs a.on{color:var(--p);border-bottom-color:var(--p2)}.btabs a.on b{filter:none;opacity:1}.sub{padding:10px 18px 0;font-size:14px;color:var(--mu)}
 .tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--ln);z-index:5}
 .tabs a{flex:1;text-align:center;font-size:11px;color:#9a88ad;text-decoration:none}.tabs a b{display:block;font-size:22px;filter:grayscale(.6);opacity:.75}.tabs a.on{color:var(--p);font-weight:800}.tabs a.on b{filter:none;opacity:1}
 .song{display:flex;gap:12px;align-items:center}.song .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:24px;background:#f4eefa;flex:none}.song>div{flex:1;min-width:0}.song small{color:var(--mu)}
@@ -80,7 +81,9 @@ function go(h){if(location.hash===h)render();else location.hash=h}
 window.addEventListener('hashchange',render);
 const tabs=(list,on)=>{$('tabs').innerHTML=list.map(([h,ic,t])=>`<a href="${h}" class="${h===on?'on':''}"><b>${ic}</b>${t}</a>`).join('')};
 const appTabs=on=>tabs([['#/','🎸','내 밴드'],['#/find','🔍','찾기'],['#/me','🙋','내 정보']],on);
-const bandTabs=(c,on)=>tabs([['#/b/'+c+'/home','🏠','홈'],['#/b/'+c+'/cal','📅','일정'],['#/b/'+c+'/score','🎼','악보'],['#/b/'+c+'/mem','👥','멤버'],['#/b/'+c+'/fee','💰','회비']],'#/b/'+c+'/'+on);
+// 모스처럼(10/26 «하단 메뉴는 1층 메뉴, 밴드 메뉴는 상단 메뉴로»): 아래 = 늘 앱 메뉴, 밴드 안 메뉴는 머리 밑 띠(스크롤해도 붙어 있음)
+let bTab='home';const bandTabs=(c,on)=>{bTab=on;appTabs('#/')};
+const BT=[['home','🏠','홈'],['cal','📅','일정'],['score','🎼','악보'],['mem','👥','멤버'],['fee','💰','회비']];
 let lastH=null;const V=h=>{const y=scrollY;$('app').innerHTML=h;if(location.hash!==lastH){lastH=location.hash;scrollTo(0,0)}else scrollTo(0,y)};
 
 async function render(){const h=location.hash||'#/',p=h.slice(2).split('/');
@@ -181,7 +184,7 @@ function vMe(){V(`<div class="top g"><small>이 기기에 저장돼요</small><h
  $('mpr').innerHTML=`<div class="row"><span>이번 주</span><b>${mins(w)}</b></div><div class="row"><span>이번 달</span><b>${mins(m)}</b></div>`+Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([s,v])=>`<div class="row"><span>${esc(SN[s]||s)}</span><span>${mins(v)}</span></div>`).join('')}
 
 // ════════ 밴드 홈 ════════
-const head=(mb,t,sub)=>`<div class="top"><a href="#/"><small>← 내 밴드 · 코드 ${mb.code} · ${pe(mb.part)} ${pn(mb.part)}</small></a><h1>${t}</h1>${sub||''}</div>`;
+const head=(mb,t,sub)=>`<div class="top" style="padding-bottom:12px"><a href="#/"><small>← 내 밴드</small></a><h1>🎸 ${esc(B.band.name)}</h1><small style="margin-top:3px">코드 ${mb.code} · 나 ${esc(mb.me)} ${pe(mb.part)} ${pn(mb.part)}</small></div><nav class="btabs">${BT.map(([k,ic,n])=>`<a href="#/b/${mb.code}/${k}" class="${k===bTab?'on':''}"><b>${ic}</b>${n}</a>`).join('')}</nav>${sub?'<div class="sub">'+sub+'</div>':''}`;
 const atUrl=(mb,song)=>{const k=B.band.k||DEFK;let s=song;if(!s){try{s=(localStorage.getItem('at_s')||'butterfly_g1').split('_')[0]}catch(e){s='butterfly'}}return `at.html?k=${k}&s=${s}_${mb.part}`};
 function vHome(mb){const n=nextOf('j'),g=nextOf('g'),nt=B.nt;
  const pr=myPr(),[w]=sumPr(pr,weekStart(today()),today()),[lw]=sumPr(pr,addD(weekStart(today()),-7),addD(weekStart(today()),-1));
@@ -252,7 +255,7 @@ async function newEv(d){let songs=[];try{const o=await fetch(LIB+(B.band.k||DEFK
   B.ev[id]={...v,t:Date.now()};closeM();calSel=dd;calM=dd.slice(0,7);calSeg='cal';render();toast('✅ 만들었어요 — 📤로 단톡방에 출첵 보내기')}}
 
 // 🎼 악보함: 방 악보함(band_play_lib/{k}/tex)의 곡 → 내 파트로 열기. 막대 = 이 기기에서 ▶로 지나간 마디 비율(at.html이 band_play_cov에 적음)
-async function vScore(mb){V(head(mb,'🎼 악보함','<small style="margin-top:4px">내 파트: '+(PN[mb.part]||'')+'</small>')+'<main id="sl"><p class="empty">불러오는 중…</p></main>');
+async function vScore(mb){V(head(mb,'🎼 악보함','내 파트: '+(PN[mb.part]||''))+'<main id="sl"><p class="empty">불러오는 중…</p></main>');
  const k=B.band.k||DEFK;let o={};try{o=await fetch(LIB+k+'/tex.json?shallow=true').then(r=>r.json())||{}}catch(e){}
  const songs=[...new Set(Object.keys(o).map(x=>x.split('_')[0]))],cov=LG('cov')||{},pr=myPr(),[,by]=sumPr(pr,'2000-01-01','2999-12-31');
  const up=occ(today(),addD(today(),60)).map(x=>x.e.so||'').join(',');
