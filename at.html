@@ -4,10 +4,12 @@
 <style>
 :root{--bg:#fff;--fg:#111}
 body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--fg)}
-#bar{position:sticky;top:0;background:#111;color:#fff;padding:8px max(10px,env(safe-area-inset-left));z-index:9;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-#bar button{font-size:17px;padding:7px 14px;border:0;border-radius:10px;background:#2b2b2b;color:#fff}
+#bar{position:sticky;top:0;background:#111;color:#fff;padding:6px max(8px,env(safe-area-inset-left));z-index:9;display:flex;flex-direction:column;gap:6px}
+#bar .row{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}#bar .row::-webkit-scrollbar{display:none}#bar .row>*{flex:none}
+@media(max-width:520px){#bar button{font-size:14px;padding:7px 8px}#bar .row{gap:4px}#sg{max-width:24vw}#pt{max-width:19vw}#bar .em{display:none}#rm{max-width:12vw;overflow:hidden;text-overflow:clip;white-space:nowrap}#md button{padding:7px 6px}}
+#bar button{font-size:clamp(14px,2.3vw,17px);padding:7px clamp(9px,1.8vw,14px);border:0;border-radius:10px;background:#2b2b2b;color:#fff}
 #bar button.on{background:#dc2626}
-#md{display:inline-flex;border-radius:10px;overflow:hidden;background:#2b2b2b}#md[hidden]{display:none}#md button{border-radius:0;background:transparent;color:#aaa}#md button.on{background:#7c3aed;color:#fff}#bar b{font-size:15px}#pt,#sg{font-size:16px;padding:6px;border-radius:10px;background:#2b2b2b;color:#fff;border:0}#pt:empty{display:none}#st{font-size:13px;opacity:.75}
+#md{display:inline-flex;border-radius:10px;overflow:hidden;background:#2b2b2b}#md[hidden]{display:none}#bar i.em{font-style:normal}#md button{border-radius:0;background:transparent;color:#aaa}#md button.on{background:#7c3aed;color:#fff}#bar b{font-size:15px}#pt,#sg{font-size:clamp(14px,2.2vw,16px);padding:6px;border-radius:10px;background:#2b2b2b;color:#fff;border:0}#pt:empty{display:none}#st{font-size:13px;opacity:.75}
 #at{padding:0 6px}
 #yt{display:none;background:#000;position:sticky;top:52px;z-index:8}#yt.on{display:flex;gap:8px;align-items:center;padding:6px;flex-wrap:wrap}
 #ytbox{width:min(320px,45vw);aspect-ratio:16/9}#ytbox iframe{width:100%;height:100%}
@@ -95,7 +97,7 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
   A(em,[{opacity:1},{opacity:.0}],{delay:200,duration:400});
 },2500);
  setTimeout(()=>end(),4200)})();
-</script><div id="bar"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><select id="sg"></select><select id="pt"></select><button id="rm">👥 합주 방</button><span id="md" hidden><button id="mdS">🎧 개인</button><button id="mdJ">👥 합주</button></span><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="rec">⏺ 녹화</button><span id="st">불러오는 중…</span></div>
+</script><div id="bar"><div class="row"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button></div><div class="row"><select id="sg"></select><select id="pt"></select><button id="rm">👥 합주 방</button><span id="md" hidden><button id="mdS"><i class="em">🎧 </i>개인</button><button id="mdJ"><i class="em">👥 </i>합주</button></span><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="rec">⏺ 녹화</button><span id="st">불러오는 중…</span></div></div>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
  <div><button id="o1">◀ 0.05초</button> <button id="o2">0.05초 ▶</button></div><small id="yinfo">원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요</small></div></div>
@@ -141,7 +143,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  api=new alphaTab.AlphaTabApi($('at'),{core:{fontDirectory:CDN+'font/',tex:true},
   display:{staveProfile:voc&&!q.get('v')?'Default':q.get('v')||({vocal:'Score',g1:'Tab',g2:'ScoreTab',bass:'ScoreTab',keys:'Score',drums:'Score'})[(q.get('s')||'').split('_')[1]]||'Tab',scale:narrow?0.95:1.15,layoutMode:'page'},
   notation:{rhythmMode:alphaTab.TabRhythmMode.ShowWithBars},
-  player:{enablePlayer:true,enableCursor:true,enableAnimatedBeatCursor:true,soundFont:CDN+'soundfont/sonivox.sf2',scrollElement:document.scrollingElement,scrollOffsetY:-90}});
+  player:{enablePlayer:true,enableCursor:true,enableAnimatedBeatCursor:true,soundFont:CDN+'soundfont/sonivox.sf2',scrollElement:document.scrollingElement,scrollOffsetY:-110}});
  window.api=api;let mute=false,sp=1;api.masterVolume=1;$('mt').textContent='🔊 소리';
  api.error.on(e=>{$('st').textContent='오류: '+(e.message||e)});
  api.renderFinished.on(()=>{$('st').textContent='';window.__done=1});
