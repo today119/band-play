@@ -31,7 +31,7 @@ button,.btn{font:800 16px -apple-system,sans-serif;border:0;border-radius:14px;p
 .go{background:var(--p2);color:#fff;border-radius:10px;padding:8px 12px;font-weight:800;font-size:14px;text-decoration:none;white-space:nowrap}
 input,select,textarea{width:100%;font-size:17px;padding:11px;margin-top:8px;border:2px solid #e4d8ef;border-radius:12px;background:#fff;color:var(--fg);font-family:inherit}
 label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight:700}
-.btabs{position:sticky;top:0;z-index:6;background:#fff;display:flex;border-bottom:1px solid var(--ln);box-shadow:0 2px 8px #3b0a5712;top:env(safe-area-inset-top)}body::before{content:'';position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:var(--p);z-index:7}.btabs a{flex:1;text-align:center;padding:9px 2px 8px;font-size:13px;font-weight:700;color:#9a88ad;text-decoration:none;border-bottom:3px solid transparent}.btabs a b{display:block;font-size:19px;filter:grayscale(.6);opacity:.75}.btabs a.on{color:var(--p);border-bottom-color:var(--p2)}.btabs a.on b{filter:none;opacity:1}.sub{padding:10px 18px 0;font-size:14px;color:var(--mu)}
+.btabs{position:sticky;top:0;z-index:6;background:#fff;display:flex;border-bottom:1px solid var(--ln);box-shadow:0 2px 8px #3b0a5712;top:env(safe-area-inset-top)}body::before{content:'';position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:var(--p);z-index:7}.btabs a{flex:1;text-align:center;padding:10px 2px 9px;font-size:13px;font-weight:700;color:#9a88ad;text-decoration:none;border-bottom:3px solid transparent}.btabs a b{display:block;font-size:19px;filter:grayscale(.6);opacity:.75}.btabs a.on{color:var(--p);border-bottom-color:var(--p2)}.btabs a.on b{filter:none;opacity:1}.sub{padding:10px 18px 0;font-size:14px;color:var(--mu)}
 .tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--ln);z-index:5}
 .tabs a{flex:1;text-align:center;font-size:11px;color:#9a88ad;text-decoration:none}.tabs a b{display:block;font-size:22px;filter:grayscale(.6);opacity:.75}.tabs a.on{color:var(--p);font-weight:800}.tabs a.on b{filter:none;opacity:1}
 .song{display:flex;gap:12px;align-items:center}.song .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:24px;background:#f4eefa;flex:none}.song>div{flex:1;min-width:0}.song small{color:var(--mu)}
@@ -197,7 +197,7 @@ const weekStart=s=>{const d=pd(s),k=(d.getDay()+6)%7;return addD(s,-k)};
 
 // ════════ 앱 홈 ════════
 async function vApp(){
- V(`<div class="top g"><small>${me.name?'안녕하세요, '+esc(me.name)+(me.part?' · '+esc(PN[me.part]||''):''):'함께 연주하는 밴드 앱'}</small><h1 style="font:900 28px Pretendard,-apple-system,sans-serif;letter-spacing:-.02em"><span style="color:#5EC4BE">We</span>Band</h1></div><main>
+ V(`<div class="top g"><small>${me.name?'안녕하세요, '+esc(me.name)+(me.part?' · '+esc(PN[me.part]||''):''):'함께 연주하는 밴드 앱'}</small><h1 style="font:900 28px Pretendard,-apple-system,sans-serif;letter-spacing:-.02em"><span style="color:#5EC4BE">We</span><span style="color:#FF3B47">Ba</span>nd</h1></div><main>
  <div class="card"><h3>내 밴드</h3><div id="bl">${bands.length?'':'<p class="empty">아직 밴드가 없어요.<br>만들거나, 받은 초대 코드로 가입하세요.</p>'}</div></div>
  <a class="btn" href="#/make">＋ 밴드 만들기</a><button class="btn b2" onclick="askCode()">🔗 초대 코드로 가입</button>
  <div class="card" style="margin-top:12px"><h3>🎧 혼자 연습</h3><div class="row"><span style="color:var(--mu);font-size:14px">밴드 없이 악보만 열어 연습하기</span><a class="go" href="at.html?solo=1">악보 열기</a></div></div>
@@ -279,7 +279,7 @@ function vCal(mb){const p=location.hash.split('/');if(location.hash!==calH){calH
   const pm=ymd(new Date(y,m-2,1)).slice(0,7),nm=ymd(new Date(y,m,1)).slice(0,7);
   const [mt,by]=sumPr(pr,from,to),ws=weekStart(today()),[w]=sumPr(pr,ws,today()),[lw]=sumPr(pr,addD(ws,-7),addD(ws,-1));
   const sel=occ(calSel,calSel);
-  body=`<div class="card" style="padding:10px 12px"><div class="mh"><a href="javascript:void 0" onclick="calM='${pm}';render()">‹</a><b>${y}년 ${m}월</b><a href="javascript:void 0" onclick="calM='${nm}';render()">›</a></div>
+  body=`<div class="card" id="calc" style="padding:10px 12px"><div class="mh"><a href="javascript:void 0" onclick="calM='${pm}';render()">‹</a><b>${y}년 ${m}월</b><a href="javascript:void 0" onclick="calM='${nm}';render()">›</a></div>
    <div class="wk">${'월화수목금토일'.split('').map((c,i)=>`<span style="${i===5?'color:#2563eb':i===6?'color:#dc2626':''}">${c}</span>`).join('')}</div><div class="gd">${g}</div>
    <div class="lg"><span><i class="dt j"></i>합주</span><span><i class="dt g"></i>공연·행사</span><span><i class="dt a"></i>출석</span><span style="color:#0f766e;font-weight:800">25분</span><span>내 연습</span></div></div>
   <div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="color:var(--p)">🎧 ${m}월 내 연습</b><b style="font-size:20px;color:var(--p2)">${mins(mt)}</b></div>
@@ -354,4 +354,14 @@ render();
 // 다른 멤버가 바꾼 것(출첵·일정) 반영: 화면 돌아올 때·30초마다
 const refresh=async()=>{if(!B||document.hidden||$('mod'))return;const c=B.code;if(await load(c))render()};
 document.addEventListener('visibilitychange',refresh);setInterval(refresh,30000);
+// 옆으로 밀어 밴드 메뉴 넘기기(10/26 «상단 메뉴는 누르기 쉽지 않으니 스와이프로»): 가로로 70px 넘게·세로보다 2배 넘게 밀었을 때만.
+// 화면 가장자리 24px(아이폰 뒤로 가기 제스처)·입력칸·창(일정 만들기 등)은 제외, 달력 위에서 밀면 달 넘기기
+{let x0=null,y0=0,t0=0,on=null;
+ document.addEventListener('touchstart',e=>{const t=e.touches[0];x0=null;if(e.touches.length>1||$('mod')||!B||!location.hash.startsWith('#/b/'))return;
+  if(t.clientX<24||t.clientX>innerWidth-24||e.target.closest('input,select,textarea'))return;x0=t.clientX;y0=t.clientY;t0=Date.now();on=e.target.closest('#calc')},{passive:true});
+ document.addEventListener('touchend',e=>{if(x0==null)return;const t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
+  if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*2||Date.now()-t0>700)return;const dir=dx<0?1:-1;
+  if(on){const [y,m]=calM.split('-').map(Number);calM=ymd(new Date(y,m-1+dir,1)).slice(0,7);render();return}
+  const i=BT.findIndex(x=>x[0]===bTab),j=i+dir;if(j<0||j>=BT.length)return;
+  const a=$('app');a.animate([{transform:`translateX(${-dir*40}px)`,opacity:.3},{transform:'none',opacity:1}],{duration:220,easing:'ease-out'});go('#/b/'+B.code+'/'+BT[j][0])},{passive:true})}
 </script></body></html>
