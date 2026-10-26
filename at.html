@@ -150,7 +150,27 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
   display:{staveProfile:voc&&!q.get('v')?'Default':q.get('v')||({vocal:'Score',g1:'Tab',g2:'ScoreTab',bass:'ScoreTab',keys:'Score',drums:'Score'})[(q.get('s')||'').split('_')[1]]||'Tab',scale:narrow?0.95:1.15,layoutMode:'page'},
   notation:{rhythmMode:alphaTab.TabRhythmMode.ShowWithBars},
   player:{enablePlayer:true,enableCursor:true,enableAnimatedBeatCursor:true,soundFont:CDN+'soundfont/sonivox.sf2',scrollElement:document.scrollingElement,scrollOffsetY:-110}});
- window.api=api;let mute=false,sp=1;api.masterVolume=1;$('mt').textContent='🔊 소리';
+ window.api=api;
+ // 재생바를 직접 그림(10/26 «아직도 재생바가 버벅일 때가 있어»): alphaTab은 «이 음표→다음 음표»까지만 움직이고 다음 소리 신호가 늦으면
+ // 그 자리에 멈췄다 튐 → 마지막 신호 + 흐른 시간으로 매 프레임 위치를 계산(살짝씩만 끌어당겨 맞춤), 멈춤 중엔 alphaTab이 놓는 그대로
+ {const C={c:null,ev:null,tk:-1,pf:0,hint:null};
+  api.customCursorHandler={onAttach(){},onDetach(){},
+   placeBarCursor(b,bb){const v=bb.barBounds.masterBarBounds.visualBounds;b.setBounds(v.x,v.y,v.w,v.h)},
+   placeBeatCursor(c,bb,x){C.c=c;if(api.playerState===1&&C.ev)return;const v=bb.barBounds.masterBarBounds.visualBounds;c.transitionToX(0,x);c.setBounds(x,v.y,1,v.h)},
+   transitionBeatCursor(c){C.c=c}};
+  api.playerPositionChanged.on(e=>{C.ev={tk:e.currentTick,at:performance.now(),r:960*e.modifiedTempo/60000};if(e.isSeek)C.tk=-1});
+  api.playerStateChanged.on(e=>{if(e.state!==1){C.ev=null;C.tk=-1}});
+  const draw=tk=>{const lb=api.renderer.boundsLookup,tc=api.tickCache;if(!lb||!tc||!C.c)return;
+   const res=tc.findBeat(new Set(api.tracks.map(t=>t.index)),Math.floor(tk),C.hint);if(!res||!res.beat)return;C.hint=res;
+   const bb=lb.findBeat(res.beat);if(!bb)return;const sys=bb.barBounds.masterBarBounds,v=sys.visualBounds;
+   let x1=bb.realBounds.x+bb.realBounds.w;if(res.nextBeat&&res.nextBeat.beat){const nb=lb.findBeat(res.nextBeat.beat);if(nb&&nb.barBounds.masterBarBounds.staffSystemBounds===sys.staffSystemBounds&&nb.onNotesX>bb.onNotesX)x1=nb.onNotesX}
+   const f=res.tickDuration>0?Math.max(0,Math.min(1,(tk-res.start)/res.tickDuration)):0,x=bb.onNotesX+(x1-bb.onNotesX)*f;
+   C.c.transitionToX(0,x);C.c.setBounds(x,v.y,1,v.h)};
+  (function loop(now){requestAnimationFrame(loop);const dt=Math.min(100,now-C.pf);C.pf=now;const e=C.ev;if(!e||api.playerState!==1)return;
+   const est=e.tk+Math.min(400,now-e.at)*e.r;
+   if(C.tk<0||Math.abs(est-C.tk)>480)C.tk=est;else{const p=C.tk+dt*e.r;C.tk=p+(est-p)*0.12}
+   try{draw(C.tk)}catch(x){}})(0)}
+ let mute=false,sp=1;api.masterVolume=1;$('mt').textContent='🔊 소리';
  api.error.on(e=>{$('st').textContent='오류: '+(e.message||e)});
  api.renderFinished.on(()=>{$('st').textContent='';window.__done=1});
  let ready=false;api.soundFontLoad.on(e=>{if(!ready&&e.total)$('st').textContent='소리 준비 '+Math.floor(e.loaded/e.total*100)+'%'});
