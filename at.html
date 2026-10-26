@@ -160,15 +160,27 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    transitionBeatCursor(c){C.c=c}};
   api.playerPositionChanged.on(e=>{C.ev={tk:e.currentTick,at:performance.now(),r:960*e.modifiedTempo/60000};if(e.isSeek)C.tk=-1});
   api.playerStateChanged.on(e=>{if(e.state!==1){C.ev=null;C.tk=-1}});
+  // 음표 사이 간격이 박자 길이와 비례하지 않아 음표마다 속도가 «툭» 바뀜(10/26 «어떤 음에 따라 약간 튀기는 듯») →
+  // 앞·뒤 음표까지 4점으로 단조 3차 곡선(Fritsch–Carlson) — 음표를 지날 때 속도가 이어짐
+  const TR=()=>new Set(api.tracks.map(t=>t.index)),kn=(lb,r,sys)=>{const b=r&&r.beat&&lb.findBeat(r.beat);return b&&b.barBounds.masterBarBounds.staffSystemBounds===sys?b.onNotesX:null};
+  let K=null;
+  const knots=(res,lb,tc)=>{const bb=lb.findBeat(res.beat);if(!bb)return null;const mb=bb.barBounds.masterBarBounds,sys=mb.staffSystemBounds,t1=res.start,t2=res.start+res.tickDuration;
+   let x2=bb.realBounds.x+bb.realBounds.w;const n=res.nextBeat&&kn(lb,res.nextBeat,sys);if(n!=null&&n>bb.onNotesX)x2=n;
+   const tr=TR(),p=t1>0?tc.findBeat(tr,t1-1):null,q=tc.findBeat(tr,t2);
+   const P0=p&&p.start<t1?[p.start,kn(lb,p,sys)]:null,q3=q&&q.nextBeat?kn(lb,q.nextBeat,sys):null,P3=q&&q.start===t2&&q3!=null&&q3>x2?[t2+q.tickDuration,q3]:null;
+   const s12=(x2-bb.onNotesX)/Math.max(1,t2-t1),hm=(a,b)=>a>0&&b>0?2*a*b/(a+b):0,s=(A,B)=>(B[1]-A[1])/Math.max(1,B[0]-A[0]);
+   const m1=P0&&P0[1]!=null&&P0[1]<bb.onNotesX?hm(s(P0,[t1,bb.onNotesX]),s12):s12,m2=P3?hm(s12,s([t2,x2],P3)):s12;
+   return {r:res,t1,t2,x1:bb.onNotesX,x2,m1,m2,y:mb.visualBounds.y,h:mb.visualBounds.h}};
   const draw=tk=>{const lb=api.renderer.boundsLookup,tc=api.tickCache;if(!lb||!tc||!C.c)return;
-   const res=tc.findBeat(new Set(api.tracks.map(t=>t.index)),Math.floor(tk),C.hint);if(!res||!res.beat)return;C.hint=res;
-   const bb=lb.findBeat(res.beat);if(!bb)return;const sys=bb.barBounds.masterBarBounds,v=sys.visualBounds;
-   let x1=bb.realBounds.x+bb.realBounds.w;if(res.nextBeat&&res.nextBeat.beat){const nb=lb.findBeat(res.nextBeat.beat);if(nb&&nb.barBounds.masterBarBounds.staffSystemBounds===sys.staffSystemBounds&&nb.onNotesX>bb.onNotesX)x1=nb.onNotesX}
-   const f=res.tickDuration>0?Math.max(0,Math.min(1,(tk-res.start)/res.tickDuration)):0,x=bb.onNotesX+(x1-bb.onNotesX)*f;
-   C.c.transitionToX(0,x);C.c.setBounds(x,v.y,1,v.h)};
+   const res=tc.findBeat(TR(),Math.floor(tk),C.hint);if(!res||!res.beat)return;C.hint=res;
+   if(!K||K.r.beat!==res.beat||K.t1!==res.start||K.lb!==lb){K=knots(res,lb,tc);if(!K)return;K.lb=lb}
+   const L=K.t2-K.t1,u=L>0?Math.max(0,Math.min(1,(tk-K.t1)/L)):0,u2=u*u,u3=u2*u;
+   const x=(2*u3-3*u2+1)*K.x1+(u3-2*u2+u)*L*K.m1+(-2*u3+3*u2)*K.x2+(u3-u2)*L*K.m2;
+   C.c.transitionToX(0,x);C.c.setBounds(x,K.y,1,K.h)};
+  window.__cx=tk=>{draw(tk);return C.c&&C.c.lastBounds.x}; // 시험용
   (function loop(now){requestAnimationFrame(loop);const dt=Math.min(100,now-C.pf);C.pf=now;const e=C.ev;if(!e||api.playerState!==1)return;
    const est=e.tk+Math.min(400,now-e.at)*e.r;
-   if(C.tk<0||Math.abs(est-C.tk)>480)C.tk=est;else{const p=C.tk+dt*e.r;C.tk=p+(est-p)*0.12}
+   if(C.tk<0||Math.abs(est-C.tk)>480)C.tk=est;else{const p=C.tk+dt*e.r;C.tk=p+(est-p)*0.06}
    try{draw(C.tk)}catch(x){}})(0)}
  let mute=false,sp=1;api.masterVolume=1;$('mt').textContent='🔊 소리';
  api.error.on(e=>{$('st').textContent='오류: '+(e.message||e)});
