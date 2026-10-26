@@ -53,19 +53,18 @@ label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1e1030;color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;z-index:30;font-size:14px}
 .rs{display:flex;gap:6px}.rs button{flex:1;padding:10px;font-size:15px;background:var(--li);color:var(--p)}.rs button.on1{background:#16a34a;color:#fff}.rs button.on0{background:#dc2626;color:#fff}
 .note{white-space:pre-wrap;font-size:15px}
-/* 블랙 테마(10/26 «밴드 하는 사람들 시크한가? 보라보다 블랙?») — 바탕 검정, 주 버튼·오늘·D-day 빨강(인트로 Ba), 강조 민트(인트로 We) */
-:root{--p:#FF3B47;--p2:#5EC4BE;--bg:#0b0b0d;--fg:#f2f2f2;--mu:#9a9aa5;--li:#23232a;--ln:#26262c}
-.top,.top.g{background:#000!important;border-bottom:1px solid #1d1d22}
-.card{background:#17171b!important;box-shadow:none!important;border:1px solid #222228}
-.tabs,.btabs{background:#0f0f12!important;border-color:#222228!important;box-shadow:none!important}
-.btabs a.on{color:#fff}.tabs a.on{color:#fff}.btabs a.on{border-bottom-color:#FF3B47}
-.seg a.on{background:#33333c!important;color:#fff}
-.pill{background:#26262c;color:#ddd}.ok{background:#10301f!important;color:#6ee7a0!important}.no{background:#3a1418!important;color:#fca5a5!important}.q{background:#352c0e!important;color:#fde68a!important}
-input,select,textarea{background:#111114!important;border-color:#2f2f38!important;color:#f2f2f2!important}
-.song .ic{background:#26262c}.row{border-color:#26262c!important}
-.go{color:#000!important}.b2{color:#fff!important}.rs button{color:#fff!important}.rs button.on1{background:#16a34a!important}
-.gd a{color:#ddd}.gd a.sel{color:#fff}.mh,.mh a{color:#fff!important}.code{color:#5EC4BE}.big{color:#fff}
-.tag{color:#5EC4BE}.tag.g{color:#FF3B47}
+/* 블랙&화이트(10/26 «올블랙은 좀 그렇고 블랙엔 화이트지, 건반처럼») — 머리·밴드 메뉴·주 버튼은 검정, 내용은 흰 바탕·검정 글씨, 색은 갑니다 초록·못 가요/오늘 빨강·인트로 We 민트만 */
+:root{--p:#111;--p2:#111;--bg:#f2f2f3;--fg:#111;--mu:#6b6b72;--li:#e9e9ec;--ln:#e2e2e6}
+.top,.top.g{background:#000!important}
+.card{background:#fff;box-shadow:none;border:1px solid #e4e4e8}
+.btabs{background:#000;border-bottom:0;box-shadow:0 2px 8px #0003}.btabs a{color:#8a8a92}.btabs a.on{color:#fff;border-bottom-color:#fff}
+.tabs{background:#fff;border-top:1px solid #e2e2e6}.tabs a.on{color:#000}
+.seg a.on{background:#fff;color:#000;box-shadow:0 1px 3px #0002}
+.pill{background:#efeff2;color:#333}.pill.ok{background:#dcfce7;color:#166534}.pill.no{background:#fee2e2;color:#991b1b}.pill.q{background:#fef9c3;color:#854d0e}.song .ic{background:#f0f0f2}
+.go{background:#000;color:#fff}.b2{background:#e9e9ec;color:#111}
+.gd a.sel{background:#000}.gd a.td{outline-color:#000}.sel .dt.j{background:#fff}.sel .pm{color:#a7f3d0}.dt.j{background:#111}
+.prog{background:#e9e9ec}.prog i{background:#111}
+.tag{color:#111}.tag.g{color:#FF3B47}.code{color:#000}
 body::before{background:#000}
 </style><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard-subset.css">
 </head><body>
@@ -158,7 +157,7 @@ async function load(code){const o=await J(code).catch(()=>null);if(!o||!o.band)r
 function go(h){if(location.hash===h)render();else location.hash=h}
 window.addEventListener('hashchange',render);
 const tabs=(list,on)=>{$('tabs').innerHTML=list.map(([h,ic,t])=>`<a href="${h}" class="${h===on?'on':''}"><b>${ic}</b>${t}</a>`).join('')};
-const appTabs=on=>tabs([['#/','🎸','내 밴드'],['#/find','🔍','찾기'],['#/me','🙋','내 정보']],on);
+const appTabs=on=>tabs([['#/','🎸','내 밴드'],['#/lib','🎼','내 악보'],['#/find','🔍','찾기'],['#/me','🙋','내 정보']],on);
 // 모스처럼(10/26 «하단 메뉴는 1층 메뉴, 밴드 메뉴는 상단 메뉴로»): 아래 = 늘 앱 메뉴, 밴드 안 메뉴는 머리 밑 띠(스크롤해도 붙어 있음)
 let bTab='home';const bandTabs=(c,on)=>{bTab=on;appTabs('#/')};
 const BT=[['home','🏠','홈'],['cal','📅','일정'],['score','🎼','악보'],['mem','👥','멤버'],['fee','💰','회비']];
@@ -172,6 +171,7 @@ async function render(){const h=location.hash||'#/',p=h.slice(2).split('/');
   ({home:vHome,cal:vCal,score:vScore,mem:vMem,fee:vFee})[t]?.(mb);return}
  if(p[0]==='join'){vJoin(p[1]);return}
  if(p[0]==='make'){vMake();return}
+ if(p[0]==='lib'){appTabs('#/lib');vLib();return}
  if(p[0]==='find'){appTabs('#/find');vFind();return}
  if(p[0]==='me'){appTabs('#/me');vMe();return}
  appTabs('#/');vApp()}
@@ -340,7 +340,33 @@ async function vScore(mb){V(head(mb,'🎼 악보함','내 파트: '+(PN[mb.part]
  songs.sort((a,b)=>(up.includes((SN[b]||b).replace(/^\S+ /,''))?1:0)-(up.includes((SN[a]||a).replace(/^\S+ /,''))?1:0));
  $('sl').innerHTML=songs.map(s=>{const parts=Object.keys(o).filter(x=>x.split('_')[0]===s).map(x=>x.split('_')[1]),c=cov[s+'_'+mb.part],pc=c&&c.n?Math.round(c.h/c.n*100):0,has=parts.includes(mb.part);
   return `<div class="card"><div class="song"><span class="ic">${(SN[s]||'🎵').split(' ')[0]}</span><div><b>${esc((SN[s]||s).replace(/^\S+ /,''))}</b>${up.includes((SN[s]||s).replace(/^\S+ /,''))?' <span class="tag">다음 합주</span>':''}<br><small>${parts.map(pe).join('')} ${parts.length}파트${by[s]?' · 내 연습 '+mins(by[s]):''}</small><div class="prog"><i style="width:${pc}%"></i></div></div>
-  <a class="go" href="at.html?k=${k}&s=${s}_${has?mb.part:parts[0]}">열기</a></div></div>`}).join('')+`<div class="card" style="border:2px dashed #c4b5fd;box-shadow:none"><b>＋ 새 곡 올리기</b><div style="font-size:13px;color:var(--mu);margin-top:4px">악보 PDF를 보내 주시면 🤖 박자 맞는 악보로 다시 그려 드려요 (지금은 관리자에게 요청)</div></div><p style="font-size:12px;color:#9a88ad">막대 = 내 파트에서 ▶로 한 번이라도 지나간 마디 비율</p>`}
+  <a class="go" href="at.html?k=${k}&s=${s}_${has?mb.part:parts[0]}">열기</a></div></div>`}).join('')+addCard()+'<p style="font-size:12px;color:#9a88ad">막대 = 내 파트에서 ▶로 한 번이라도 지나간 마디 비율</p>'}
+
+// 🎼 내 악보(1층, 10/26 «혼자 연습하려면 1층 메뉴에도 악보가 있어야 하나? 악보를 넣는 메뉴가 없네»)
+//   위밴드 악보함 곡 전부를 파트 골라 혼자 연습 + 악보 넣기(내 PDF는 이 기기 index.html / 새로 그려 달라는 요청은 band_play_req)
+async function vLib(){let k=DEFK;try{k=localStorage.getItem('at_k')||DEFK}catch(e){}const part=me.part||'g1';
+ V(`<div class="top g"><small>파트를 골라 혼자 연습해요</small><h1>🎼 내 악보</h1></div><main><label class="l" style="margin-top:0">내 파트</label>${partSel('lp',part)}<div id="ll" style="margin-top:12px"><p class="empty">불러오는 중…</p></div></main>`);
+ $('lp').onchange=()=>{me={...me,part:$('lp').value};LSet('me',me);vLib()};
+ let o={};try{o=await fetch(LIB+k+'/tex.json?shallow=true').then(r=>r.json())||{}}catch(e){}
+ const songs=[...new Set(Object.keys(o).map(x=>x.split('_')[0]))],cov=LG('cov')||{},[,by]=sumPr(myPr(),'2000-01-01','2999-12-31'),pdf=LG('pdfs')||0;
+ $('ll').innerHTML=songs.map(s=>{const parts=Object.keys(o).filter(x=>x.split('_')[0]===s).map(x=>x.split('_')[1]),has=parts.includes(part),c=cov[s+'_'+part],pc=c&&c.n?Math.round(c.h/c.n*100):0;
+  return `<div class="card"><div class="song"><span class="ic">${(SN[s]||'🎵').split(' ')[0]}</span><div><b>${esc((SN[s]||s).replace(/^\S+ /,''))}</b><br><small>${has?pe(part)+' '+pn(part):'⚠️ '+pn(part)+' 파트 없음'} · ${parts.length}파트${by[s]?' · 연습 '+mins(by[s]):''}</small><div class="prog"><i style="width:${pc}%"></i></div></div>
+  <a class="go" href="at.html?solo=1&k=${k}&s=${s}_${has?part:parts[0]}">연습</a></div></div>`}).join('')+addCard()}
+function addCard(){return `<div class="card" style="border:2px dashed #5EC4BE66"><b>＋ 악보 넣기</b>
+ <a class="btn b2" href="index.html" style="margin-top:10px">📄 내 PDF 악보 넣기 <small style="display:block;font-weight:400;font-size:12px;opacity:.75">지금 바로 · 이 기기에만 저장 · 재생바로 연습</small></a>
+ <button class="btn b2" onclick="reqModal()">🤖 새로 그려 주세요 <small style="display:block;font-weight:400;font-size:12px;opacity:.75">박자 맞는 악보로 다시 그려 위밴드에 올려 드려요</small></button></div>`}
+function reqModal(){const mine=LG('reqs')||[];
+ modal(`<h2>🤖 새로 그려 주세요</h2><p style="color:var(--mu);font-size:14px;margin:0">곡을 알려 주시면 박자 맞는 악보로 그려서 «내 악보»에 올려 드려요. 보통 1~2일.</p>
+ <label class="l">곡 이름</label><input id="rq1" maxlength="60" placeholder="예: 붉은 노을"><label class="l">가수</label><input id="rq2" maxlength="40" placeholder="예: 빅뱅">
+ <label class="l">필요한 파트</label><div class="chk">${Object.entries(PN).map(([k,n])=>`<label><input type="checkbox" value="${k}" ${k===(me.part||'g1')?'checked':''}>${n}</label>`).join('')}</div>
+ <label class="l">더 알려 줄 것 (원곡 영상 링크·키·버전 등)</label><textarea id="rq3" rows="3" maxlength="300"></textarea>
+ <button class="btn" id="rqs">요청 보내기</button><button class="btn gh" onclick="closeM()">닫기</button>
+ ${mine.length?`<h3 style="margin:14px 0 4px;font-size:14px;color:var(--mu)">내 요청</h3>`+mine.map(x=>`<div class="row"><span>${esc(x.song)}</span><small style="color:var(--mu)">${esc(x.d)}</small></div>`).join(''):''}`);
+ $('rqs').onclick=async()=>{const song=$('rq1').value.trim();if(!song){toast('곡 이름을 넣어 주세요');return}
+  const v={song,artist:$('rq2').value.trim(),parts:[...document.querySelectorAll('#mod .chk input:checked')].map(x=>x.value).join(','),note:$('rq3').value.trim(),name:me.name||'',band:(LG('band')||{}).code||'',cid,t:{'.sv':'timestamp'}};
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);$('rqs').disabled=true;
+  try{await fetch(RDB.replace('band_play/','band_play_req/')+id+'.json',{method:'PUT',body:JSON.stringify(v)}).then(r=>{if(!r.ok)throw 0})}catch(e){$('rqs').disabled=false;toast('⚠️ 못 보냈어요 — 인터넷 확인');return}
+  mine.unshift({song,d:today()});LSet('reqs',mine.slice(0,20));closeM();toast('✅ 요청 보냈어요')}}
 
 // 👥 멤버
 function vMem(mb){const now=Date.now(),mem=Object.entries(B.m).filter(([k,v])=>v&&v.name).sort((a,b)=>Object.keys(PN).indexOf(a[1].part)-Object.keys(PN).indexOf(b[1].part));
