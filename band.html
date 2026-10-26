@@ -57,10 +57,9 @@ label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight
 :root{--p:#111;--p2:#111;--bg:#f2f2f3;--fg:#111;--mu:#6b6b72;--li:#e9e9ec;--ln:#e2e2e6}
 .top,.top.g{background:#000!important}
 .card{background:#fff;box-shadow:none;border:1px solid #e4e4e8}
-.btabs{background:#000;border-bottom:0;box-shadow:0 2px 8px #0003}.btabs a{color:#8a8a92}.btabs a.on{color:#fff;border-bottom-color:#fff}
+/* 밴드 메뉴 띠는 머리(검정)보다 한 톤 밝은 회색(10/26 «밴드 메뉴 색 그레이나 톤 다운») */
+.btabs{background:#2c2c31;border-bottom:0;box-shadow:0 2px 8px #0003}.btabs a{color:#a3a3ab}.btabs a.on{color:#fff;border-bottom-color:#fff}
 .tabs{background:#fff;border-top:1px solid #e2e2e6}.tabs a.on{color:#000}
-/* 밴드 안에선 아래 1층 메뉴를 회색으로 낮춤(10/26 «시험밴드 하단 메뉴는 그레이나 톤 다운») — 밴드 메뉴는 위 띠 */
-.tabs.dim{background:#ececee;border-top-color:#dcdce0}.tabs.dim a,.tabs.dim a.on{color:#a0a0a8;font-weight:400}.tabs.dim a b,.tabs.dim a.on b{filter:grayscale(1);opacity:.45}
 .seg a.on{background:#fff;color:#000;box-shadow:0 1px 3px #0002}
 .pill{background:#efeff2;color:#333}.pill.ok{background:#dcfce7;color:#166534}.pill.no{background:#fee2e2;color:#991b1b}.pill.q{background:#fef9c3;color:#854d0e}.song .ic{background:#f0f0f2}
 .go{background:#000;color:#fff}.b2{background:#e9e9ec;color:#111}
@@ -161,7 +160,7 @@ window.addEventListener('hashchange',render);
 const tabs=(list,on)=>{$('tabs').classList.remove('dim');$('tabs').innerHTML=list.map(([h,ic,t])=>`<a href="${h}" class="${h===on?'on':''}"><b>${ic}</b>${t}</a>`).join('')};
 const appTabs=on=>tabs([['#/','🎸','내 밴드'],['#/lib','🎼','내 악보'],['#/find','🔍','찾기'],['#/me','🙋','내 정보']],on);
 // 모스처럼(10/26 «하단 메뉴는 1층 메뉴, 밴드 메뉴는 상단 메뉴로»): 아래 = 늘 앱 메뉴, 밴드 안 메뉴는 머리 밑 띠(스크롤해도 붙어 있음)
-let bTab='home';const bandTabs=(c,on)=>{bTab=on;appTabs('#/');$('tabs').classList.add('dim')};
+let bTab='home';const bandTabs=(c,on)=>{bTab=on;appTabs('#/')};
 const BT=[['home','🏠','홈'],['cal','📅','일정'],['score','🎼','악보'],['mem','👥','멤버'],['fee','💰','회비']];
 let lastH=null;const V=h=>{const y=scrollY;$('app').innerHTML=h;if(location.hash!==lastH){lastH=location.hash;scrollTo(0,0)}else scrollTo(0,y)};
 
