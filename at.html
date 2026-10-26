@@ -4,14 +4,18 @@
 <style>
 :root{--bg:#fff;--fg:#111}
 body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--fg)}
-#bar{position:sticky;top:0;background:#111;color:#fff;padding:6px max(8px,env(safe-area-inset-left));z-index:9;display:flex;flex-direction:column;gap:6px}
+#bar{position:fixed;left:0;right:0;top:0;background:#111;color:#fff;padding:calc(8px + env(safe-area-inset-top)) max(10px,env(safe-area-inset-left)) 2px;z-index:9;display:flex;flex-direction:column;gap:8px;transition:transform .28s cubic-bezier(.2,.8,.2,1);box-shadow:0 2px 10px #0004}
+#bar.hide{transform:translateY(calc(-100% - 12px))}#barsp{height:var(--bh,100px);transition:height .28s cubic-bezier(.2,.8,.2,1)}body.bh #barsp{height:0}
+#grip{display:flex;justify-content:center;padding:4px 0 6px;touch-action:none;cursor:grab}#grip span{width:46px;height:5px;border-radius:3px;background:#555}
+#tab{position:fixed;top:0;left:50%;transform:translate(-50%,-100%);z-index:9;background:#111d;color:#fff;border:0;border-radius:0 0 14px 14px;padding:calc(4px + env(safe-area-inset-top)) 22px 7px;font-size:14px;transition:transform .28s;touch-action:none}body.bh #tab{transform:translate(-50%,0)}
+#hideb{background:#2b2b2b!important;color:#bbb!important}
 #bar .row{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}#bar .row::-webkit-scrollbar{display:none}#bar .row>*{flex:none}
 @media(max-width:520px){#bar button{font-size:14px;padding:7px 8px}#bar .row{gap:4px}#sg{max-width:24vw}#pt{max-width:19vw}#bar .em{display:none}#rm{max-width:40px;overflow:hidden;text-overflow:clip;white-space:nowrap}#md button{padding:7px 6px}}
 #bar button{font-size:clamp(14px,2.3vw,17px);padding:7px clamp(9px,1.8vw,14px);border:0;border-radius:10px;background:#2b2b2b;color:#fff}
 #bar button.on{background:#dc2626}
 #md{display:inline-flex;border-radius:10px;overflow:hidden;background:#2b2b2b}#md[hidden]{display:none}#bar i.em{font-style:normal}#md button{border-radius:0;background:transparent;color:#aaa}#md button.on{background:#7c3aed;color:#fff}#bar b{font-size:15px}#pt,#sg{font-size:clamp(14px,2.2vw,16px);padding:6px;border-radius:10px;background:#2b2b2b;color:#fff;border:0}#pt:empty{display:none}#st{font-size:13px;opacity:.75}
 #at{padding:0 6px}
-#yt{display:none;background:#000;position:sticky;top:52px;z-index:8}#yt.on{display:flex;gap:8px;align-items:center;padding:6px;flex-wrap:wrap}
+#yt{display:none;background:#000;position:sticky;top:var(--bt,100px);z-index:8}#yt.on{display:flex;gap:8px;align-items:center;padding:6px;flex-wrap:wrap}
 #ytbox{width:min(320px,45vw);aspect-ratio:16/9}#ytbox iframe{width:100%;height:100%}
 #ytc{color:#fff;font-size:14px;display:flex;flex-direction:column;gap:6px}#ytc button{font-size:15px;padding:6px 10px;border:0;border-radius:8px;background:#333;color:#fff}
 #ytc .tap{background:#2563eb;font-size:16px}#ytc small{opacity:.75}@media(max-height:500px){#ytbox{width:190px}#ytc small{display:none}}
@@ -97,7 +101,7 @@ body{margin:0;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;b
   A(em,[{opacity:1},{opacity:.0}],{delay:200,duration:400});
 },2500);
  setTimeout(()=>end(),4200)})();
-</script><div id="bar"><div class="row"><select id="sg"></select><select id="pt"></select><button id="rm">👥 합주 방</button><span id="md" hidden><button id="mdS"><i class="em">🎧 </i>개인</button><button id="mdJ"><i class="em">👥 </i>합주</button></span><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="rec">⏺ 녹화</button><span id="st">불러오는 중…</span></div><div class="row"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button></div></div>
+</script><div id="bar"><div class="row"><select id="sg"></select><select id="pt"></select><button id="rm">👥 합주 방</button><span id="md" hidden><button id="mdS"><i class="em">🎧 </i>개인</button><button id="mdJ"><i class="em">👥 </i>합주</button></span><button id="bx" hidden>🚪 나가기</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="rec">⏺ 녹화</button><span id="st">불러오는 중…</span></div><div class="row"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><button id="hideb">︿ 넣기</button></div><div id="grip"><span></span></div></div><div id="barsp"></div><button id="tab">﹀ 메뉴</button>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
  <div><button id="o1">◀ 0.05초</button> <button id="o2">0.05초 ▶</button></div><small id="yinfo">원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요</small></div></div>
@@ -129,7 +133,9 @@ fetch(DB+q.get('k')+'/tex.json?shallow=true').then(r=>r.json()).then(o=>{const a
   q.set('s',ks.includes(x+'_'+want)?x+'_'+want:ks.includes(x+'_g1')?x+'_g1':ks[0]);location.search=q.toString()};
  const ks=all.filter(k=>k.split('_')[0]===SONG);ks.sort((a,b)=>order.indexOf(a.split('_')[1])-order.indexOf(b.split('_')[1]));
  $('pt').innerHTML=ks.map(k=>`<option value="${k}"${k===q.get('s')?' selected':''}>${PN[k.split('_')[1]]||k}</option>`).join('');
- $('pt').onchange=()=>{q.set('s',$('pt').value);location.search=q.toString()}}).catch(()=>{});
+ $('pt').onchange=()=>{q.set('s',$('pt').value);
+  // 위에서 고른 파트 = 내 파트(10/26 «드럼 누르면 기타1로 바뀌네» — 밴드에 저장된 파트로 되돌리던 것)
+  try{const pp=$('pt').value.split('_')[1],b=JSON.parse(localStorage.getItem('band_play_band'));localStorage.setItem('at_part',pp);if(b){b.part=pp;localStorage.setItem('band_play_band',JSON.stringify(b))}}catch(e){}location.search=q.toString()}}).catch(()=>{});
 const CDN='https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/';
 // 원본 밴드 악보처럼 맨 위에 보컬 줄(멜로디+가사)을 같이 보여 줌 — 보컬 소리는 끔(10/25 «각 악보에 노래 가사도»)
 const PART=(q.get('s')||'').split('_')[1]||'',STF={g1:'tabs',g2:'score tabs',bass:'score tabs',keys:'score',drums:'score'};
@@ -203,12 +209,15 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  const J=(u,o)=>fetch(RDB+u+'.json',o).then(r=>r.json());
  function hello(){if(band)J(band.code+'/m/'+cid,{method:'PUT',body:JSON.stringify({name:band.me,part:band.part,t:{'.sv':'timestamp'}})}).catch(()=>{})}
  setInterval(hello,60000);
- function barName(){$('rm').textContent=band?'🎸 '+band.name:room?'👥 '+room:'🎸 밴드';$('rm').classList.toggle('on',!!(band||room));
+ function barName(){$('rm').textContent=band?'🎸 '+band.name:room?'👥 '+room:'🎸 밴드';$('rm').classList.toggle('on',!!(band||room));$('bx').hidden=!band;
   // 개인 연습 ↔ 합주(10/26 «개인연습도 가능하게 하고 합주도 가능하게»): 합주일 때만 ▶가 멤버 모두에게 같이 걸린다
   const jr=band?band.code:LG('jr');$('md').hidden=!jr;const jam=!!room;$('mdS').classList.toggle('on',!jam);$('mdJ').classList.toggle('on',jam)}
  function setMode(m){LSet('mode',m);if(m==='jam'){const c=band?band.code:LG('jr');if(c&&room!==c)join(c)}else if(room){leave()}barName();
   $('st').textContent=m==='jam'?'👥 합주 모드 — ▶를 누르면 멤버 모두 같이 시작해요':'🎧 개인 연습 — 나만 재생돼요';setTimeout(()=>$('st').textContent='',3000)}
  $('mdS').onclick=()=>setMode('solo');$('mdJ').onclick=()=>setMode('jam');
+ // 밴드 나가기 — 위 줄 🚪 버튼(10/26 «나가기 버튼이 필요하겠어»)과 밴드 화면 버튼 공용
+ function quit(){if(!band||!confirm(`«${band.name}»에서 나갈까요?`))return;fetch(RDB+band.code+'/m/'+cid+'.json',{method:'DELETE'}).catch(()=>{});band=null;LSet('band',null);LSet('jr',null);LSet('mode','solo');leave();barName();home()}
+ $('bx').onclick=quit;
  function toPart(p){LSet('band',band);if(p&&p!==PART){const k=SONG+'_'+p;if([...$('pt').options].some(o=>o.value===k)){q.set('s',k);location.search=q.toString();return true}}return false}
  function enter(b){band=b;LSet('band',b);try{localStorage.setItem('at_part',b.part)}catch(e){}if(LG('mode')==='jam'){if(room!==b.code)join(b.code)}else if(room)leave();hello();barName();$('home').classList.remove('on');toPart(b.part)}
  async function members(){if(!band)return;const m=await J(band.code+'/m').catch(()=>null)||{},now=sNow();const el=$('mem');if(!el)return;
@@ -223,7 +232,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    $('hi').onclick=async()=>{const u=link(band.code),t=`🎸 «${band.name}» 위밴드 합주방 초대\n누르고 이름·파트만 넣으면 끝!\n${u}`;
     try{if(navigator.share){await navigator.share({title:'위밴드 초대',text:t});return}}catch(e){if(e.name==='AbortError')return}
     try{await navigator.clipboard.writeText(t);$('hi').textContent='✅ 복사됨 — 단톡방에 붙여넣기'}catch(e){prompt('복사해서 보내세요',u)}};
-   $('hx').onclick=()=>{if(!confirm(`«${band.name}»에서 나갈까요?`))return;fetch(RDB+band.code+'/m/'+cid+'.json',{method:'DELETE'}).catch(()=>{});band=null;LSet('band',null);leave();barName();home()};return}
+   $('hx').onclick=quit;return}
   if(view==='make'){H.innerHTML=`<h2>🎸 밴드 만들기</h2><input id="bn" placeholder="밴드 이름" maxlength="30"><input id="bm" placeholder="내 이름" maxlength="20"><select id="bp">${partOpts(myPart())}</select>
    <button class="pri" id="bk">만들기</button><button class="sm" id="bb">← 뒤로</button>`;$('bb').onclick=()=>home('start');
    $('bk').onclick=async()=>{const n=$('bn').value.trim(),me=$('bm').value.trim();if(!n||!me){$('bk').textContent='밴드 이름과 내 이름을 넣어 주세요';return}
@@ -271,6 +280,26 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
 </script><script>
 if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{const d=document;if(d.fullscreenElement||d.webkitFullscreenElement)(d.exitFullscreen||d.webkitExitFullscreen).call(d);
  else{const e=d.documentElement,f=e.requestFullscreen||e.webkitRequestFullscreen;if(f)f.call(e);else document.getElementById('st').textContent=('사파리 공유 버튼 → 「홈 화면에 추가」로 열면 주소창 없이 꽉 찬 화면이 돼요')}};
+
+// ── 메뉴바 넣기/꺼내기(10/26 «당기면 내려오고 넣기 누르면 위로 싹, 세 번 터치하면 다시»): 손잡이를 끌거나, 악보를 세 번 톡톡톡
+(()=>{const B=document.getElementById('bar'),T=document.getElementById('tab'),bd=document.body;let bh=100;
+ const off=()=>{try{if(window.api){api.settings.player.scrollOffsetY=bd.classList.contains('bh')?-20:-(bh+10);api.updateSettings()}}catch(e){}};
+ const meas=()=>{bh=B.offsetHeight;document.documentElement.style.setProperty('--bh',bh+'px');document.documentElement.style.setProperty('--bt',(bd.classList.contains('bh')?0:bh)+'px');off()};
+ new ResizeObserver(meas).observe(B);
+ const set=h=>{B.classList.toggle('hide',h);bd.classList.toggle('bh',h);try{localStorage.setItem('band_play_bh',h?'1':'')}catch(e){}meas()};
+ try{if(localStorage.getItem('band_play_bh'))set(true)}catch(e){}
+ document.getElementById('hideb').onclick=()=>set(true);T.onclick=()=>set(false);
+ // 끌기: 탭은 아래로 25px 넘게 끌면 나오고, 손잡이는 위로 끌면 들어감
+ const drag=(el,fn)=>{let y0=null;el.addEventListener('pointerdown',e=>{y0=e.clientY;el.setPointerCapture(e.pointerId)});
+  el.addEventListener('pointermove',e=>{if(y0==null)return;const d=e.clientY-y0;if(fn(d))y0=null});el.addEventListener('pointerup',()=>{y0=null})};
+ drag(T,d=>{if(d>25){set(false);return true}});
+ drag(document.getElementById('grip'),d=>{if(d<-20){set(true);return true}});
+ document.getElementById('grip').onclick=()=>set(true);
+ // 세 번 톡톡톡(0.6초 안): 메뉴바 꺼내기/넣기
+ let taps=[];document.addEventListener('pointerup',e=>{if(B.contains(e.target)||T.contains(e.target)||e.target.closest('#home,#camBox,#yt'))return;
+  const n=performance.now();taps=taps.filter(t=>n-t<600);taps.push(n);if(taps.length>=3){taps=[];set(!bd.classList.contains('bh'))}});
+ setInterval(()=>{if(window.api&&!window.__offset){window.__offset=1;off()}},500);
+})();
 </script><div id="camBox"><video id="vid" playsinline muted autoplay></video><b id="recT">● 0:00</b><button class="cb" id="flip" style="left:6px">🔄</button><button class="cb" id="camX" style="right:6px">✕</button></div>
 <script>
 // 📷 내 연주 녹화(10/25 «이 앱에 촬영 버튼») — 악보를 보면서 카메라(+마이크)로 찍고, 끝나면 💾 저장(공유 시트 → 사진 앱)
