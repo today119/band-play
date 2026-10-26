@@ -2,6 +2,17 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#3B0A57">
 <link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-512.png"><meta name="apple-mobile-web-app-title" content="위밴드"><title>위밴드</title>
 <style>
+#spl{position:fixed;inset:0;background:radial-gradient(120% 80% at 50% 42%,#5a1683 0%,#3B0A57 60%,#2a0640 100%);z-index:100000;color:#fff;font-family:-apple-system,"Apple SD Gothic Neo","Helvetica Neue",sans-serif;overflow:hidden}
+#spl .stg{position:absolute;left:50%;top:44%;width:0;height:0}
+#spl .ln{position:absolute;left:0;top:0;transform:translate(-50%,-50%);white-space:nowrap;display:flex}
+#spl .ln span{display:inline-block;opacity:0}
+#spl .en{font:900 min(15vw,96px)/1 Pretendard,-apple-system,"Helvetica Neue",sans-serif;letter-spacing:-.03em}
+#spl .en .x{position:absolute;left:0;top:0;display:flex;opacity:1}
+#spl .ko{clip-path:inset(0 100% 0 0);-webkit-clip-path:inset(0 100% 0 0);font:900 min(15vw,96px)/1 Pretendard,"Apple SD Gothic Neo",-apple-system,sans-serif;letter-spacing:-.02em}
+#spl .em{position:absolute;left:0;top:min(18vw,110px);transform:translateX(-50%);display:flex;gap:min(4vw,24px);font-size:min(9vw,52px)}
+#spl .em i{font-style:normal;opacity:0;display:inline-block}
+#spl .pp{position:absolute;left:0;top:0;width:12px;height:12px;margin:-6px;border-radius:50%;pointer-events:none}
+#spl small{position:absolute;left:0;right:0;text-align:center;bottom:40px;opacity:.5;font-weight:600}
 /* 위밴드 — 앱 홈(내 밴드·찾기·내 정보) + 밴드 홈(홈·일정·악보·멤버·회비). 10/26 «모스처럼 앱 홈이 있고 거기서 밴드 만들고 찾고» */
 :root{--p:#3B0A57;--p2:#7c3aed;--bg:#f7f2fb;--fg:#1e1030;--mu:#7a6890;--li:#efe7f6;--ln:#eadff3}
 *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Apple SD Gothic Neo",system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
@@ -42,7 +53,60 @@ label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1e1030;color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;z-index:30;font-size:14px}
 .rs{display:flex;gap:6px}.rs button{flex:1;padding:10px;font-size:15px;background:var(--li);color:var(--p)}.rs button.on1{background:#16a34a;color:#fff}.rs button.on0{background:#dc2626;color:#fff}
 .note{white-space:pre-wrap;font-size:15px}
-</style></head><body>
+</style><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard-subset.css">
+</head><body>
+<div id="spl"><div class="stg">
+ <div class="ln en" id="sEn"><span style="color:#5EC4BE">W</span><span style="color:#5EC4BE">e</span><span class="pl">P</span><span class="pl">l</span><span class="pl">a</span><span class="pl">y</span></div>
+ <div class="ln ko" id="sKo"><span style="color:#5EC4BE">위</span><span style="color:#FF3B47">밴</span><span>드</span></div>
+ <div class="em" id="sEm"><i>🎸</i><i>🎹</i><i>🥁</i><i>🎸</i><i>🎤</i></div>
+</div><small>by WePlay</small></div>
+<script>
+// 🎬 켤 때 인트로(10/26 «위리처럼 WePlay → Band, 세션 악기·마이크 이모지 움직이게») — 곡 바꿀 때 페이지가 다시 열리니 한 번 본 창에선 생략, 탭하면 바로 넘김
+(()=>{const e=document.getElementById('spl');let seen=false;try{seen=sessionStorage.getItem('wb_spl')}catch(x){}
+ // 순서(10/26 «WePlay → WeBand 뿅 → 한글 위밴드, 모스처럼» / «모스보다 부자연스러워» → 모스처럼 글자 단위·같은 이징으로 다시)
+ //  ① WePlay 글자가 하나씩 올라옴 ② Play 가 한 글자씩 빠지고 Band 가 올라옴 + 작은 불꽃 ③ 악기 이모지
+ //  ④ 영문은 아래로 작아지며 부제가 되고, 가운데에 큰 「위밴드」 ⑤ 사라짐
+ if(seen||/[?&]nosplash/.test(location.search)||!e.animate){e.remove();return}try{sessionStorage.setItem('wb_spl',1)}catch(x){}
+ let gone=false;const end=(d=380)=>{if(gone)return;gone=true;e.animate([{opacity:1},{opacity:0}],{duration:d,fill:'forwards'}).onfinish=()=>e.remove()};
+ e.onclick=()=>end(180);
+ const ease='cubic-bezier(.2,.8,.2,1)',A=(el,kf,o)=>el.animate(kf,Object.assign({fill:'both',easing:ease},o));
+ const en=e.querySelector('#sEn'),ko=e.querySelector('#sKo'),em=e.querySelector('#sEm'),stg=e.querySelector('.stg');
+ const enS=[...en.children],koS=[...ko.children],emS=[...em.children];
+ // Band 글자를 Play 자리에 겹쳐 둔다
+ const band=document.createElement('span');band.className='x';band.style.left=enS[2].offsetLeft+'px';
+ band.innerHTML='<span style="color:#FF3B47">B</span><span style="color:#FF3B47">a</span><span>n</span><span>d</span>';en.appendChild(band);
+ const bS=[...band.children];
+ // Play→Band 로 폭이 바뀌니 줄 가운데를 맞춘다
+ const wP=enS.slice(2).reduce((a,x)=>a+x.offsetWidth,0),wB=bS.reduce((a,x)=>a+x.offsetWidth,0);en.style.width=(enS[0].offsetWidth+enS[1].offsetWidth+wP)+'px';
+ const up=[{opacity:0,transform:'translateY(18px)'},{opacity:1,transform:'none'}];
+ enS.forEach((x,i)=>A(x,up,{delay:150+i*70,duration:420}));
+ A(en,[{transform:'translate(-50%,-50%)'},{transform:`translate(calc(-50% - ${(wB-wP)/2}px),-50%)`}],{delay:1000,duration:380});
+ enS.slice(2).forEach((x,i)=>A(x,[{opacity:1,transform:'none'},{opacity:0,transform:'translateY(-22px)'}],{delay:950+i*50,duration:260}));
+ bS.forEach((x,i)=>A(x,[{opacity:0,transform:'translateY(26px) scale(.8)'},{opacity:1,transform:'translateY(-4px) scale(1.06)',offset:.7},{opacity:1,transform:'none'}],{delay:1080+i*60,duration:380}));  // 색종이 없이, 글자만 살짝 튀어 오름(10/26 «Band 는 이전 효과가 더 좋아»)
+ const C=['#5EC4BE','#FF3B47','#FFC53D','#fff','#c084fc'];
+ const burst=(at,n,r,y)=>setTimeout(()=>{for(let k=0;k<n;k++){const d=document.createElement('i'),a=Math.PI*2*k/n+Math.random()*.5,R=r*(.65+Math.random()*.5);
+  d.className='pp';d.style.background=C[k%C.length];d.style.top=y+'px';stg.appendChild(d);
+  d.animate([{transform:'translate(0,0) scale(.3)',opacity:0},{transform:`translate(${Math.cos(a)*R*.6}px,${Math.sin(a)*R*.6}px) scale(1)`,opacity:1,offset:.3},{transform:`translate(${Math.cos(a)*R}px,${Math.sin(a)*R+26}px) scale(.3)`,opacity:0}],{duration:900,easing:'cubic-bezier(.15,.7,.3,1)',fill:'forwards'}).onfinish=()=>d.remove()}},at);
+ emS.forEach((x,i)=>{A(x,[{opacity:0,transform:'translateY(20px) scale(.6)'},{opacity:1,transform:'none'}],{delay:1550+i*90,duration:380});
+  x.animate([{transform:'translateY(0) rotate(-6deg)'},{transform:'translateY(-8px) rotate(6deg)'}],{delay:1950+i*90,duration:520,direction:'alternate',iterations:Infinity,easing:'ease-in-out',composite:'add'})});
+ // ④ 위리처럼 빨간 띠가 쓸고 지나가며 영문 WeBand 를 닦아내고, 같은 크기의 한글 「위밴드」가 드러남(10/26 «영문 닦아내면서, 크기 맞춰서»)
+ setTimeout(()=>{const sr=stg.getBoundingClientRect(),rs=[enS[0],enS[1],...bS].map(x=>x.getBoundingClientRect());
+  const L=Math.min(...rs.map(r=>r.left)),R=Math.max(...rs.map(r=>r.right)),T=Math.min(...rs.map(r=>r.top)),B=Math.max(...rs.map(r=>r.bottom));
+  const kh=ko.getBoundingClientRect().height,sc=Math.min((B-T)*1.02/kh,(R-L)*1.05/ko.getBoundingClientRect().width); // 영문 글자 높이에 맞춤(너비에 맞추면 한글이 너무 커짐)
+  ko.style.fontSize=(parseFloat(getComputedStyle(ko).fontSize)*sc)+'px';ko.style.left=((L+R)/2-sr.left)+'px';ko.style.top=((T+B)/2-sr.top)+'px';
+  koS.forEach(x=>x.style.opacity=1);
+  const W=R-L+40,x0=L-20-sr.left,bar=document.createElement('i');bar.style.cssText=`position:absolute;top:${T-sr.top-12}px;left:${x0}px;width:10px;height:${B-T+24}px;background:#FF3B47;border-radius:3px`;stg.appendChild(bar);
+  const d=520,o={duration:d,easing:'cubic-bezier(.45,.05,.35,1)',fill:'forwards'};
+  // ★ 아이폰 사파리는 clip-path 애니메이션이 제대로 안 돼서 영문이 한글 뒤에 남았다(10/26) → 매 프레임 직접 그리고, 끝나면 영문은 숨김
+  const cp=(el,v)=>{el.style.clipPath=v;el.style.webkitClipPath=v},t0=performance.now(),ez=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+  const er=en.getBoundingClientRect(),kr=ko.getBoundingClientRect(),bx0=L-20+5;  // 띠 가운데(화면 좌표)를 기준으로 픽셀 단위로 자른다
+  (function f(now){const t=Math.min(1,(now-t0)/d),bx=bx0+ez(t)*W;bar.style.transform=`translateX(${ez(t)*W}px)`;cp(en,`inset(-30% -50% -30% ${bx-er.left}px)`);cp(ko,`inset(-30% ${Math.max(0,kr.right-bx)}px -30% -30%)`);
+   if(t<1)requestAnimationFrame(f);else{en.style.visibility='hidden';cp(ko,'none')}})(t0);
+  setTimeout(()=>bar.remove(),d+30);
+  A(em,[{opacity:1},{opacity:.0}],{delay:200,duration:400});
+},2500);
+ setTimeout(()=>end(),4200)})();
+</script>
 <div id="app"></div><nav class="tabs" id="tabs"></nav>
 <script>
 // ── 데이터: RTDB band_play/{코드} (at.html 합주 방과 같은 곳)
@@ -133,7 +197,7 @@ const weekStart=s=>{const d=pd(s),k=(d.getDay()+6)%7;return addD(s,-k)};
 
 // ════════ 앱 홈 ════════
 async function vApp(){
- V(`<div class="top g"><small>${me.name?'안녕하세요, '+esc(me.name)+(me.part?' · '+esc(PN[me.part]||''):''):'함께 연주하는 밴드 앱'}</small><h1>위밴드</h1></div><main>
+ V(`<div class="top g"><small>${me.name?'안녕하세요, '+esc(me.name)+(me.part?' · '+esc(PN[me.part]||''):''):'함께 연주하는 밴드 앱'}</small><h1 style="font:900 28px Pretendard,-apple-system,sans-serif;letter-spacing:-.02em"><span style="color:#5EC4BE">We</span>Band</h1></div><main>
  <div class="card"><h3>내 밴드</h3><div id="bl">${bands.length?'':'<p class="empty">아직 밴드가 없어요.<br>만들거나, 받은 초대 코드로 가입하세요.</p>'}</div></div>
  <a class="btn" href="#/make">＋ 밴드 만들기</a><button class="btn b2" onclick="askCode()">🔗 초대 코드로 가입</button>
  <div class="card" style="margin-top:12px"><h3>🎧 혼자 연습</h3><div class="row"><span style="color:var(--mu);font-size:14px">밴드 없이 악보만 열어 연습하기</span><a class="go" href="at.html?solo=1">악보 열기</a></div></div>
