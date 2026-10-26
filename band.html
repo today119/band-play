@@ -1,0 +1,290 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#3B0A57">
+<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-512.png"><meta name="apple-mobile-web-app-title" content="위밴드"><title>위밴드</title>
+<style>
+/* 위밴드 — 앱 홈(내 밴드·찾기·내 정보) + 밴드 홈(홈·일정·악보·멤버·회비). 10/26 «모스처럼 앱 홈이 있고 거기서 밴드 만들고 찾고» */
+:root{--p:#3B0A57;--p2:#7c3aed;--bg:#f7f2fb;--fg:#1e1030;--mu:#7a6890;--li:#efe7f6;--ln:#eadff3}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,"Apple SD Gothic Neo",system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom));touch-action:manipulation}
+.top{background:var(--p);color:#fff;padding:calc(18px + env(safe-area-inset-top)) 20px 18px}.top.g{background:linear-gradient(135deg,#3B0A57,#7c3aed)}
+.top small{opacity:.75;font-size:13px;display:block}.top h1{margin:2px 0 0;font-size:26px}.top a{color:#fff;text-decoration:none}
+main{padding:14px 16px;max-width:640px;margin:0 auto}
+.card{background:#fff;border-radius:18px;padding:14px 16px;margin-bottom:12px;box-shadow:0 2px 8px #3b0a5712}
+.card h3{margin:0 0 8px;font-size:15px;color:var(--mu)}
+.big{font:900 30px sans-serif;color:var(--p)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #f0e8f6;font-size:15px}.row:first-child{border-top:0}
+.pill{display:inline-block;background:#f4eefa;border-radius:999px;padding:5px 11px;font-weight:700;font-size:13px;margin:3px 3px 0 0}
+.ok{background:#dcfce7;color:#166534}.no{background:#fee2e2;color:#991b1b}.q{background:#fef9c3;color:#854d0e}
+button,.btn{font:800 16px -apple-system,sans-serif;border:0;border-radius:14px;padding:13px;background:var(--p);color:#fff;cursor:pointer}
+.btn{display:block;width:100%;margin-top:8px;text-align:center;text-decoration:none}.b2{background:var(--li);color:var(--p)}.sm{font-size:14px;padding:8px 12px;border-radius:10px}.gh{background:none;color:var(--mu);font-weight:700}
+.go{background:var(--p2);color:#fff;border-radius:10px;padding:8px 12px;font-weight:800;font-size:14px;text-decoration:none;white-space:nowrap}
+input,select,textarea{width:100%;font-size:17px;padding:11px;margin-top:8px;border:2px solid #e4d8ef;border-radius:12px;background:#fff;color:var(--fg);font-family:inherit}
+label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight:700}
+.tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--ln);z-index:5}
+.tabs a{flex:1;text-align:center;font-size:11px;color:#9a88ad;text-decoration:none}.tabs a b{display:block;font-size:22px;filter:grayscale(.6);opacity:.75}.tabs a.on{color:var(--p);font-weight:800}.tabs a.on b{filter:none;opacity:1}
+.song{display:flex;gap:12px;align-items:center}.song .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:24px;background:#f4eefa;flex:none}.song>div{flex:1;min-width:0}.song small{color:var(--mu)}
+.prog{height:8px;background:var(--li);border-radius:4px;overflow:hidden;margin-top:6px}.prog i{display:block;height:100%;background:var(--p2)}
+.seg{display:flex;background:var(--li);border-radius:12px;padding:3px;margin-bottom:12px}.seg a{flex:1;text-align:center;padding:8px;border-radius:10px;font-weight:700;font-size:14px;color:var(--mu);text-decoration:none}.seg a.on{background:#fff;color:var(--p)}
+.tag{font-size:12px;color:var(--p2);font-weight:800}.tag.g{color:#db2777}
+.mh{display:flex;justify-content:space-between;align-items:center;font-size:16px;color:var(--p);margin-bottom:6px}.mh a{padding:4px 12px;font-size:20px;color:var(--p);text-decoration:none}
+.wk,.gd{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}.wk span{font-size:11px;color:#9a88ad}
+.gd a{height:44px;font-size:14px;position:relative;display:flex;justify-content:center;padding-top:4px;border-radius:10px;color:var(--fg);text-decoration:none}
+.gd a.sel{background:var(--p);color:#fff;font-weight:800}.gd a.td{outline:2px solid #c4b5fd}.gd a.sun{color:#dc2626}.gd a.sat{color:#2563eb}.gd a.sel.sun,.gd a.sel.sat{color:#fff}
+.dots{position:absolute;top:22px;left:0;right:0;display:flex;gap:3px;justify-content:center}.dt{width:6px;height:6px;border-radius:3px;display:inline-block}.dt.j{background:var(--p2)}.dt.g{background:#db2777}.dt.a{background:#16a34a}.sel .dt.j{background:#fde047}
+.pm{position:absolute;bottom:2px;left:0;right:0;font-size:9.5px;color:#0f766e;font-weight:800}.sel .pm{color:#a7f3d0}
+.lg{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--mu);margin-top:6px;align-items:center}.lg i{margin-right:3px}
+.mem span.on::before{content:'● ';color:#16a34a}
+.code{font:900 30px ui-monospace,monospace;letter-spacing:.2em;color:var(--p)}
+.mod{position:fixed;inset:0;background:#1e103099;z-index:20;display:flex;align-items:flex-end;justify-content:center}.mod>div{background:#fff;width:min(560px,100%);max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
+.mod h2{margin:0 0 6px}.chk{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.chk label{background:var(--li);border-radius:999px;padding:7px 12px;font-weight:700;font-size:14px}.chk input{width:auto;margin:0 4px 0 0}
+.empty{color:var(--mu);font-size:14px;text-align:center;padding:10px}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1e1030;color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;z-index:30;font-size:14px}
+.rs{display:flex;gap:6px}.rs button{flex:1;padding:10px;font-size:15px;background:var(--li);color:var(--p)}.rs button.on1{background:#16a34a;color:#fff}.rs button.on0{background:#dc2626;color:#fff}
+.note{white-space:pre-wrap;font-size:15px}
+</style></head><body>
+<div id="app"></div><nav class="tabs" id="tabs"></nav>
+<script>
+// ── 데이터: RTDB band_play/{코드} (at.html 합주 방과 같은 곳)
+//   band={name,made,k} · m/{기기}={name,part,t,pp(연습 공개)} · nt={txt,by,t}(공지)
+//   ev/{id}={ty:'j'합주|'g'공연·행사, d:'2026-10-29', tm:'19:00', pl, so:'곡,곡', rep:1(매주), by, t}
+//   rs/{id}/{날짜}/{기기}={s:1갑니다|0못가요, name, part} · pr/{기기}/{yyyymmdd}={곡:초} (at.html이 ▶ 중에 적음)
+const RDB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/',LIB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play_lib/';
+const DEFK='cfinph2riiRuxxtqTv87VFIq';
+const PN={vocal:'🎤 보컬',g1:'🎸 기타1',g2:'🎸 기타2',bass:'🎸 베이스',keys:'🎹 키보드',drums:'🥁 드럼'};
+const SN={butterfly:'🦋 버터플라이',redsunset:'🌅 붉은노을',smileboy:'😊 Smile Boy'};
+const $=id=>document.getElementById(id),esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+const LG=k=>{try{return JSON.parse(localStorage.getItem('band_play_'+k))}catch(e){return null}},LSet=(k,v)=>{try{localStorage.setItem('band_play_'+k,JSON.stringify(v))}catch(e){}};
+const J=(u,o)=>fetch(RDB+u+'.json',o).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()});
+const PUT=(u,v)=>J(u,{method:'PUT',body:JSON.stringify(v)}),DEL=u=>J(u,{method:'DELETE'});
+let cid=LG('cid');if(!cid){cid=Math.random().toString(36).slice(2,10);LSet('cid',cid)}
+const toast=t=>{const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),2200)};
+const pn=p=>(PN[p]||'').replace(/^\S+ /,''),pe=p=>(PN[p]||'🎵').split(' ')[0];
+// 날짜(기기 시간 = 한국)
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const pd=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const today=()=>ymd(new Date()),addD=(s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ymd(d)};
+const WD='일월화수목금토',fmt=s=>{const d=pd(s);return `${d.getMonth()+1}/${d.getDate()}(${WD[d.getDay()]})`};
+const dday=s=>{const n=Math.round((pd(s)-pd(today()))/864e5);return n===0?'오늘':n>0?'D-'+n:'D+'+(-n)};
+const mins=sec=>{const m=Math.round(sec/60);return m<60?m+'분':Math.floor(m/60)+'시간'+(m%60?' '+m%60+'분':'')};
+
+// ── 내 정보·내 밴드 목록(이 기기)
+let me=LG('me')||{};{const b=LG('band');if(b&&!me.name){me={name:b.me,part:b.part};LSet('me',me)}}
+let bands=LG('bands')||[];{const b=LG('band');if(b&&!bands.some(x=>x.code===b.code)){bands.unshift(b);LSet('bands',bands)}}
+const saveBands=()=>LSet('bands',bands);
+const myBand=c=>bands.find(x=>x.code===c);
+
+// ── 화면 전환: #/ · #/find · #/me · #/b/1234/home|cal|score|mem|fee
+let B=null; // 지금 밴드 데이터 {code, band, m, ev, rs, nt, pr}
+async function load(code){const o=await J(code).catch(()=>null);if(!o||!o.band)return null;B={code,...o,m:o.m||{},ev:o.ev||{},rs:o.rs||{},pr:o.pr||{}};return B}
+function go(h){if(location.hash===h)render();else location.hash=h}
+window.addEventListener('hashchange',render);
+const tabs=(list,on)=>{$('tabs').innerHTML=list.map(([h,ic,t])=>`<a href="${h}" class="${h===on?'on':''}"><b>${ic}</b>${t}</a>`).join('')};
+const appTabs=on=>tabs([['#/','🎸','내 밴드'],['#/find','🔍','찾기'],['#/me','🙋','내 정보']],on);
+const bandTabs=(c,on)=>tabs([['#/b/'+c+'/home','🏠','홈'],['#/b/'+c+'/cal','📅','일정'],['#/b/'+c+'/score','🎼','악보'],['#/b/'+c+'/mem','👥','멤버'],['#/b/'+c+'/fee','💰','회비']],'#/b/'+c+'/'+on);
+let lastH=null;const V=h=>{const y=scrollY;$('app').innerHTML=h;if(location.hash!==lastH){lastH=location.hash;scrollTo(0,0)}else scrollTo(0,y)};
+
+async function render(){const h=location.hash||'#/',p=h.slice(2).split('/');
+ if(p[0]==='b'&&p[1]){const c=p[1],t=p[2]||'home';
+  if(!myBand(c)){go('#/join/'+c);return}
+  if(!B||B.code!==c){V('<main><p class="empty">불러오는 중…</p></main>');if(!await load(c)){V('<main><div class="card">밴드를 못 찾았어요. 인터넷 연결을 확인해 주세요.</div><a class="btn b2" href="#/">← 내 밴드</a></main>');return}}
+  const mb=myBand(c);LSet('band',mb);hello(mb);B.m[cid]={...(B.m[cid]||{}),name:mb.me,part:mb.part,t:Date.now(),...(mb.pp?{pp:true}:{})};bandTabs(c,t);
+  ({home:vHome,cal:vCal,score:vScore,mem:vMem,fee:vFee})[t]?.(mb);return}
+ if(p[0]==='join'){vJoin(p[1]);return}
+ if(p[0]==='make'){vMake();return}
+ if(p[0]==='find'){appTabs('#/find');vFind();return}
+ if(p[0]==='me'){appTabs('#/me');vMe();return}
+ appTabs('#/');vApp()}
+function hello(mb){PUT(mb.code+'/m/'+cid,{name:mb.me,part:mb.part,t:{'.sv':'timestamp'},...(mb.pp?{pp:true}:{})}).catch(()=>{})}
+
+// ── 일정 펼치기: 매주 반복은 시작일부터 1년
+function occ(from,to){const out=[];if(!B)return out;
+ for(const [id,e] of Object.entries(B.ev)){if(!e||!e.d)continue;
+  if(e.rep){let d=e.d;const end=e.un||addD(e.d,366);if(d<from){const k=Math.floor((pd(from)-pd(d))/864e5/7);d=addD(d,k*7)}for(;d<=to&&d<=end;d=addD(d,7))if(d>=from&&!(e.sk&&e.sk[d]))out.push({id,d,e})}
+  else if(e.d>=from&&e.d<=to)out.push({id,d:e.d,e})}
+ return out.sort((a,b)=>(a.d+(a.e.tm||'')).localeCompare(b.d+(b.e.tm||'')))}
+const rsOf=(id,d)=>(B.rs[id]&&B.rs[id][d])||{};
+const nextOf=ty=>occ(today(),addD(today(),400)).find(o=>!ty||o.e.ty===ty);
+function rsvpBox(o){const r=rsOf(o.id,o.d),mine=r[cid],all=Object.entries(B.m).filter(([k,v])=>v&&v.name);
+ const yes=Object.values(r).filter(x=>x.s===1).length,no=Object.values(r).filter(x=>x.s===0).length,nr=all.filter(([k])=>!r[k]).length;
+ const who=all.map(([k,v])=>{const s=r[k]?r[k].s:null;return `<span class="pill ${s===1?'ok':s===0?'no':'q'}">${pe(v.part)} ${esc(v.name)}</span>`}).join('');
+ const miss=Object.keys(PN).filter(pt=>all.some(([k,v])=>v.part===pt)&&!all.some(([k,v])=>v.part===pt&&r[k]&&r[k].s===1)&&all.filter(([k,v])=>v.part===pt).every(([k])=>r[k]&&r[k].s===0));
+ return `<div style="margin:4px 0 8px"><span class="pill ok">갑니다 ${yes}</span><span class="pill no">못 가요 ${no}</span><span class="pill q">미응답 ${nr}</span></div>
+  <div class="rs"><button class="${mine&&mine.s===1?'on1':''}" onclick="rsvp('${o.id}','${o.d}',1)">✋ 갑니다</button><button class="${mine&&mine.s===0?'on0':''}" onclick="rsvp('${o.id}','${o.d}',0)">못 가요</button></div>
+  <div style="margin-top:8px">${who}</div>${miss.length?`<div style="font-size:13px;color:#991b1b;margin-top:6px">⚠️ ${miss.map(pn).join('·')} 빠짐</div>`:''}`}
+async function rsvp(id,d,s){const mb=myBand(B.code),v={s,name:mb.me,part:mb.part,t:{'.sv':'timestamp'}};
+ B.rs[id]=B.rs[id]||{};B.rs[id][d]=B.rs[id][d]||{};B.rs[id][d][cid]={s,name:mb.me,part:mb.part};render();
+ PUT(B.code+'/rs/'+id+'/'+d+'/'+cid,v).catch(()=>toast('⚠️ 저장 못 했어요 — 인터넷 확인'))}
+async function share(id,d){const e=B.ev[id];const u=location.origin+location.pathname+'#/b/'+B.code+'/cal/'+d;
+ const r=rsOf(id,d),yes=Object.values(r).filter(x=>x.s===1).map(x=>x.name);
+ const t=`${e.ty==='g'?'🎤':'🎸'} «${B.band.name}» ${e.ty==='g'?'공연':'합주'} ${fmt(d)} ${e.tm||''}${e.pl?' · '+e.pl:''}${e.so?'\n🎵 '+e.so:''}${yes.length?'\n✋ 갑니다: '+yes.join(', '):''}\n출첵 👉 ${u}\n(처음이면 초대 코드 ${B.code})`;
+ try{if(navigator.share){await navigator.share({text:t});return}}catch(x){if(x.name==='AbortError')return}
+ try{await navigator.clipboard.writeText(t);toast('✅ 복사됨 — 단톡방에 붙여넣기')}catch(x){prompt('복사해서 보내세요',t)}}
+
+// ── 연습 기록: 이 기기(at.html이 band_play_pr에 적음) + 밴드 DB(pr/{기기}) 중 큰 값
+function myPr(){const loc=LG('pr')||{},db=(B&&B.pr[cid])||{},out={};
+ for(const src of [loc,db])for(const [day,o] of Object.entries(src||{}))for(const [s,sec] of Object.entries(o||{})){out[day]=out[day]||{};out[day][s]=Math.max(out[day][s]||0,sec)}
+ return out}
+const daySec=(pr,d)=>Object.values(pr[d.replace(/-/g,'')]||{}).reduce((a,b)=>a+b,0);
+const sumPr=(pr,from,to)=>{let t=0;const by={};for(const [day,o] of Object.entries(pr)){const d=day.slice(0,4)+'-'+day.slice(4,6)+'-'+day.slice(6);if(d<from||d>to)continue;for(const [s,sec] of Object.entries(o)){t+=sec;by[s]=(by[s]||0)+sec}}return [t,by]};
+const weekStart=s=>{const d=pd(s),k=(d.getDay()+6)%7;return addD(s,-k)};
+
+// ════════ 앱 홈 ════════
+async function vApp(){
+ V(`<div class="top g"><small>${me.name?'안녕하세요, '+esc(me.name)+(me.part?' · '+esc(PN[me.part]||''):''):'함께 연주하는 밴드 앱'}</small><h1>위밴드</h1></div><main>
+ <div class="card"><h3>내 밴드</h3><div id="bl">${bands.length?'':'<p class="empty">아직 밴드가 없어요.<br>만들거나, 받은 초대 코드로 가입하세요.</p>'}</div></div>
+ <a class="btn" href="#/make">＋ 밴드 만들기</a><button class="btn b2" onclick="askCode()">🔗 초대 코드로 가입</button>
+ <div class="card" style="margin-top:12px"><h3>🎧 혼자 연습</h3><div class="row"><span style="color:var(--mu);font-size:14px">밴드 없이 악보만 열어 연습하기</span><a class="go" href="at.html?solo=1">악보 열기</a></div></div>
+ <div class="card"><h3>🔍 찾기</h3><div style="font-size:14px;color:var(--mu)">세션 구하는 밴드 · 밴드 찾는 연주자 — 곧 열려요</div></div></main>`);
+ const el=$('bl');if(!bands.length)return;
+ el.innerHTML=bands.map(b=>`<div class="song" style="margin:6px 0 10px"><span class="ic">🎸</span><div><b>${esc(b.name)}</b><br><small id="bi_${b.code}">${pe(b.part)} ${pn(b.part)} · 코드 ${b.code}</small></div><a class="go" href="#/b/${b.code}/home">입장</a></div>`).join('');
+ for(const b of bands)J(b.code).then(o=>{if(!o||!o.band)return;const save=B;B={code:b.code,...o,m:o.m||{},ev:o.ev||{},rs:o.rs||{},pr:o.pr||{}};const n=nextOf();
+  const mc=Object.values(B.m).filter(x=>x&&x.name).length;B=save;const e=$('bi_'+b.code);if(e)e.textContent=`멤버 ${mc}${n?' · 다음 '+(n.e.ty==='g'?'공연':'합주')+' '+dday(n.d):''}`}).catch(()=>{})}
+function askCode(){modal(`<h2>🔗 초대 코드로 가입</h2><p style="color:var(--mu)">밴드에서 받은 4자리 코드를 넣어 주세요</p><input id="jc" inputmode="numeric" maxlength="4" placeholder="1234"><button class="btn" id="jg">다음</button><button class="btn gh" onclick="closeM()">닫기</button>`);
+ $('jc').focus();$('jg').onclick=()=>{const c=$('jc').value.trim();if(!/^\d{4}$/.test(c)){toast('4자리 숫자예요');return}closeM();go('#/join/'+c)}}
+function modal(h){closeM();const d=document.createElement('div');d.className='mod';d.id='mod';d.innerHTML='<div>'+h+'</div>';d.onclick=e=>{if(e.target===d)closeM()};document.body.appendChild(d)}
+function closeM(){const m=$('mod');if(m)m.remove()}
+const partSel=(id,v)=>`<select id="${id}">${Object.entries(PN).map(([k,n])=>`<option value="${k}"${k===v?' selected':''}>${n}</option>`).join('')}</select>`;
+
+function vMake(){$('tabs').innerHTML='';
+ V(`<div class="top"><a href="#/"><small>← 내 밴드</small></a><h1>＋ 밴드 만들기</h1></div><main><div class="card">
+ <label class="l">밴드 이름</label><input id="bn" maxlength="30" placeholder="예: 우리 밴드">
+ <label class="l">내 이름</label><input id="bm" maxlength="20" value="${esc(me.name||'')}">
+ <label class="l">내 파트</label>${partSel('bp',me.part||'g1')}
+ <button class="btn" id="bk">만들기</button></div></main>`);
+ $('bk').onclick=async()=>{const n=$('bn').value.trim(),nm=$('bm').value.trim();if(!n||!nm){toast('밴드 이름과 내 이름을 넣어 주세요');return}
+  $('bk').disabled=true;$('bk').textContent='만드는 중…';let c=null;
+  for(let i=0;i<15&&!c;i++){const t=String(1000+Math.floor(Math.random()*9000));const o=await fetch(RDB+t+'.json?shallow=true').then(r=>r.json()).catch(()=>1);if(o===null)c=t}
+  if(!c){$('bk').disabled=false;$('bk').textContent='⚠️ 다시 눌러 주세요';return}
+  let k=DEFK;try{k=localStorage.getItem('at_k')||DEFK}catch(e){}
+  await PUT(c+'/band',{name:n,made:{'.sv':'timestamp'},k}).catch(()=>{});
+  const mb={code:c,name:n,me:nm,part:$('bp').value};bands.unshift(mb);saveBands();me={...me,name:nm,part:mb.part};LSet('me',me);B=null;go('#/b/'+c+'/mem')}}
+async function vJoin(c){$('tabs').innerHTML='';V('<main><p class="empty">밴드 찾는 중…</p></main>');
+ const o=await J(c+'/band').catch(()=>null);
+ if(!o){V(`<main><div class="card">코드 <b>${esc(c)}</b> 밴드를 못 찾았어요.</div><a class="btn b2" href="#/">← 내 밴드</a></main>`);return}
+ V(`<div class="top"><a href="#/"><small>← 내 밴드</small></a><h1>🎸 ${esc(o.name)}</h1></div><main><div class="card"><h3>가입하기</h3>
+ <label class="l">내 이름</label><input id="jm" maxlength="20" value="${esc(me.name||'')}" placeholder="밴드에서 부르는 이름">
+ <label class="l">내 파트</label>${partSel('jp',me.part||'g1')}
+ <button class="btn" id="jk">가입하기</button></div></main>`);
+ $('jk').onclick=()=>{const nm=$('jm').value.trim();if(!nm){toast('이름을 넣어 주세요');return}
+  const mb={code:c,name:o.name,me:nm,part:$('jp').value};bands=bands.filter(x=>x.code!==c);bands.unshift(mb);saveBands();if(!me.name){me={...me,name:nm,part:mb.part};LSet('me',me)}
+  B=null;const back=sessionStorage.getItem('wb_after');sessionStorage.removeItem('wb_after');go(back||'#/b/'+c+'/home')}}
+function vFind(){V(`<div class="top g"><small>위밴드</small><h1>🔍 세션·밴드 찾기</h1></div><main>
+ <div class="card"><h3>곧 열려요</h3><div style="font-size:15px;line-height:1.6">• 🥁 <b>세션 구해요</b> — 합주에 빠진 파트를 근처 연주자에게<br>• 🎹 <b>밴드 구해요</b> — 밴드 찾는 연주자 등록<br><span style="color:var(--mu);font-size:14px">여러 밴드가 쓰기 시작하면 열게요.</span></div></div></main>`)}
+function vMe(){V(`<div class="top g"><small>이 기기에 저장돼요</small><h1>🙋 내 정보</h1></div><main><div class="card">
+ <label class="l">이름</label><input id="mn" maxlength="20" value="${esc(me.name||'')}">
+ <label class="l">주 파트</label>${partSel('mp',me.part||'g1')}
+ <label class="l">지역 (나중에 찾기에서 써요)</label><input id="mr" maxlength="20" value="${esc(me.region||'')}" placeholder="예: 인천 중구">
+ <button class="btn" id="ms">저장</button></div>
+ <div class="card"><h3>🎧 내 연습 (이 기기)</h3><div id="mpr"></div></div></main>`);
+ $('ms').onclick=()=>{me={name:$('mn').value.trim(),part:$('mp').value,region:$('mr').value.trim()};LSet('me',me);toast('저장했어요')};
+ const pr=myPr(),[m,by]=sumPr(pr,today().slice(0,8)+'01',today()),[w]=sumPr(pr,weekStart(today()),today());
+ $('mpr').innerHTML=`<div class="row"><span>이번 주</span><b>${mins(w)}</b></div><div class="row"><span>이번 달</span><b>${mins(m)}</b></div>`+Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([s,v])=>`<div class="row"><span>${esc(SN[s]||s)}</span><span>${mins(v)}</span></div>`).join('')}
+
+// ════════ 밴드 홈 ════════
+const head=(mb,t,sub)=>`<div class="top"><a href="#/"><small>← 내 밴드 · 코드 ${mb.code} · ${pe(mb.part)} ${pn(mb.part)}</small></a><h1>${t}</h1>${sub||''}</div>`;
+const atUrl=(mb,song)=>{const k=B.band.k||DEFK;let s=song;if(!s){try{s=(localStorage.getItem('at_s')||'butterfly_g1').split('_')[0]}catch(e){s='butterfly'}}return `at.html?k=${k}&s=${s}_${mb.part}`};
+function vHome(mb){const n=nextOf('j'),g=nextOf('g'),nt=B.nt;
+ const pr=myPr(),[w]=sumPr(pr,weekStart(today()),today()),[lw]=sumPr(pr,addD(weekStart(today()),-7),addD(weekStart(today()),-1));
+ V(head(mb,'🎸 '+esc(B.band.name))+`<main>
+ <div class="card"><h3>다음 합주</h3>${n?`<div class="big">${dday(n.d)}</div><div style="font-size:15px;margin:2px 0 4px">${fmt(n.d)} ${esc(n.e.tm||'')}${n.e.pl?' · '+esc(n.e.pl):''}${n.e.so?'<br><small style="color:var(--mu)">🎵 '+esc(n.e.so)+'</small>':''}</div>${rsvpBox(n)}
+   <button class="btn b2 sm" style="margin-top:10px" onclick="share('${n.id}','${n.d}')">📤 단톡방에 출첵 보내기</button>`:`<p class="empty">잡힌 합주가 없어요</p><a class="btn b2" href="#/b/${mb.code}/cal">＋ 합주 일정 만들기</a>`}</div>
+ ${g?`<div class="card"><h3>🎤 공연·행사</h3><div class="row"><span>${esc(g.e.pl||'공연')} · ${fmt(g.d)} ${esc(g.e.tm||'')}</span><b style="color:var(--p2)">${dday(g.d)}</b></div></div>`:''}
+ <div class="card" onclick="editNote()"><h3>📢 공지 <small style="font-weight:400">(눌러서 고치기)</small></h3><div class="note">${nt&&nt.txt?esc(nt.txt):'<span style="color:var(--mu)">공지가 없어요</span>'}</div>${nt&&nt.by?`<small style="color:var(--mu)">— ${esc(nt.by)}</small>`:''}</div>
+ <div class="card"><h3>🎧 내 연습</h3><div class="row"><span>이번 주</span><b>${mins(w)} ${lw||w?`<small style="color:${w>=lw?'#16a34a':'#dc2626'}">${w>=lw?'▲':'▼'}${mins(Math.abs(w-lw))}</small>`:''}</b></div></div>
+ <a class="btn" href="${atUrl(mb,n&&n.e.so?songKey(n.e.so.split(',')[0]):null)}">▶ 악보 열기 (연습·합주)</a></main>`)}
+const songKey=name=>{name=(name||'').trim();for(const [k,v] of Object.entries(SN))if(v.replace(/^\S+ /,'')===name||k===name)return k;return null};
+function editNote(){const nt=B.nt||{};modal(`<h2>📢 공지</h2><textarea id="ntx" rows="5" maxlength="500">${esc(nt.txt||'')}</textarea><button class="btn" id="nts">저장</button><button class="btn gh" onclick="closeM()">닫기</button>`);
+ $('nts').onclick=()=>{const v={txt:$('ntx').value.trim(),by:myBand(B.code).me,t:{'.sv':'timestamp'}};B.nt={txt:v.txt,by:v.by};closeM();render();PUT(B.code+'/nt',v).catch(()=>toast('⚠️ 저장 못 했어요'))}}
+
+// 📅 일정: 달력 / 목록 / 출석률
+let calM=null,calSel=null,calSeg='cal';
+let calH=null;
+function vCal(mb){const p=location.hash.split('/');if(location.hash!==calH){calH=location.hash;if(p[4]&&/^\d{4}-\d\d-\d\d$/.test(p[4])){calSel=p[4];calM=p[4].slice(0,7);calSeg='cal'}}
+ calSel=calSel||today();calM=calM||calSel.slice(0,7);
+ const seg=`<div class="seg">${[['cal','📅 달력'],['list','목록'],['att','출석률']].map(([k,t])=>`<a href="javascript:void 0" class="${calSeg===k?'on':''}" onclick="calSeg='${k}';render()">${t}</a>`).join('')}</div>`;
+ let body='';
+ if(calSeg==='cal'){const [y,m]=calM.split('-').map(Number),first=new Date(y,m-1,1),last=new Date(y,m,0),from=ymd(first),to=ymd(last);
+  const os=occ(from,to),pr=myPr(),pad=(first.getDay()+6)%7;let g='';for(let i=0;i<pad;i++)g+='<span></span>';
+  for(let d=1;d<=last.getDate();d++){const s=ymd(new Date(y,m-1,d)),wd=new Date(y,m-1,d).getDay(),o=os.filter(x=>x.d===s),sec=daySec(pr,s);
+   const went=o.some(x=>x.e.ty==='j'&&s<today()&&rsOf(x.id,s)[cid]&&rsOf(x.id,s)[cid].s===1);
+   const dots=(went?'<i class="dt a"></i>':o.some(x=>x.e.ty==='j')?'<i class="dt j"></i>':'')+(o.some(x=>x.e.ty==='g')?'<i class="dt g"></i>':'');
+   g+=`<a href="javascript:void 0" onclick="calSel='${s}';render()" class="${s===calSel?'sel':''} ${s===today()?'td':''} ${wd===0?'sun':wd===6?'sat':''}">${d}<span class="dots">${dots}</span>${sec>=60?`<span class="pm">${mins(sec)}</span>`:''}</a>`}
+  const pm=ymd(new Date(y,m-2,1)).slice(0,7),nm=ymd(new Date(y,m,1)).slice(0,7);
+  const [mt,by]=sumPr(pr,from,to),ws=weekStart(today()),[w]=sumPr(pr,ws,today()),[lw]=sumPr(pr,addD(ws,-7),addD(ws,-1));
+  const sel=occ(calSel,calSel);
+  body=`<div class="card" style="padding:10px 12px"><div class="mh"><a href="javascript:void 0" onclick="calM='${pm}';render()">‹</a><b>${y}년 ${m}월</b><a href="javascript:void 0" onclick="calM='${nm}';render()">›</a></div>
+   <div class="wk">${'월화수목금토일'.split('').map((c,i)=>`<span style="${i===5?'color:#2563eb':i===6?'color:#dc2626':''}">${c}</span>`).join('')}</div><div class="gd">${g}</div>
+   <div class="lg"><span><i class="dt j"></i>합주</span><span><i class="dt g"></i>공연·행사</span><span><i class="dt a"></i>출석</span><span style="color:#0f766e;font-weight:800">25분</span><span>내 연습</span></div></div>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="color:var(--p)">🎧 ${m}월 내 연습</b><b style="font-size:20px;color:var(--p2)">${mins(mt)}</b></div>
+   <div style="font-size:12.5px;color:var(--mu);margin-top:3px">${Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([s,v])=>esc((SN[s]||s).replace(/^\S+ /,''))+' '+mins(v)).join(' · ')||'악보 화면에서 ▶ 누른 시간이 저절로 쌓여요'}${w||lw?` · 이번 주 ${mins(w)} (지난주보다 ${w>=lw?'▲':'▼'}${mins(Math.abs(w-lw))})`:''}</div></div>
+  <h3 style="margin:16px 4px 8px;font-size:15px;color:var(--mu)">${fmt(calSel)}${daySec(pr,calSel)>=60?' · 연습 '+mins(daySec(pr,calSel)):''}</h3>
+  ${sel.length?sel.map(evCard).join(''):'<p class="empty">이날 일정이 없어요</p>'}
+  <button class="btn b2" onclick="newEv('${calSel}')">＋ ${fmt(calSel)} 일정 만들기</button>`}
+ else if(calSeg==='list'){const os=occ(today(),addD(today(),60));body=(os.length?os.map(evCard).join(''):'<p class="empty">앞으로 60일 동안 일정이 없어요</p>')+`<button class="btn b2" onclick="newEv('${today()}')">＋ 일정 만들기</button>`}
+ else{const past=occ(addD(today(),-120),addD(today(),-1)).filter(o=>o.e.ty==='j'),mem=Object.entries(B.m).filter(([k,v])=>v&&v.name);
+  body=`<div class="card"><h3>최근 120일 합주 ${past.length}번</h3>${mem.map(([k,v])=>{const n=past.filter(o=>rsOf(o.id,o.d)[k]&&rsOf(o.id,o.d)[k].s===1).length,pc=past.length?Math.round(n/past.length*100):0;
+   return `<div class="row"><span>${pe(v.part)} ${esc(v.name)}</span><span style="flex:1;max-width:45%"><span class="prog" style="display:block;margin:0"><i style="width:${pc}%"></i></span></span><b>${n}/${past.length}</b></div>`}).join('')||'<p class="empty">멤버가 없어요</p>'}
+   <small style="color:var(--mu)">«갑니다»를 누른 날 = 출석으로 셉니다</small></div>`}
+ V(head(mb,'📅 일정')+'<main>'+seg+body+'</main>')}
+function evCard(o){const e=o.e;return `<div class="card"><div class="row" style="padding-top:0"><div><span class="tag ${e.ty==='g'?'g':''}">${e.ty==='g'?'공연·행사':'합주'}${e.rep?' · 매주':''}</span><br><b>${fmt(o.d)} ${esc(e.tm||'')}</b>${e.pl?'<br><small style="color:var(--mu)">📍 '+esc(e.pl)+'</small>':''}${e.so?'<br><small style="color:var(--mu)">🎵 '+esc(e.so)+'</small>':''}</div>
+ <span style="display:flex;gap:4px"><button class="sm b2" onclick="share('${o.id}','${o.d}')">📤</button><button class="sm b2" onclick="evMenu('${o.id}','${o.d}')">⋯</button></span></div>${rsvpBox(o)}</div>`}
+function evMenu(id,d){const e=B.ev[id];modal(`<h2>${e.ty==='g'?'공연·행사':'합주'} ${fmt(d)}</h2>
+ ${e.rep?`<button class="btn b2" onclick="skipEv('${id}','${d}')">이번 주(${fmt(d)})만 쉬기</button><button class="btn b2" onclick="endEv('${id}','${d}')">${fmt(d)}부터 반복 끝내기</button>`:''}
+ <button class="btn" style="background:#dc2626" onclick="delEv('${id}')">${e.rep?'반복 일정 전부 지우기':'일정 지우기'}</button><button class="btn gh" onclick="closeM()">닫기</button>`)}
+async function skipEv(id,d){closeM();B.ev[id].sk={...(B.ev[id].sk||{}),[d]:1};render();PUT(B.code+'/ev/'+id+'/sk/'+d,1).catch(()=>toast('⚠️ 저장 못 했어요'))}
+async function endEv(id,d){closeM();const u=addD(d,-1);B.ev[id].un=u;render();PUT(B.code+'/ev/'+id+'/un',u).catch(()=>toast('⚠️ 저장 못 했어요'))}
+async function delEv(id){if(!confirm('지울까요?'))return;closeM();delete B.ev[id];render();DEL(B.code+'/ev/'+id).catch(()=>toast('⚠️ 못 지웠어요'));DEL(B.code+'/rs/'+id).catch(()=>{})}
+async function newEv(d){let songs=[];try{const o=await fetch(LIB+(B.band.k||DEFK)+'/tex.json?shallow=true').then(r=>r.json());songs=[...new Set(Object.keys(o||{}).map(k=>k.split('_')[0]))]}catch(e){}
+ const wd=WD[pd(d).getDay()];
+ modal(`<h2>＋ 일정 만들기</h2><div class="seg" id="ety"><a href="javascript:void 0" class="on" data-t="j">🎸 합주</a><a href="javascript:void 0" data-t="g">🎤 공연·행사</a></div>
+ <label class="l">날짜</label><input type="date" id="ed" value="${d}"><label class="l">시간</label><input type="time" id="et" value="19:00">
+ <label class="l" id="epl">장소</label><input id="ep" maxlength="40" placeholder="예: 음악실">
+ ${songs.length?`<label class="l">곡</label><div class="chk">${songs.map(s=>`<label><input type="checkbox" value="${esc((SN[s]||s).replace(/^\S+ /,''))}">${esc(SN[s]||s)}</label>`).join('')}</div>`:''}
+ <label class="chk" id="erw" style="margin-top:12px"><label><input type="checkbox" id="er" checked>매주 <span id="ewd">${wd}</span>요일마다 반복</label></label>
+ <button class="btn" id="es">만들기</button><button class="btn gh" onclick="closeM()">닫기</button>`);
+ let ty='j';$('ety').onclick=e=>{const a=e.target.closest('a');if(!a)return;ty=a.dataset.t;[...$('ety').children].forEach(x=>x.classList.toggle('on',x===a));$('er').checked=ty==='j';$('ep').placeholder=ty==='g'?'예: 2학기 공연 · 강당':'예: 음악실';$('epl').textContent=ty==='g'?'이름·장소':'장소'};
+ $('ed').onchange=()=>{$('ewd').textContent=WD[pd($('ed').value).getDay()]};
+ $('es').onclick=async()=>{const dd=$('ed').value;if(!dd){toast('날짜를 골라 주세요');return}
+  const so=[...document.querySelectorAll('#mod .chk input[type=checkbox]:not(#er):checked')].map(x=>x.value).join(', ');
+  const v={ty,d:dd,tm:$('et').value||'',pl:$('ep').value.trim(),so,rep:$('er').checked?1:0,by:myBand(B.code).me,t:{'.sv':'timestamp'}};
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  $('es').disabled=true;try{await PUT(B.code+'/ev/'+id,v)}catch(e){$('es').disabled=false;toast('⚠️ 저장 못 했어요 — 인터넷 확인');return}
+  B.ev[id]={...v,t:Date.now()};closeM();calSel=dd;calM=dd.slice(0,7);calSeg='cal';render();toast('✅ 만들었어요 — 📤로 단톡방에 출첵 보내기')}}
+
+// 🎼 악보함: 방 악보함(band_play_lib/{k}/tex)의 곡 → 내 파트로 열기. 막대 = 이 기기에서 ▶로 지나간 마디 비율(at.html이 band_play_cov에 적음)
+async function vScore(mb){V(head(mb,'🎼 악보함','<small style="margin-top:4px">내 파트: '+(PN[mb.part]||'')+'</small>')+'<main id="sl"><p class="empty">불러오는 중…</p></main>');
+ const k=B.band.k||DEFK;let o={};try{o=await fetch(LIB+k+'/tex.json?shallow=true').then(r=>r.json())||{}}catch(e){}
+ const songs=[...new Set(Object.keys(o).map(x=>x.split('_')[0]))],cov=LG('cov')||{},pr=myPr(),[,by]=sumPr(pr,'2000-01-01','2999-12-31');
+ const up=occ(today(),addD(today(),60)).map(x=>x.e.so||'').join(',');
+ songs.sort((a,b)=>(up.includes((SN[b]||b).replace(/^\S+ /,''))?1:0)-(up.includes((SN[a]||a).replace(/^\S+ /,''))?1:0));
+ $('sl').innerHTML=songs.map(s=>{const parts=Object.keys(o).filter(x=>x.split('_')[0]===s).map(x=>x.split('_')[1]),c=cov[s+'_'+mb.part],pc=c&&c.n?Math.round(c.h/c.n*100):0,has=parts.includes(mb.part);
+  return `<div class="card"><div class="song"><span class="ic">${(SN[s]||'🎵').split(' ')[0]}</span><div><b>${esc((SN[s]||s).replace(/^\S+ /,''))}</b>${up.includes((SN[s]||s).replace(/^\S+ /,''))?' <span class="tag">다음 합주</span>':''}<br><small>${parts.map(pe).join('')} ${parts.length}파트${by[s]?' · 내 연습 '+mins(by[s]):''}</small><div class="prog"><i style="width:${pc}%"></i></div></div>
+  <a class="go" href="at.html?k=${k}&s=${s}_${has?mb.part:parts[0]}">열기</a></div></div>`}).join('')+`<div class="card" style="border:2px dashed #c4b5fd;box-shadow:none"><b>＋ 새 곡 올리기</b><div style="font-size:13px;color:var(--mu);margin-top:4px">악보 PDF를 보내 주시면 🤖 박자 맞는 악보로 다시 그려 드려요 (지금은 관리자에게 요청)</div></div><p style="font-size:12px;color:#9a88ad">막대 = 내 파트에서 ▶로 한 번이라도 지나간 마디 비율</p>`}
+
+// 👥 멤버
+function vMem(mb){const now=Date.now(),mem=Object.entries(B.m).filter(([k,v])=>v&&v.name).sort((a,b)=>Object.keys(PN).indexOf(a[1].part)-Object.keys(PN).indexOf(b[1].part));
+ const ws=weekStart(today()),wk=k=>{const [t]=sumPr(B.pr[k]||{},ws,today());return t};
+ V(head(mb,'👥 멤버')+`<main><div class="card"><h3>멤버 ${mem.length}명 <small style="font-weight:400">(● 최근 접속)</small></h3>
+ ${mem.map(([k,v])=>`<div class="row"><span>${pe(v.part)} <b>${esc(v.name)}</b> <small style="color:var(--mu)">${pn(v.part)}</small>${now-(v.t||0)<180000?' <span style="color:#16a34a">●</span>':''}${k===cid?' <span class="tag">나</span>':''}</span><small style="color:var(--mu)">${v.pp?'이번 주 '+mins(wk(k)):''}</small></div>`).join('')}</div>
+ <div class="card"><h3>📨 멤버 초대</h3><div>초대 코드 <span class="code">${mb.code}</span></div><button class="btn" onclick="invite()">초대 링크 보내기</button></div>
+ <div class="card"><h3>나</h3><label class="l">이름</label><input id="mn" maxlength="20" value="${esc(mb.me)}"><label class="l">파트</label>${partSel('mp',mb.part)}
+ <label class="chk" style="margin-top:10px"><label><input type="checkbox" id="mpp" ${mb.pp?'checked':''}>내 연습 시간을 밴드에 보여 주기</label></label>
+ <button class="btn" id="msv">저장</button><button class="btn gh" style="color:#dc2626" onclick="quit()">밴드 나가기</button></div></main>`);
+ $('msv').onclick=()=>{mb.me=$('mn').value.trim()||mb.me;mb.part=$('mp').value;mb.pp=$('mpp').checked;saveBands();LSet('band',mb);try{localStorage.setItem('at_part',mb.part)}catch(e){}
+  B.m[cid]={...(B.m[cid]||{}),name:mb.me,part:mb.part,pp:mb.pp,t:Date.now()};hello(mb);toast('저장했어요');render()}}
+async function invite(){const u=location.origin+location.pathname+'#/join/'+B.code,t=`🎸 «${B.band.name}» 위밴드 초대\n누르고 이름·파트만 넣으면 끝! (초대 코드 ${B.code})\n${u}`;
+ try{if(navigator.share){await navigator.share({title:'위밴드 초대',text:t});return}}catch(e){if(e.name==='AbortError')return}
+ try{await navigator.clipboard.writeText(t);toast('✅ 복사됨 — 단톡방에 붙여넣기')}catch(e){prompt('복사해서 보내세요',t)}}
+function quit(){if(!confirm(`«${B.band.name}»에서 나갈까요?`))return;DEL(B.code+'/m/'+cid).catch(()=>{});bands=bands.filter(x=>x.code!==B.code);saveBands();
+ const cur=LG('band');if(cur&&cur.code===B.code){LSet('band',null);LSet('jr',null);LSet('mode','solo')}B=null;go('#/')}
+function vFee(mb){V(head(mb,'💰 회비')+`<main><div class="card"><h3>2단계에서 열려요</h3><div style="font-size:15px;line-height:1.6">모스처럼 <b>월별 체크판</b>으로 — 누가 몇 월분을 냈는지 한눈에, 총무 혼자서도 관리.</div></div></main>`)}
+
+// 초대 링크(#/join/코드) · 출첵 링크(#/b/코드/cal/날짜)를 가입 전에 열면 가입 후 그 자리로
+{const h=location.hash,m=h.match(/^#\/b\/(\d{4})\//);if(m&&!myBand(m[1])){try{sessionStorage.setItem('wb_after',h)}catch(e){}location.hash='#/join/'+m[1]}}
+// 처음 열 때: 밴드가 하나뿐이고 주소가 비었으면 바로 그 밴드 홈
+if(!location.hash||location.hash==='#')location.hash=bands.length===1?'#/b/'+bands[0].code+'/home':'#/';
+render();
+// 다른 멤버가 바꾼 것(출첵·일정) 반영: 화면 돌아올 때·30초마다
+const refresh=async()=>{if(!B||document.hidden||$('mod'))return;const c=B.code;if(await load(c))render()};
+document.addEventListener('visibilitychange',refresh);setInterval(refresh,30000);
+</script></body></html>
