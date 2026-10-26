@@ -169,20 +169,24 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
   if(!run.on){if(api.playerState===1)api.pause();api.timePosition=run.tp||0;$('st').textContent='';return}
   sp=run.sp||1;api.playbackSpeed=sp;$('sp').textContent=Math.round(sp*100)+'%';
   const d=run.at-sNow();
-  if(d>0){if(api.playerState===1)api.pause();api.timePosition=run.tp;$('st').textContent='🎵 함께 시작!';startT=setTimeout(()=>{api.timePosition=want();api.play();$('st').textContent=''},d)}
+  // 받는 쪽은 기다리는 동안 미리 그 자리로 가 둔다 → 시작 순간엔 다시 옮기지 않고 ▶만(옮기면 소리 준비하느라 버벅임, 10/26 «아이패드에서 누르면 폰이 버벅»)
+  if(d>0){if(api.playerState===1)api.pause();api.timePosition=run.tp;$('st').textContent='🎵 함께 시작!';startT=setTimeout(()=>{const w=want();if(Math.abs(w-api.timePosition)>120)api.timePosition=w;api.play();$('st').textContent=''},d)}
   else{api.timePosition=want();api.play()}
-  // 기기마다 조금씩 밀리는 것 바로잡기(0.12초 넘게 어긋나면 맞춤)
-  // 아이패드는 위치 값이 띄엄띄엄 갱신돼서 매번 고치면 오히려 뚝뚝 끊김(10/25) → 마지막 위치 이벤트로 지금 위치를 추정하고, 2번 연속 0.25초 넘게 어긋날 때만 맞춤
-  let miss=0;drift=setInterval(()=>{if(!(run&&run.on&&sNow()>run.at+1500&&api.playerState===1&&lastPos))return;
-   const now=lastPos.t+(performance.now()-lastPos.at)*(run.sp||1),d=now-want();
-   if(Math.abs(d)>250){if(++miss>=2){api.timePosition=want();miss=0;lastPos=null}}else miss=0},1000)}
+  // 어긋남 바로잡기: 자리를 옮기면(seek) 소리를 새로 만드느라 또 늦어져서 계속 옮기는 악순환이 생김
+  //  → 조금(0.06~0.6초) 어긋나면 속도를 살짝(±6%) 바꿔 슬그머니 따라잡고, 크게(0.6초+) 어긋날 때만 옮김. 옮긴 뒤엔 3초 기다렸다 다시 잰다
+  let miss=0,hold=0;drift=setInterval(()=>{const S1=run&&run.sp||1;
+   if(!(run&&run.on&&sNow()>run.at+1500&&api.playerState===1&&lastPos)){if(api.playbackSpeed!==S1)api.playbackSpeed=S1;return}
+   if(performance.now()<hold)return;
+   const now=lastPos.t+(performance.now()-lastPos.at)*api.playbackSpeed,d=now-want();
+   if(Math.abs(d)>600){if(++miss>=2){api.playbackSpeed=S1;api.timePosition=want();miss=0;lastPos=null;hold=performance.now()+3000}}
+   else{miss=0;api.playbackSpeed=Math.abs(d)>60?S1*(d>0?0.94:1.06):S1}},500)}
  let lastPos=null;api.playerPositionChanged.on(e=>{lastPos={t:e.currentTime,at:performance.now()}});
  async function join(c){room=c;LSet('room',c);$('rbox').hidden=true;if(typeof barName==='function')barName();else{$('rm').textContent='👥 '+c;$('rm').classList.add('on')}await clockSync();
   if(es)es.close();es=new EventSource(RDB+c+'/at.json');es.addEventListener('put',e=>{const m=JSON.parse(e.data);if(m.path==='/')run=m.data;else if(run){run[m.path.slice(1)]=m.data}apply()})}
  function leave(){if(es)es.close();es=null;room=null;run=null;LSet('room',null);clearTimeout(startT);clearInterval(drift);if(typeof barName==='function')barName()}
  $('rm').onclick=()=>{if(room){leave();return}const b=$('rbox');b.hidden=!b.hidden;if(!b.hidden){$('rcode').value=LG('room')||'';$('rcode').focus()}};
  $('rgo').onclick=()=>{const c=$('rcode').value.trim();if(!/^\d{4}$/.test(c)){$('st').textContent='코드 4자리를 넣어 주세요';return}join(c)};
- const go=(tp,sp2)=>put({on:true,at:Math.round(sNow()+900),tp:Math.max(0,tp),sp:sp2,song:SONG,by:cid});
+ const go=(tp,sp2)=>put({on:true,at:Math.round(sNow()+1500),tp:Math.max(0,tp),sp:sp2,song:SONG,by:cid});
  $('p').onclick=()=>{if(!room)return api.playPause();if(run&&run.on&&run.song===SONG)put({on:false,tp:Math.round(api.timePosition),song:SONG,by:cid});else go(api.timePosition,sp)};
  $('h').onclick=()=>{if(!room)return api.stop();put({on:false,tp:0,song:SONG,by:cid})};
  const S0=S;S=d=>{S0(d);if(room&&run&&run.on)go(want(),sp)};
