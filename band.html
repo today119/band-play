@@ -53,12 +53,14 @@ label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1e1030;color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;z-index:30;font-size:14px}
 .rs{display:flex;gap:6px}.rs button{flex:1;padding:10px;font-size:15px;background:var(--li);color:var(--p)}.rs button.on1{background:#16a34a;color:#fff}.rs button.on0{background:#dc2626;color:#fff}
 .note{white-space:pre-wrap;font-size:15px}
+</style>
+<style id="th-k">
 /* 블랙&화이트(10/26 «올블랙은 좀 그렇고 블랙엔 화이트지, 건반처럼») — 머리·밴드 메뉴·주 버튼은 검정, 내용은 흰 바탕·검정 글씨, 색은 갑니다 초록·못 가요/오늘 빨강·인트로 We 민트만 */
 :root{--p:#111;--p2:#111;--bg:#f2f2f3;--fg:#111;--mu:#6b6b72;--li:#e9e9ec;--ln:#e2e2e6}
 .top,.top.g{background:#000!important}
 .card{background:#fff;box-shadow:none;border:1px solid #e4e4e8}
-/* 밴드 메뉴 띠는 머리(검정)보다 한 톤 밝은 회색(10/26 «밴드 메뉴 색 그레이나 톤 다운») */
-.btabs{background:#5b5b63;border-bottom:0;box-shadow:0 2px 8px #0002}.btabs a{color:#d4d4da}.btabs a.on{color:#fff;border-bottom-color:#fff}
+/* 밴드 메뉴 띠는 연회색 바탕+진한 글씨(10/26 «톤 다운» → «메뉴들이 그레이에 묻혀 있는 듯» → 글씨 대비 살림) */
+.btabs{background:var(--bg);border-bottom:1px solid #dcdce0;box-shadow:0 2px 6px #0001}.btabs a{color:#55555c}.btabs a b{filter:grayscale(.3);opacity:.85}.btabs a.on{color:#000;font-weight:900;border-bottom-color:#000}
 .tabs{background:#fff;border-top:1px solid #e2e2e6}.tabs a.on{color:#000}
 .seg a.on{background:#fff;color:#000;box-shadow:0 1px 3px #0002}
 .pill{background:#efeff2;color:#333}.pill.ok{background:#dcfce7;color:#166534}.pill.no{background:#fee2e2;color:#991b1b}.pill.q{background:#fef9c3;color:#854d0e}.song .ic{background:#f0f0f2}
@@ -67,7 +69,8 @@ label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight
 .prog{background:#e9e9ec}.prog i{background:#111}
 .tag{color:#111}.tag.g{color:#FF3B47}.code{color:#000}
 body::before{background:#000}
-</style><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard-subset.css">
+</style>
+<script>/* 테마 고르기(10/26 «블랙톤하고 보라톤 둘 다 선택») — 기본 블랙&화이트, 내 정보에서 바꿈 */try{if(JSON.parse(localStorage.getItem("band_play_theme"))==="p"){document.getElementById("th-k").disabled=true;document.querySelector("meta[name=theme-color]").content="#3B0A57"}}catch(e){}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard-subset.css">
 </head><body>
 <div id="spl"><div class="stg">
  <div class="ln en" id="sEn"><span style="color:#5EC4BE">W</span><span style="color:#5EC4BE">e</span><span class="pl">P</span><span class="pl">l</span><span class="pl">a</span><span class="pl">y</span></div>
@@ -257,8 +260,11 @@ function vMe(){V(`<div class="top g"><small>이 기기에 저장돼요</small><h
  <label class="l">주 파트</label>${partSel('mp',me.part||'g1')}
  <label class="l">지역 (나중에 찾기에서 써요)</label><input id="mr" maxlength="20" value="${esc(me.region||'')}" placeholder="예: 인천 중구">
  <button class="btn" id="ms">저장</button></div>
+ <div class="card"><h3>🎨 화면 색</h3><div class="rs"><button id="thk">🎹 블랙&화이트</button><button id="thp">💜 보라</button></div></div>
  <div class="card"><h3>🎧 내 연습 (이 기기)</h3><div id="mpr"></div></div></main>`);
  $('ms').onclick=()=>{me={name:$('mn').value.trim(),part:$('mp').value,region:$('mr').value.trim()};LSet('me',me);toast('저장했어요')};
+ const th=()=>{const p=LG('theme')==='p';$('th-k').disabled=p;document.querySelector('meta[name=theme-color]').content=p?'#3B0A57':'#000000';$('thk').className=p?'':'on1';$('thp').className=p?'on1':''};
+ $('thk').onclick=()=>{LSet('theme','k');th()};$('thp').onclick=()=>{LSet('theme','p');th()};th();
  const pr=myPr(),[m,by]=sumPr(pr,today().slice(0,8)+'01',today()),[w]=sumPr(pr,weekStart(today()),today());
  $('mpr').innerHTML=`<div class="row"><span>이번 주</span><b>${mins(w)}</b></div><div class="row"><span>이번 달</span><b>${mins(m)}</b></div>`+Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([s,v])=>`<div class="row"><span>${esc(SN[s]||s)}</span><span>${mins(v)}</span></div>`).join('')}
 
