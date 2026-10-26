@@ -1,5 +1,5 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#3B0A57">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#000000">
 <link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-512.png"><meta name="apple-mobile-web-app-title" content="위밴드"><title>위밴드</title>
 <style>
 #spl{position:fixed;inset:0;background:radial-gradient(120% 80% at 50% 42%,#5a1683 0%,#3B0A57 60%,#2a0640 100%);z-index:100000;color:#fff;font-family:-apple-system,"Apple SD Gothic Neo","Helvetica Neue",sans-serif;overflow:hidden}
@@ -53,6 +53,20 @@ label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1e1030;color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;z-index:30;font-size:14px}
 .rs{display:flex;gap:6px}.rs button{flex:1;padding:10px;font-size:15px;background:var(--li);color:var(--p)}.rs button.on1{background:#16a34a;color:#fff}.rs button.on0{background:#dc2626;color:#fff}
 .note{white-space:pre-wrap;font-size:15px}
+/* 블랙 테마(10/26 «밴드 하는 사람들 시크한가? 보라보다 블랙?») — 바탕 검정, 주 버튼·오늘·D-day 빨강(인트로 Ba), 강조 민트(인트로 We) */
+:root{--p:#FF3B47;--p2:#5EC4BE;--bg:#0b0b0d;--fg:#f2f2f2;--mu:#9a9aa5;--li:#23232a;--ln:#26262c}
+.top,.top.g{background:#000!important;border-bottom:1px solid #1d1d22}
+.card{background:#17171b!important;box-shadow:none!important;border:1px solid #222228}
+.tabs,.btabs{background:#0f0f12!important;border-color:#222228!important;box-shadow:none!important}
+.btabs a.on{color:#fff}.tabs a.on{color:#fff}.btabs a.on{border-bottom-color:#FF3B47}
+.seg a.on{background:#33333c!important;color:#fff}
+.pill{background:#26262c;color:#ddd}.ok{background:#10301f!important;color:#6ee7a0!important}.no{background:#3a1418!important;color:#fca5a5!important}.q{background:#352c0e!important;color:#fde68a!important}
+input,select,textarea{background:#111114!important;border-color:#2f2f38!important;color:#f2f2f2!important}
+.song .ic{background:#26262c}.row{border-color:#26262c!important}
+.go{color:#000!important}.b2{color:#fff!important}.rs button{color:#fff!important}.rs button.on1{background:#16a34a!important}
+.gd a{color:#ddd}.gd a.sel{color:#fff}.mh,.mh a{color:#fff!important}.code{color:#5EC4BE}.big{color:#fff}
+.tag{color:#5EC4BE}.tag.g{color:#FF3B47}
+body::before{background:#000}
 </style><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard-subset.css">
 </head><body>
 <div id="spl"><div class="stg">
