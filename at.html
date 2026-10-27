@@ -207,6 +207,7 @@ function unroll(tex,arr){try{
 // 🎶 반주(노래방, 10/27 «보컬 개인 연습할 때 전 세션 연주음이 들리면 — 노래방처럼»): 다른 파트 줄을 소리용으로 뒤에 붙임(화면엔 내 악보만)
 //  보컬은 기본 켬, 다른 파트도 버튼으로 켤 수 있음. 합주방(모두 각자 소리)에서는 겹치니까 안 씀
 const TPN={'Vocal':'vocal','Guitar 1':'g1','Guitar 2':'g2','Bass':'bass','Keyboard':'keys','Drums':'drums'};
+window.__errs=[];{const P=m=>{window.__errs.push(String(m).slice(0,160));if(window.__errs.length>20)window.__errs.shift()};addEventListener('error',e=>P('E '+(e.message||'')+' @'+(e.filename||'').slice(-30)+':'+e.lineno));addEventListener('unhandledrejection',e=>P('R '+(e.reason&&(e.reason.message||e.reason))));const ow=console.warn,oe=console.error;console.warn=(...a)=>{P('W '+a.join(' '));ow.apply(console,a)};console.error=(...a)=>{P('C '+a.join(' '));oe.apply(console,a)}}
 const MRK='at_mr_'+PART,JAM=(()=>{try{return JSON.parse(localStorage.getItem('band_play_mode'))==='jam'}catch(e){return false}})();
 let MRJ=(()=>{try{return localStorage.getItem('at_mrj')==='1'}catch(e){return false}})();
 let MR=(()=>{try{const v=localStorage.getItem(MRK);return v==null?PART==='vocal':v==='1'}catch(e){return PART==='vocal'}})();
@@ -347,7 +348,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    if(C.tk<0||Math.abs(est-C.tk)>480)C.tk=est;else{const p=C.tk+dt*e.r;C.tk=p+(est-p)*(1-Math.exp(-dt/300))} // 끌어당김을 시간 기준으로(프레임이 밀려도 같은 세기)
    try{draw(C.tk)}catch(x){}})(0)}
  let mute=false,sp=1;api.masterVolume=1;BL('mt','spk','소리');
- api.error.on(e=>{$('st').textContent='오류: '+(e.message||e)});
+ api.error.on(e=>{$('st').textContent='오류: '+(e.message||e);window.__errs.push('A '+String(e&&(e.message||e)).slice(0,160))});
  api.renderFinished.on(()=>{$('st').textContent='';window.__done=1});
  let ready=false;api.soundFontLoad.on(e=>{if(!ready&&e.total)$('st').textContent='소리 준비 '+Math.floor(e.loaded/e.total*100)+'%'});
  // 소리(사운드폰트)를 받기 전에 ▶를 누르면 alphaTab이 그냥 무시함(10/27 PC «처음에 재생하니 재생바가 안 가») → 눌러 둔 걸 기억했다가 준비되면 바로 시작
@@ -485,7 +486,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    const now=lastPos?lastPos.t+(performance.now()-lastPos.at)*api.playbackSpeed:null,c=api.player&&api.player.output&&api.player.output.context;
    L.push([Math.round((sNow()-run.at)/100)/10,now==null?null:Math.round(now-want()),Math.round(api.timePosition-want()),api.playerState,posN,seekN,window.__resync||0,window.__kick||0,window.__dbgC?window.__dbgC.back:0,window.__dbgC?window.__dbgC.jank:0,c?c.state[0]:'-']);posN=0;
    if(L.length>90)L.shift();
-   if(Date.now()-t0>3000){t0=Date.now();const v={ver:ATVER,ua:navigator.userAgent.slice(0,90),part:PART,ord:!!window.ORD,even:typeof EVEN!=='undefined'?EVEN:null,off2:Math.round(off2),run:{at:run.at,tp:run.tp,by:run.by},me:cid,k:'t,dLast,dPos,st,posEv,seek,resync,kick,back,jank,ctx',L};
+   if(Date.now()-t0>3000){t0=Date.now();const v={ver:ATVER,ua:navigator.userAgent.slice(0,90),part:PART,ord:!!window.ORD,even:typeof EVEN!=='undefined'?EVEN:null,off2:Math.round(off2),run:{at:run.at,tp:run.tp,by:run.by},me:cid,k:'t,dLast,dPos,st,posEv,seek,resync,kick,back,jank,ctx',err:(window.__errs||[]).slice(-6),nat:!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()),pl:(()=>{try{return [api.isReadyForPlayback,api.playerState,Math.round(api.timePosition),api.player&&api.player.output&&api.player.output.constructor&&api.player.output.constructor.name,typeof AudioWorkletNode,api.settings.player.outputMode]}catch(e){return String(e)}})(),L:L.slice(-25)};
     const bd=JSON.stringify(JSON.stringify(Object.assign(v,{room})).slice(0,5900));fetch(RDB+room+'/dbg/'+cid+'.json',{method:'PUT',body:bd}).catch(()=>{});if(room!=='0000')fetch(RDB+'0000/dbg/'+cid+'.json',{method:'PUT',body:bd}).catch(()=>{})}},1000)} // 0000 = 모아 보는 곳
  async function join(c){room=c;if(window.__applyMR)window.__applyMR();setTimeout(fillChk,2500);LSet('room',c);LSet('jr',c);$('rbox').hidden=true;if(typeof barName==='function')barName();else{BL('rm','back','합주방 '+c);$('rm').classList.add('on')}await clockSync();
   if(es)es.close();es=new EventSource(RDB+c+'/at.json');es.addEventListener('put',e=>{const m=JSON.parse(e.data);if(m.path==='/')run=m.data;else if(run){run[m.path.slice(1)]=m.data}apply()})}
@@ -669,7 +670,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261028g';
+const ATVER='20261028h';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
