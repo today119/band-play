@@ -136,7 +136,10 @@ window.IC=IC;const BL=window.BL=(id,ic,t)=>{const b=$(id);if(b)b.innerHTML=IC[ic
  if(location.search.slice(1)!==q.toString())history.replaceState(null,'','?'+q.toString())}
 // 아이폰: 무음 스위치가 켜져 있으면 웹오디오(악보 소리)가 안 남 → 오디오 세션을 «재생»으로 바꾸고, 첫 터치에 무음 오디오를 틀어 풀어 줌
 try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
-let unl=false;const unlock=()=>{if(unl)return;unl=true;try{const au=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=');au.loop=true;au.volume=0.01;au.play().catch(()=>{})}catch(e){}
+let unl=false;const unlock=()=>{if(unl)return;unl=true;try{// ★ 길이 0초 파일을 반복하면 PC 크롬이 쉬지 않고 «끝→처음»을 돌아 화면이 굳음(10/27 «PC에서 버튼도 안 눌러지는 멈춤», 응답 최대 27초) → 1초짜리 진짜 무음
+ const n=8000,w=new DataView(new ArrayBuffer(44+n)),S=(o,t)=>[...t].forEach((c,i)=>w.setUint8(o+i,c.charCodeAt(0)));
+ S(0,'RIFF');w.setUint32(4,36+n,true);S(8,'WAVEfmt ');w.setUint32(16,16,true);w.setUint16(20,1,true);w.setUint16(22,1,true);w.setUint32(24,8000,true);w.setUint32(28,8000,true);w.setUint16(32,1,true);w.setUint16(34,8,true);S(36,'data');w.setUint32(40,n,true);for(let i=0;i<n;i++)w.setUint8(44+i,128);
+ const au=new Audio(URL.createObjectURL(new Blob([w],{type:'audio/wav'})));au.loop=true;au.volume=0.01;au.play().catch(()=>{})}catch(e){}
  try{const c=api&&api.player&&api.player.output&&api.player.output.context;if(c&&c.resume)c.resume()}catch(e){}};
 ['touchend','click'].forEach(t=>document.addEventListener(t,unlock,{capture:true}));
 let api=null;
@@ -234,7 +237,12 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  api.error.on(e=>{$('st').textContent='오류: '+(e.message||e)});
  api.renderFinished.on(()=>{$('st').textContent='';window.__done=1});
  let ready=false;api.soundFontLoad.on(e=>{if(!ready&&e.total)$('st').textContent='소리 준비 '+Math.floor(e.loaded/e.total*100)+'%'});
- api.playerReady.on(()=>{ready=true;$('st').textContent=''});
+ // 소리(사운드폰트)를 받기 전에 ▶를 누르면 alphaTab이 그냥 무시함(10/27 PC «처음에 재생하니 재생바가 안 가») → 눌러 둔 걸 기억했다가 준비되면 바로 시작
+ let wantPlay=false;api.playerReady.on(()=>{ready=true;$('st').textContent=''});
+ {const t=setInterval(()=>{if(!api.isReadyForPlayback)return;clearInterval(t);if(wantPlay){wantPlay=false;$('st').textContent='';api.play()}if(window.__reapply)window.__reapply()},150)}
+ // 재생 중인데 시간이 안 흐르면(소리 장치가 잠든 채 시작 등) 한 번 깨워서 다시 시작
+ {let lt=-1,still=0;setInterval(()=>{if(api.playerState!==1||!ready){still=0;lt=-1;return}const t=api.timePosition;if(t===lt){if(++still>=2){still=0;
+   try{const c=api.player&&api.player.output&&api.player.output.context;if(c&&c.resume)c.resume()}catch(e){}api.pause();setTimeout(()=>api.play(),60);window.__kick=(window.__kick||0)+1}}else still=0;lt=t},1000)}
  api.playerStateChanged.on(e=>{const on=e.state===1;$('p').innerHTML=on?IC.pause:IC.play;$('p').title=on?'멈춤':'재생';$('p').classList.toggle('on',on)});
  // 위치판(마디 · 시간) — 소프트웨어 재생기처럼 지금 어디인지 늘 보이게
  const mmss=ms=>{const t=Math.max(0,Math.floor(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};let lsec=-1;
@@ -247,7 +255,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  api.playedBeatChanged.on(bt=>{try{$('lbar').textContent=bt.voice.bar.masterBar.index+1}catch(x){}});
  api.tex(tex,voc?[0,1]:undefined);
  if(voc)api.scoreLoaded.on(sc=>{try{api.changeTrackMute([sc.tracks[0]],true)}catch(e){}});
- $('p').onclick=()=>api.playPause();$('h').onclick=()=>api.stop();
+ const soloPP=window.soloPP=()=>{if(!api.isReadyForPlayback&&api.playerState!==1){wantPlay=!wantPlay;$('st').textContent=wantPlay?'🎵 소리 준비 중 — 끝나면 바로 시작해요':'';$('p').classList.toggle('on',wantPlay);return}api.playPause()};$('p').onclick=soloPP;$('h').onclick=()=>api.stop();
  let S=d=>{sp=Math.max(0.5,Math.min(1.5,Math.round((sp+d)*20)/20));api.playbackSpeed=sp;$('sp').textContent=Math.round(sp*100)+'%'};
  $('dn').onclick=()=>S(-0.05);$('up').onclick=()=>S(0.05);
  $('mt').onclick=()=>{mute=!mute;api.masterVolume=mute?0:1;BL('mt',mute?'mute':'spk','소리');$('mt').classList.toggle('on',mute)};
@@ -262,7 +270,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  async function clockSync(){let best=1e9;for(let k=0;k<4;k++){try{const a=Date.now();const r=await fetch(RDB+room+'/ping/'+cid+'.json',{method:'PUT',body:'{".sv":"timestamp"}'});const v=await r.json(),b=Date.now();if(b-a<best){best=b-a;off2=v-(a+b)/2}}catch(e){}}}
  const put=v=>fetch(RDB+room+'/at.json',{method:'PUT',body:JSON.stringify(v)}).catch(()=>{$('st').textContent='⚠️ 인터넷 연결을 확인해 주세요'});
  const want=()=>run.tp+(sNow()-run.at)*run.sp;
- let applied='';function apply(){const sig=JSON.stringify(run);if(sig===applied&&run&&run.on)return;applied=sig; // 같은 신호가 다시 오면(연결 다시 맺을 때) 또 옮기지 않음
+ let applied='';window.__reapply=()=>{if(run&&run.on){applied='';apply()}};function apply(){const sig=JSON.stringify(run);if(sig===applied&&run&&run.on)return;applied=sig; // 같은 신호가 다시 오면(연결 다시 맺을 때) 또 옮기지 않음
  clearTimeout(startT);clearInterval(drift);if(!run)return;
   if(run.song&&run.song!==SONG){$('st').textContent='방에서 다른 곡을 연주 중이에요';return}
   if(!run.on){if(api.playerState===1)api.pause();api.timePosition=run.tp||0;$('st').textContent='';return}
@@ -284,7 +292,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  $('rm').onclick=()=>{if(room){leave();return}const b=$('rbox');b.hidden=!b.hidden;if(!b.hidden){$('rcode').value=LG('room')||'';$('rcode').focus()}};
  $('rgo').onclick=()=>{const c=$('rcode').value.trim();if(!/^\d{4}$/.test(c)){$('st').textContent='코드 4자리를 넣어 주세요';return}join(c)};
  const go=(tp,sp2)=>put({on:true,at:Math.round(sNow()+1500),tp:Math.max(0,tp),sp:sp2,song:SONG,by:cid});
- $('p').onclick=()=>{if(!room)return api.playPause();if(run&&run.on&&run.song===SONG)put({on:false,tp:Math.round(api.timePosition),song:SONG,by:cid});else go(api.timePosition,sp)};
+ $('p').onclick=()=>{if(!room)return soloPP();if(run&&run.on&&run.song===SONG)put({on:false,tp:Math.round(api.timePosition),song:SONG,by:cid});else go(api.timePosition,sp)};
  $('h').onclick=()=>{if(!room)return api.stop();put({on:false,tp:0,song:SONG,by:cid})};
  const S0=S;S=d=>{S0(d);if(room&&run&&run.on)go(want(),sp)};
  $('dn').onclick=()=>S(-0.05);$('up').onclick=()=>S(0.05);
