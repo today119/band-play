@@ -410,7 +410,8 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  $('mk').textContent=MARK;if(!YT_ID)$('ytb').style.display='none';let yp=null,off=null,sync=0;try{const v=localStorage.getItem(OK)??localStorage.getItem('at_off_'+q.get('s'));if(v!=null)off=+v}catch(e){}
  const barMs=n=>{let t=0;const mb=api.score.masterBars,k=window.ORD?Math.max(0,window.ORD.indexOf(n-1)):n-1;for(let i=0;i<k;i++){const m=mb[i];t+=m.calculateDuration()*60000/960/(api.score.tempo)}return t}; // 앞 마디들 길이(반복 없는 첫 회)
  const info=()=>$('yinfo').textContent=off==null?'원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요':`맞춤 완료 (영상 ${off.toFixed(2)}초 = 1마디). 영상을 움직이면 악보가 따라가요`;
- function follow(){if(!yp||off==null||!yp.getCurrentTime)return;const st=yp.getPlayerState(),want=(yp.getCurrentTime()-off)*1000;
+ // 원곡 창을 닫으면 따라가기도 멈춤(닫아도 200ms마다 «영상 멈춤 → 악보 멈춤·자리 옮김»을 해서 합주 재생과 서로 잡아당겼음, 10/27)
+ function follow(){if(!yp||off==null||!yp.getCurrentTime||!$('yt').classList.contains('on'))return;const st=yp.getPlayerState(),want=(yp.getCurrentTime()-off)*1000;
   {const r=yp.getPlaybackRate();if(api.playbackSpeed!==r)api.playbackSpeed=r} // 같은 값을 다시 넣으면 alphaTab이 소리를 다시 준비함(버벅임)
   if(st===1){if(api.playerState!==1)api.play();if(want>=0&&Math.abs(api.timePosition-want)>90)api.timePosition=want}
   else{if(api.playerState===1)api.pause();if(want>=0&&Math.abs(api.timePosition-want)>30)api.timePosition=want}}
@@ -494,7 +495,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261027f';
+const ATVER='20261027g';
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
   if(m&&m[1]!==ATVER&&!(window.api&&api.playerState===1))location.reload()}).catch(()=>{})};
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)chk()});setInterval(chk,60000)}
