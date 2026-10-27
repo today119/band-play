@@ -201,6 +201,7 @@ function unroll(tex){try{
 // 🎶 반주(노래방, 10/27 «보컬 개인 연습할 때 전 세션 연주음이 들리면 — 노래방처럼»): 다른 파트 줄을 소리용으로 뒤에 붙임(화면엔 내 악보만)
 //  보컬은 기본 켬, 다른 파트도 버튼으로 켤 수 있음. 합주방(모두 각자 소리)에서는 겹치니까 안 씀
 const MRK='at_mr_'+PART,JAM=(()=>{try{return JSON.parse(localStorage.getItem('band_play_mode'))==='jam'}catch(e){return false}})();
+let MRJ=(()=>{try{return localStorage.getItem('at_mrj')==='1'}catch(e){return false}})();
 let MR=(()=>{try{const v=localStorage.getItem(MRK);return v==null?PART==='vocal':v==='1'}catch(e){return PART==='vocal'}})();
 const withBand=([tex,voc])=>{const nShow=voc?2:1;if(!tex)return [tex,voc,0]; // 늘 붙여 두고 켜기·끄기는 소리만(10/27 «누르면 새로고침처럼 튕겨야 되나?»)
  const others=['vocal','g1','g2','bass','keys','drums'].filter(p=>p!==PART&&!(p==='vocal'&&voc));
@@ -226,7 +227,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  BL('ex',UNROLL?'unroll':'rpt',UNROLL?'펼침':'도돌이');$('ex').title=UNROLL?'도돌이 구간을 펼쳐서 위→아래로 (누르면 원래 악보대로)':'원래 악보대로 도돌이 (누르면 펼친 악보)';
  $('ex').onclick=()=>{try{localStorage.setItem('at_ex',UNROLL?'0':'1')}catch(e){}location.reload()};
  BL('mr','mr',MR?'반주 켬':'반주');
- $('mr').onclick=()=>{let jam=false;try{jam=!!room}catch(e){}if(jam){$('st').textContent='합주방에서는 각자 소리라 반주를 안 깔아요';return}MR=!MR;try{localStorage.setItem(MRK,MR?'1':'0')}catch(e){}if(window.__applyMR)window.__applyMR()};
+ $('mr').onclick=()=>{let jam=false;try{jam=!!room}catch(e){}if(jam){MRJ=!MRJ;try{localStorage.setItem('at_mrj',MRJ?'1':'0')}catch(e){}$('st').textContent=MRJ?'🎶 원격 합주: 다른 파트 반주를 깔아요':'';if(window.__applyMR)window.__applyMR();return}MR=!MR;try{localStorage.setItem(MRK,MR?'1':'0')}catch(e){}if(window.__applyMR)window.__applyMR()};
  if(window.ORD){api.settings.notation.elements.set(alphaTab.NotationElement.BarNumber,false);api.updateSettings();
   const lay=document.createElement('div');lay.id='bnl';$('at').style.position='relative';$('at').appendChild(lay);
   // 펼친 악보의 마디 번호 = 종이 악보 번호, 두 번째 돌 때는 ②
@@ -313,9 +314,9 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  api.playedBeatChanged.on(bt=>{try{$('lbar').textContent=OI(bt.voice.bar.masterBar.index)+1}catch(x){}});
  api.tex(tex,nMR?[...Array(nMR).keys()]:voc?[0,1]:undefined);
  // 노래방: 반주 켜면 다른 세션 소리 + 보컬은 내 멜로디 작게(길잡이). 합주방에 있으면 반주 끔(각자 소리)
- const applyMR=window.__applyMR=()=>{const sc=api.score;if(!sc||!nMR)return;let jam=JAM;try{jam=!!room}catch(e){}const on=MR&&!jam;
+ const applyMR=window.__applyMR=()=>{const sc=api.score;if(!sc||!nMR)return;let jam=JAM;try{jam=!!room}catch(e){}const on=jam?MRJ:MR; // 합주방에선 따로(기본 끔) — 멀리 떨어져 연습할 때만 켬(10/27)
   try{api.changeTrackMute(sc.tracks.slice(nMR),!on);if(PART==='vocal')api.changeTrackVolume([sc.tracks[0]],on?0.6:1)}catch(e){}
-  BL('mr','mr',on?'반주 켬':'반주');$('mr').classList.toggle('on',on);$('mr').title=jam?'합주방에서는 각자 소리라 반주를 안 깔아요':on?'다른 세션 소리 같이 (누르면 내 파트만)':'내 파트만 (누르면 다른 세션 소리도 같이 — 노래방처럼)'};
+  BL('mr','mr',on?'반주 켬':'반주');$('mr').classList.toggle('on',on);$('mr').title=jam?(on?'합주방: 다른 파트 반주 깔림 — 멀리 떨어져 연습할 때 (누르면 끔)':'합주방: 내 파트 소리만 (멀리 떨어져 있으면 눌러서 다른 파트 반주도)'):on?'다른 세션 소리 같이 (누르면 내 파트만)':'내 파트만 (누르면 다른 세션 소리도 같이 — 노래방처럼)'};
  api.scoreLoaded.on(()=>setTimeout(applyMR,0));
  if(voc)api.scoreLoaded.on(sc=>{try{api.changeTrackMute([sc.tracks[0]],true)}catch(e){}});
  const soloPP=window.soloPP=()=>{if(!api.isReadyForPlayback&&api.playerState!==1){wantPlay=!wantPlay;$('st').textContent=wantPlay?'🎵 소리 준비 중 — 끝나면 바로 시작해요':'';$('p').classList.toggle('on',wantPlay);return}api.playPause()};$('p').onclick=soloPP;$('h').onclick=()=>api.stop();
@@ -538,7 +539,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261027q';
+const ATVER='20261027r';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
