@@ -205,6 +205,7 @@ function unroll(tex,arr){try{
  if(bad)return null;return {tex:out.join('\n'),ord,n:N}}catch(e){console.warn('unroll',e);return null}}
 // 🎶 반주(노래방, 10/27 «보컬 개인 연습할 때 전 세션 연주음이 들리면 — 노래방처럼»): 다른 파트 줄을 소리용으로 뒤에 붙임(화면엔 내 악보만)
 //  보컬은 기본 켬, 다른 파트도 버튼으로 켤 수 있음. 합주방(모두 각자 소리)에서는 겹치니까 안 씀
+const TPN={'Vocal':'vocal','Guitar 1':'g1','Guitar 2':'g2','Bass':'bass','Keyboard':'keys','Drums':'drums'};
 const MRK='at_mr_'+PART,JAM=(()=>{try{return JSON.parse(localStorage.getItem('band_play_mode'))==='jam'}catch(e){return false}})();
 let MRJ=(()=>{try{return localStorage.getItem('at_mrj')==='1'}catch(e){return false}})();
 let MR=(()=>{try{const v=localStorage.getItem(MRK);return v==null?PART==='vocal':v==='1'}catch(e){return PART==='vocal'}})();
@@ -368,6 +369,9 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
   if(!EVEN){EVEN=true;try{localStorage.setItem('at_cur','even')}catch(e){}cmL();api.settings.display.systemsLayoutMode=1}api.settings.display.scale=zsc();api.updateSettings();if(api.score)rows(api.score);api.render()};
  $('zo').onclick=()=>zSet(-1);$('zi').onclick=()=>zSet(1);
  api.playedBeatChanged.on(bt=>{try{$('lbar').textContent=OI(bt.voice.bar.masterBar.index)+1}catch(x){}});
+ // 드럼 채널 지키기(10/28 «Smile Boy·붉은노을 드럼 소리만 안 나»): alphaTab이 트랙마다 채널을 2개씩 주다 보니 키보드 둘째 채널이 9(드럼 전용)와 겹쳐
+ //  피아노 음색으로 덮어씀 → 소리 만들기 전에 드럼 아닌 트랙은 9를 건너뛰어 다시 배정
+ api.scoreLoaded.on(sc=>{let ch=0;const nx=()=>{if(ch===9)ch++;return Math.min(15,ch++)};sc.tracks.forEach(t=>{const pi=t.playbackInfo;if(t.staves.some(st=>st.isPercussion)){pi.primaryChannel=pi.secondaryChannel=9}else{pi.primaryChannel=nx();pi.secondaryChannel=nx()}})});
  const TRKS=nMR?[...Array(nMR).keys()]:voc?[0,1]:undefined;api.tex(tex,TRKS);
  // 조옮김 창: − / + / 원래 키 — 다시 그리기만(새로고침 없음), 위치는 처음으로
  const tpL=()=>{const k=window.__key0;BL('tp','key',k?keyName(k,TR)+(TR?' ('+(TR>0?'+':'')+TR+')':''):'조옮김');$('tp').classList.toggle('on',!!TR)};tpL();
@@ -431,7 +435,9 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    p.remove();arPreview('')}},true);
  // 노래방: 반주 켜면 다른 세션 소리 + 보컬은 내 멜로디 작게(길잡이). 합주방에 있으면 반주 끔(각자 소리)
  const applyMR=window.__applyMR=()=>{const sc=api.score;if(!sc||!nMR)return;let jam=JAM;try{jam=!!room}catch(e){}const on=jam?MRJ:MR; // 합주방에선 따로(기본 끔) — 멀리 떨어져 연습할 때만 켬(10/27)
-  try{api.changeTrackMute(sc.tracks.slice(nMR),!on);if(PART==='vocal')api.changeTrackVolume([sc.tracks[0]],on?0.6:1)}catch(e){}
+  try{api.changeTrackMute(sc.tracks.slice(nMR),!on);if(PART==='vocal')api.changeTrackVolume([sc.tracks[0]],on?0.6:1);
+   // 빈 파트 채우기(10/28 «합주하는데 드럼 소리가 안 나»): 방에 아무도 안 맡은 파트는 한 기기(대표)만 소리를 냄
+   const F=jam&&!on&&window.__fill||[];if(F.length)api.changeTrackMute(sc.tracks.slice(nMR).filter(t=>F.includes(TPN[t.name])),false)}catch(e){}
   BL('mr','mr',on?'반주 켬':'반주');$('mr').classList.toggle('on',on);$('mr').title=jam?(on?'합주방: 다른 파트 반주 깔림 — 멀리 떨어져 연습할 때 (누르면 끔)':'합주방: 내 파트 소리만 (멀리 떨어져 있으면 눌러서 다른 파트 반주도)'):on?'다른 세션 소리 같이 (누르면 내 파트만)':'내 파트만 (누르면 다른 세션 소리도 같이 — 노래방처럼)'};
  api.scoreLoaded.on(()=>setTimeout(applyMR,0));
  if(voc)api.scoreLoaded.on(sc=>{try{api.changeTrackMute([sc.tracks[0]],true)}catch(e){}});
@@ -480,8 +486,15 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    if(L.length>90)L.shift();
    if(Date.now()-t0>3000){t0=Date.now();const v={ver:ATVER,ua:navigator.userAgent.slice(0,90),part:PART,ord:!!window.ORD,even:typeof EVEN!=='undefined'?EVEN:null,off2:Math.round(off2),run:{at:run.at,tp:run.tp,by:run.by},me:cid,k:'t,dLast,dPos,st,posEv,seek,resync,kick,back,jank,ctx',L};
     const bd=JSON.stringify(JSON.stringify(Object.assign(v,{room})).slice(0,5900));fetch(RDB+room+'/dbg/'+cid+'.json',{method:'PUT',body:bd}).catch(()=>{});if(room!=='0000')fetch(RDB+'0000/dbg/'+cid+'.json',{method:'PUT',body:bd}).catch(()=>{})}},1000)} // 0000 = 모아 보는 곳
- async function join(c){room=c;if(window.__applyMR)window.__applyMR();LSet('room',c);LSet('jr',c);$('rbox').hidden=true;if(typeof barName==='function')barName();else{BL('rm','back','합주방 '+c);$('rm').classList.add('on')}await clockSync();
+ async function join(c){room=c;if(window.__applyMR)window.__applyMR();setTimeout(fillChk,2500);LSet('room',c);LSet('jr',c);$('rbox').hidden=true;if(typeof barName==='function')barName();else{BL('rm','back','합주방 '+c);$('rm').classList.add('on')}await clockSync();
   if(es)es.close();es=new EventSource(RDB+c+'/at.json');es.addEventListener('put',e=>{const m=JSON.parse(e.data);if(m.path==='/')run=m.data;else if(run){run[m.path.slice(1)]=m.data}apply()})}
+ // 합주방(=밴드 코드) 멤버 줄의 최근 접속(t, 1분마다 갱신)+이 방 ping으로 «지금 방에 있는 기기» → 맡은 파트를 빼고 남는 파트는 번호가 가장 앞인 기기가 채움
+ const PARTS=['vocal','g1','g2','bass','keys','drums'],PNK={vocal:'보컬',g1:'기타1',g2:'기타2',bass:'베이스',keys:'키보드',drums:'드럼'};
+ async function fillChk(){let f=[];if(room){try{const [m,pg]=await Promise.all(['m','ping'].map(x=>fetch(RDB+room+'/'+x+'.json').then(r=>r.json())));
+   if(m){const now=Date.now()+off2,act=Object.keys(m).filter(c=>c!==cid&&m[c]&&m[c].t>now-150000&&pg&&pg[c]>now-12*3600e3);
+    const cov=new Set([PART,...act.map(c=>m[c].part)]);if([cid,...act].sort()[0]===cid)f=PARTS.filter(p=>!cov.has(p))}}catch(e){}}
+  const old=(window.__fill||[]).join();window.__fill=f;if(f.join()!==old){if(window.__applyMR)window.__applyMR();if(f.length)$('st').textContent='🥁 방에 없는 파트('+f.map(p=>PNK[p]).join('·')+')는 이 기기가 반주해요'}}
+ setInterval(fillChk,15000);window.__fillChk=fillChk;
  function leave(){setTimeout(()=>window.__applyMR&&window.__applyMR(),0);if(es)es.close();es=null;room=null;run=null;LSet('room',null);clearTimeout(startT);clearInterval(drift);if(typeof barName==='function')barName()}
  $('rm').onclick=()=>{if(room){leave();return}const b=$('rbox');b.hidden=!b.hidden;if(!b.hidden){$('rcode').value=LG('room')||'';$('rcode').focus()}};
  $('rgo').onclick=()=>{const c=$('rcode').value.trim();if(!/^\d{4}$/.test(c)){$('st').textContent='코드 4자리를 넣어 주세요';return}join(c)};
@@ -655,7 +668,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261028d';
+const ATVER='20261028f';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
