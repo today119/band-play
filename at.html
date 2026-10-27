@@ -65,6 +65,7 @@ body{margin:0;touch-action:manipulation;overflow-x:hidden;font-family:-apple-sys
 #home .code{font:900 34px ui-monospace,monospace;letter-spacing:.2em;color:#3B0A57}
 .at-cursor-bar{background:#fde68a55}.at-cursor-beat{background:#dc2626;width:3px}
 .at-highlight *{fill:#dc2626;stroke:#dc2626}
+#tpw{position:fixed;z-index:9999;left:50%;top:84px;transform:translateX(-50%);width:min(330px,92vw);background:#18181b;color:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 10px 40px #0008;font-size:15px}#tpw .tpk{margin:6px 0 10px;color:#d4d4d8}#tpw .tpr{display:flex;align-items:center;gap:10px}#tpw .tpr span{flex:1;text-align:center;font:800 22px ui-monospace,monospace}#tpw button{background:#3f3f46;color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:800;font-size:15px}#tpw .tp0{width:100%;margin:10px 0 6px;background:none;border:1px solid #52525b}#tpw small{color:#a1a1aa;font-size:12px;line-height:1.5;display:block}#tp.on{color:#5EC4BE}
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard-subset.css">
 <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.min.js"></script></head><body>
@@ -123,7 +124,7 @@ try{const g=k=>JSON.parse(localStorage.getItem('band_play_'+k));if(!g('gu')&&!g(
   A(em,[{opacity:1},{opacity:.0}],{delay:200,duration:400});
 },2500);
  setTimeout(()=>end(),4200)})();
-</script><div id="bar"><div class="tb"><button id="rm" class="ib" title="밴드 홈"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>밴드</span></button><select id="sg"></select><select id="pt"></select><span class="fx"></span><span id="md" hidden><button id="mdS"><svg viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4.5" height="6" rx="1.5"/><rect x="16.5" y="14" width="4.5" height="6" rx="1.5"/></svg><span>개인</span></button><button id="mdJ"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.5 2.4 3.5 5.5"/></svg><span>합주</span></button></span><i class="br"></i><button id="h" class="ib" title="처음으로"><svg viewBox="0 0 24 24"><path d="M6 5v14"/><path d="M19 5.5v13L9 12z" fill="currentColor"/></svg></button><button id="p" title="재생"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></button><span class="lcd" title="지금 마디 · 시간"><b id="lbar">1</b><small id="lbn">/ –</small><i></i><b id="ltm">0:00</b><small id="ltt"></small></span><span class="tempo" title="빠르기"><button id="dn" class="ib">−</button><b id="sp">100%</b><button id="up" class="ib">+</button></span><span class="fx fx2"></span><button id="mt" class="ib" title="소리"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg><span>소리</span></button><button id="cm" class="ib" title="재생바 움직임"></button><button id="bp" class="ib" title="한 줄 마디 수"></button><button id="ex" class="ib" title="도돌이 펼치기"></button><button id="mr" class="ib" title="반주"></button><button id="ytb" class="ib" title="원곡"><svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="3"/><path d="M10 9.3v5.4l4.8-2.7z" fill="currentColor"/></svg><span>원곡</span></button><button id="rec" class="ib" title="녹화"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2" fill="#FF3B47" stroke="none"/></svg><span>녹화</span></button><button id="bx" hidden>나가기</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><span class="vsep"></span><button id="more" class="ib" title="내리기 — 메뉴 두 줄로"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><button id="hideb" class="ib" title="메뉴 넣기"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button></div><div id="mp"></div><div id="foot"><span id="st">불러오는 중…</span><div id="grip"><span></span></div></div></div><div id="barsp"></div><button id="tab" aria-label="메뉴 꺼내기"><span></span></button>
+</script><div id="bar"><div class="tb"><button id="rm" class="ib" title="밴드 홈"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>밴드</span></button><select id="sg"></select><select id="pt"></select><span class="fx"></span><span id="md" hidden><button id="mdS"><svg viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4.5" height="6" rx="1.5"/><rect x="16.5" y="14" width="4.5" height="6" rx="1.5"/></svg><span>개인</span></button><button id="mdJ"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.5 2.4 3.5 5.5"/></svg><span>합주</span></button></span><i class="br"></i><button id="h" class="ib" title="처음으로"><svg viewBox="0 0 24 24"><path d="M6 5v14"/><path d="M19 5.5v13L9 12z" fill="currentColor"/></svg></button><button id="p" title="재생"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></button><span class="lcd" title="지금 마디 · 시간"><b id="lbar">1</b><small id="lbn">/ –</small><i></i><b id="ltm">0:00</b><small id="ltt"></small></span><span class="tempo" title="빠르기"><button id="dn" class="ib">−</button><b id="sp">100%</b><button id="up" class="ib">+</button></span><span class="fx fx2"></span><button id="mt" class="ib" title="소리"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg><span>소리</span></button><button id="cm" class="ib" title="재생바 움직임"></button><button id="bp" class="ib" title="한 줄 마디 수"></button><button id="tp" class="ib" title="조옮김"></button><button id="ex" class="ib" title="도돌이 펼치기"></button><button id="mr" class="ib" title="반주"></button><button id="ytb" class="ib" title="원곡"><svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="3"/><path d="M10 9.3v5.4l4.8-2.7z" fill="currentColor"/></svg><span>원곡</span></button><button id="rec" class="ib" title="녹화"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2" fill="#FF3B47" stroke="none"/></svg><span>녹화</span></button><button id="bx" hidden>나가기</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><span class="vsep"></span><button id="more" class="ib" title="내리기 — 메뉴 두 줄로"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><button id="hideb" class="ib" title="메뉴 넣기"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button></div><div id="mp"></div><div id="foot"><span id="st">불러오는 중…</span><div id="grip"><span></span></div></div></div><div id="barsp"></div><button id="tab" aria-label="메뉴 꺼내기"><span></span></button>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
  <div><button id="o1">◀ 0.05초</button> <button id="o2">0.05초 ▶</button></div><small id="yinfo">원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요</small></div></div>
@@ -139,6 +140,7 @@ const IC={play:'<svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>',pa
  save:'<svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 15.5v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg>',back:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
  mr:'<svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>',unroll:'<svg viewBox="0 0 24 24"><path d="M4 5h16M4 10h16M4 15h10"/><path d="M17 13v7M14 17l3 3 3-3"/></svg>',rpt:'<svg viewBox="0 0 24 24"><path d="M5 11V9a3 3 0 0 1 3-3h11"/><path d="M16 3l3 3-3 3"/><path d="M19 13v2a3 3 0 0 1-3 3H5"/><path d="M8 21l-3-3 3-3"/></svg>',
  even:'<svg viewBox="0 0 24 24"><path d="M3 12h15"/><path d="M15 8l4 4-4 4"/><path d="M3 7v10"/></svg>',note:'<svg viewBox="0 0 24 24"><path d="M3 17h4v-5h5V7h5V3"/><circle cx="18.5" cy="18" r="2.5"/><path d="M21 18V9"/></svg>',
+ key:'<svg viewBox="0 0 24 24"><path d="M7 20V8l-3 3M7 8l3 3"/><path d="M17 4v12l-3-3M17 16l3-3"/></svg>',
  bars:'<svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="1.5"/><path d="M7.25 6v12M12 6v12M16.75 6v12"/></svg>'};
 window.IC=IC;const BL=window.BL=(id,ic,t)=>{const b=$(id);if(b)b.innerHTML=IC[ic]+(t?'<span>'+t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[c])+'</span>':'')};
 // 한 주소로 여러 곡(10/25): 악보함 키·마지막 곡/파트를 기억해서 ?k 없이 at.html 만 열어도 됨
@@ -209,8 +211,31 @@ const withBand=([tex,voc])=>{const nShow=voc?2:1;if(!tex)return [tex,voc,0]; // 
  return Promise.all(others.map(p=>fetch(DB+q.get('k')+'/tex/'+SONG+'_'+p+'.json').then(r=>r.json()).catch(()=>null))).then(L=>{let add='';
   L.forEach(v=>{if(typeof v==='string'&&v.includes('\\track'))add+='\n'+v.slice(v.indexOf('\\track')).replace('\n.\n','\n')});
   return add?[tex.replace(/\s*$/,'\n')+add,voc,nShow]:[tex,voc,0]})};
+// 🎚 조옮김(10/27 팀 의견 «조옮김 가능?»): 악보 글(alphaTex)을 반음 n만큼 다시 씀 — 음표·조표·코드 이름·TAB 프렛 다 같이, 소리도 바뀐 키로
+//  곡마다 기억(at_tr_곡) · 드럼(percussion) 줄은 그대로 · 목표 조가 플랫 조면 플랫으로 적음(Bb·Eb…)
+const TRK='at_tr_'+SONG;let TR=(()=>{try{return +localStorage.getItem(TRK)||0}catch(e){return 0}})();
+const NSH=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],NFL=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'],PCL={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const pcOf=(l,a)=>PCL[l.toUpperCase()]+(a==='#'?1:a==='b'?-1:0);
+const keyOf=t=>{const m=String(t||'').match(/\\ks\s+([A-G])([#b]?)(m?)/);return m?{pc:(pcOf(m[1],m[2])+12)%12,mi:m[3]==='m'}:null};
+const keyName=(k,n)=>{if(!k)return '';const pc=(k.pc+n+120)%12,fl=(k.mi?[2,7,0,5,10,3]:[5,10,3,8,1]).includes(pc);return (fl?NFL:NSH)[pc]+(k.mi?'m':'')};
+function trans(tex,n){if(!n||!tex)return tex;const k=keyOf(tex),tp=k?(k.pc+n+120)%12:null,NN=(k&&(k.mi?[2,7,0,5,10,3]:[5,10,3,8,1]).includes(tp))||(!k&&n<0)?NFL:NSH;
+ const tn=(l,a)=>NN[(pcOf(l,a)+n+1200)%12],chord=c=>c.replace(/^([A-G])([#b]?)/,(m,l,a)=>tn(l,a)).replace(/\/([A-G])([#b]?)/,(m,l,a)=>'/'+tn(l,a));
+ return tex.split(/(?=\\track)/).map(seg=>{if(/percussion/.test(seg.slice(0,300)))return seg;
+  const tu=(seg.match(/\\tuning\s+([^\n]+)/)||[])[1],S=tu?tu.trim().split(/\s+/).map(x=>{const m=x.match(/^([a-gA-G])([#b]?)(-?\d)/);return m?pcOf(m[1],m[2])+12*(+m[3]+1):0}):null;
+  return seg.split(/("(?:[^"\\]|\\.)*")/).map((x,i,A)=>{if(i%2)return /\bch\s*$/.test(A[i-1])?'"'+chord(x.slice(1,-1))+'"':x;
+   const keep=[];x=x.replace(/\\(clef|tuning|instrument|track|staff)[^\n]*/g,m=>{keep.push(m);return '\u0001'+(keep.length-1)+'\u0001'});
+   x=x.replace(/(\\ks\s+)([A-G])([#b]?)(m?)/g,(m,p,l,a,mi)=>p+tn(l,a)+mi);
+   x=x.replace(/(^|[\s(])([A-G])([#b]?)(-?\d)(?=[\s.){]|$)/g,(m,pre,l,a,o)=>{const v=pcOf(l,a)+12*(+o+1)+n;return pre+NN[(v%12+12)%12]+(Math.floor(v/12)-1)});
+   // TAB: 프렛을 n만큼 — 0 밑으로 내려가면 아래 줄로(같은 음높이), 22 넘으면 위 줄로. 화음 안에서 줄이 겹치면 그 줄에서 한 옥타브 위로
+   const TB=/(^|[\s(])(\d+)\.(\d+)(?=[\s.){]|$)/g,mv=(f,st,used)=>{let fr=f+n,s=st;
+    while(fr<0&&s<S.length){fr+=S[s-1]-S[s];s++}while(fr>22&&s>1){fr-=S[s-2]-S[s-1];s--}
+    if(s!==st&&used&&used.has(s)){fr=f+n+(f+n<0?12:-12);s=st}if(fr<0)fr+=12;if(used){used.delete(st);used.add(s)}return fr+'.'+s};
+   if(S)x=x.replace(/\(([^()]*)\)|(^|[\s(])(\d+)\.(\d+)(?=[\s.){]|$)/g,(m,inner,pre,f,st)=>{if(inner==null)return pre+mv(+f,+st,null); // 화음 ( ) 은 통째로 한 번만
+     const used=new Set([...inner.matchAll(TB)].map(q=>+q[3]));return '('+inner.replace(TB,(q,p2,f2,s2)=>p2+mv(+f2,+s2,used))+')'});
+   return x.replace(/\u0001(\d+)\u0001/g,(m,j)=>keep[+j])}).join('')}).join('')}
+window.__trans=trans;
 fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?withVocal(t):[null,false]).then(withBand).then(([tex,voc,nMR])=>{
- window.__tex0=tex; if(tex&&UNROLL){const u=unroll(tex);if(u){tex=u.tex;window.ORD=u.ord;window.NORIG=u.n}}
+ window.__tex0=tex;window.__key0=keyOf(tex);tex=trans(tex,TR); if(tex&&UNROLL){const u=unroll(tex);if(u){tex=u.tex;window.ORD=u.ord;window.NORIG=u.n}}
  if(!tex){$('st').textContent='악보를 못 찾았어요';return}
  const narrow=innerWidth<700;
  // 재생바 움직임 두 가지(10/27 «선택하게 — 일정 속도로 가기 / 음표 길이에 맞춰 가기»)
@@ -318,7 +343,14 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  $('bp').onclick=()=>{BPR4=!BPR4;try{localStorage.setItem('at_bpr',BPR4?'4':'')}catch(e){}bpL();C0.tk=-1;C0.sys=null;
   if(!EVEN){EVEN=true;try{localStorage.setItem('at_cur','even')}catch(e){}cmL();api.settings.display.systemsLayoutMode=1;api.updateSettings()}if(api.score)rows(api.score);api.render()};
  api.playedBeatChanged.on(bt=>{try{$('lbar').textContent=OI(bt.voice.bar.masterBar.index)+1}catch(x){}});
- api.tex(tex,nMR?[...Array(nMR).keys()]:voc?[0,1]:undefined);
+ const TRKS=nMR?[...Array(nMR).keys()]:voc?[0,1]:undefined;api.tex(tex,TRKS);
+ // 조옮김 창: − / + / 원래 키 — 다시 그리기만(새로고침 없음), 위치는 처음으로
+ const tpL=()=>{const k=window.__key0;BL('tp','key',k?keyName(k,TR)+(TR?' ('+(TR>0?'+':'')+TR+')':''):'조옮김');$('tp').classList.toggle('on',!!TR)};tpL();
+ const retex=()=>{let t=trans(window.__tex0,TR);if(UNROLL){const u=unroll(t);if(u){t=u.tex;window.ORD=u.ord;window.NORIG=u.n}}C0.tk=-1;C0.sys=null;api.tex(t,TRKS)};
+ $('tp').onclick=()=>{let d=$('tpw');if(d){d.remove();return}const k=window.__key0;d=document.createElement('div');d.id='tpw';
+  const draw=()=>{d.innerHTML=`<b>🎚 조옮김</b><div class="tpk">${k?'원래 <b>'+keyName(k,0)+'</b> → 지금 <b>'+keyName(k,TR)+'</b>':'반음 '+TR}</div><div class="tpr"><button data-d="-1">− 반음</button><span>${TR>0?'+':''}${TR}</span><button data-d="1">＋ 반음</button></div><button data-d="0" class="tp0">원래 키로</button><small>음표·코드·TAB이 같이 바뀌고 소리도 새 키로 나와요 · 이 곡만 기억</small>`};draw();
+  d.onclick=e=>{const b=e.target.closest('button');if(!b)return;const v=+b.dataset.d;const nt=v?Math.max(-6,Math.min(6,TR+v)):0;if(nt===TR)return;TR=nt;try{localStorage.setItem(TRK,TR)}catch(x){}draw();tpL();clearTimeout(d._t);d._t=setTimeout(retex,350)};
+  document.body.appendChild(d)};
  // 노래방: 반주 켜면 다른 세션 소리 + 보컬은 내 멜로디 작게(길잡이). 합주방에 있으면 반주 끔(각자 소리)
  const applyMR=window.__applyMR=()=>{const sc=api.score;if(!sc||!nMR)return;let jam=JAM;try{jam=!!room}catch(e){}const on=jam?MRJ:MR; // 합주방에선 따로(기본 끔) — 멀리 떨어져 연습할 때만 켬(10/27)
   try{api.changeTrackMute(sc.tracks.slice(nMR),!on);if(PART==='vocal')api.changeTrackVolume([sc.tracks[0]],on?0.6:1)}catch(e){}
@@ -532,7 +564,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
 })();
 // 폰 가로 도구 막대(10/27): 낮은 화면에선 빠르기·소리·일정·원곡·녹화를 ⋯ 메뉴 안으로 옮김(버튼은 그대로라 기능 같음), 화면이 바뀌면 제자리로
 {const mq=matchMedia('(max-height:500px)'),mp=document.getElementById('mp'),mb=document.getElementById('more');
- const items=['.tempo','#mt','#cm','#bp','#ex','#mr','#ytb','#rec'].map(q=>document.querySelector(q)).filter(Boolean),home=items.map(e=>{const m=document.createComment('');e.before(m);return m});
+ const items=['.tempo','#mt','#cm','#bp','#tp','#ex','#mr','#ytb','#rec'].map(q=>document.querySelector(q)).filter(Boolean),home=items.map(e=>{const m=document.createComment('');e.before(m);return m});
  const bar=document.getElementById('bar'),put=()=>{if(mq.matches&&!bar.classList.contains('x2'))items.forEach(e=>mp.appendChild(e));else{items.forEach((e,i)=>home[i].after(e));mp.classList.remove('on')}};
  // 폰 가로 3단계(10/27 «내리기로 2줄, 올리기로 1줄, 더 올리면 악보만+내리기 조금, 화면 세 번 = 1줄»): 2줄 ⇄ 1줄 ⇄ 악보만
  const x2=v=>{bar.classList.toggle('x2',v);put()};
@@ -545,7 +577,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261027t';
+const ATVER='20261027u';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
