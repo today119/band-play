@@ -1,6 +1,6 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#111">
-<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=2"><link rel="icon" type="image/png" href="icon-512.png?v=2"><meta name="apple-mobile-web-app-title" content="위밴드"><title>새로 그린 악보 · 모두의 밴드</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3"><link rel="icon" type="image/png" href="icon-512.png?v=3"><meta name="apple-mobile-web-app-title" content="위밴드"><title>새로 그린 악보 · 모두의 밴드</title>
 <style>
 :root{--bg:#fff;--fg:#111}
 body{margin:0;touch-action:manipulation;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--fg)}
@@ -74,9 +74,12 @@ body{margin:0;touch-action:manipulation;overflow-x:hidden;font-family:-apple-sys
  <div class="em" id="sEm"><i>🎸</i><i>🎹</i><i>🥁</i><i>🎸</i><i>🎤</i></div>
 </div><small>by WePlay</small></div>
 <div id="home"><div class="card" id="hc"></div></div>
+<script>// 로그인 전엔 악보 주소로 와도 위밴드 앱 로그인 화면부터(10/27 경로 정리). 옛 초대 링크(?b=코드)는 그 밴드 가입으로
+try{const g=k=>JSON.parse(localStorage.getItem('band_play_'+k));if(!g('gu')&&!g('guest')){const b=new URLSearchParams(location.search).get('b');location.replace('band.html#/'+(b&&/^\d{4}$/.test(b)?'join/'+b:''))}}catch(e){}</script>
 <script>
 // 🎬 켤 때 인트로(10/26 «위리처럼 WePlay → Band, 세션 악기·마이크 이모지 움직이게») — 곡 바꿀 때 페이지가 다시 열리니 한 번 본 창에선 생략, 탭하면 바로 넘김
-(()=>{const e=document.getElementById('spl');let seen=false;try{seen=sessionStorage.getItem('wb_spl')}catch(x){}
+(()=>{const e=document.getElementById('spl');e.remove();return; // 인트로는 위밴드 앱(band.html) 켤 때 한 번만(10/27 경로 정리)
+ let seen=false;try{seen=sessionStorage.getItem('wb_spl')}catch(x){}
  // 순서(10/26 «WePlay → WeBand 뿅 → 한글 위밴드, 모스처럼» / «모스보다 부자연스러워» → 모스처럼 글자 단위·같은 이징으로 다시)
  //  ① WePlay 글자가 하나씩 올라옴 ② Play 가 한 글자씩 빠지고 Band 가 올라옴 + 작은 불꽃 ③ 악기 이모지
  //  ④ 영문은 아래로 작아지며 부제가 되고, 가운데에 큰 「위밴드」 ⑤ 사라짐
@@ -397,7 +400,8 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  async function members(){if(!band)return;const m=await J(band.code+'/m').catch(()=>null)||{},now=sNow();const el=$('mem');if(!el)return;
   el.innerHTML=Object.values(m).filter(x=>x&&x.name&&x.t).sort((a,b)=>b.t-a.t).map(x=>`<span class="${now-x.t<150000?'on':''}">${esc(x.name)} · ${esc((PN[x.part]||'').replace(/^\S+ /,''))}</span>`).join('')||'<p>아직 아무도 없어요</p>'}
  let memT=0;
- function home(view){clearInterval(memT);$('home').classList.add('on');
+ // 밴드 만들기·가입·밴드 화면은 위밴드 앱(band.html) 한 곳에서만(10/27 «들어가는 순서가 다 이상해» — 악보 속 밴드 창이 따로 있었음)
+ function home(view){clearInterval(memT);location.href='band.html'+(view&&view.code?'#/join/'+view.code:band?'#/b/'+band.code+'/home':'#/');return;$('home').classList.add('on');
   if(band&&!view){H.innerHTML=`<h2>🎸 ${esc(band.name)}</h2><p>밴드 코드 <span class="code">${band.code}</span></p><p><b>멤버</b> (● 지금 접속 중)</p><div class="mem" id="mem"></div>
    <p>나: <b>${esc(band.me)}</b></p><select id="hp">${partOpts(band.part)}</select>
    <button class="pri" id="hj">👥 합주하기</button><button id="hs">🎧 혼자 연습하기</button><button id="hi">📨 멤버 초대 링크 보내기</button><button class="sm" id="hx">밴드 나가기</button>`;
@@ -534,7 +538,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261027p';
+const ATVER='20261027q';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
