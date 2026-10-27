@@ -334,7 +334,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    L.push([Math.round((sNow()-run.at)/100)/10,now==null?null:Math.round(now-want()),Math.round(api.timePosition-want()),api.playerState,posN,seekN,window.__resync||0,window.__kick||0,window.__dbgC?window.__dbgC.back:0,window.__dbgC?window.__dbgC.jank:0,c?c.state[0]:'-']);posN=0;
    if(L.length>90)L.shift();
    if(Date.now()-t0>3000){t0=Date.now();const v={ver:ATVER,ua:navigator.userAgent.slice(0,90),part:PART,ord:!!window.ORD,even:typeof EVEN!=='undefined'?EVEN:null,off2:Math.round(off2),run:{at:run.at,tp:run.tp,by:run.by},me:cid,k:'t,dLast,dPos,st,posEv,seek,resync,kick,back,jank,ctx',L};
-    fetch(RDB+room+'/dbg/'+cid+'.json',{method:'PUT',body:JSON.stringify(JSON.stringify(v).slice(0,5900))}).catch(()=>{})}},1000)}
+    const bd=JSON.stringify(JSON.stringify(Object.assign(v,{room})).slice(0,5900));fetch(RDB+room+'/dbg/'+cid+'.json',{method:'PUT',body:bd}).catch(()=>{});if(room!=='0000')fetch(RDB+'0000/dbg/'+cid+'.json',{method:'PUT',body:bd}).catch(()=>{}) // 0000 = 모아 보는 곳}},1000)}
  async function join(c){room=c;LSet('room',c);LSet('jr',c);$('rbox').hidden=true;if(typeof barName==='function')barName();else{BL('rm','back','합주방 '+c);$('rm').classList.add('on')}await clockSync();
   if(es)es.close();es=new EventSource(RDB+c+'/at.json');es.addEventListener('put',e=>{const m=JSON.parse(e.data);if(m.path==='/')run=m.data;else if(run){run[m.path.slice(1)]=m.data}apply()})}
  function leave(){if(es)es.close();es=null;room=null;run=null;LSet('room',null);clearTimeout(startT);clearInterval(drift);if(typeof barName==='function')barName()}
@@ -503,7 +503,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261027j';
+const ATVER='20261027k';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
