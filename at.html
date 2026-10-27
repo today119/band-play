@@ -361,7 +361,11 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  const myPart=()=>(q.get('s')||'').split('_')[1]||localStorage.getItem('at_part')||'g1';
  const link=c=>location.origin+location.pathname+'?k='+q.get('k')+'&b='+c;
  const J=(u,o)=>fetch(RDB+u+'.json',o).then(r=>r.json());
- function hello(){if(band)J(band.code+'/m/'+cid,{method:'PUT',body:JSON.stringify({name:band.me,part:band.part,t:{'.sv':'timestamp'}})}).catch(()=>{})}
+ // 같은 이름 줄이 여럿이면 가장 앞 번호 하나로 모음(band.html adopt와 같은 규칙)
+ let adopted='';const adopt=async()=>{if(!band||adopted===band.code)return;adopted=band.code;const m=await J(band.code+'/m').catch(()=>null)||{},nk=s=>String(s||'').replace(/\s+/g,'').toLowerCase();
+  const same=Object.keys(m).filter(k=>m[k]&&nk(m[k].name)===nk(band.me)).concat(cid).filter((k,i,a)=>a.indexOf(k)===i).sort();if(same.length<2)return;
+  same.slice(1).forEach(k=>fetch(RDB+band.code+'/m/'+k+'.json',{method:'DELETE'}).catch(()=>{}));if(same[0]!==cid){cid=same[0];LSet('cid',cid)}hello()};
+ function hello(){adopt();if(band)J(band.code+'/m/'+cid,{method:'PUT',body:JSON.stringify({name:band.me,part:band.part,t:{'.sv':'timestamp'}})}).catch(()=>{})}
  setInterval(hello,60000);
  function barName(){BL('rm','back',band?band.name:room?'합주방 '+room:'위밴드');$('bx').hidden=!band;
   // 개인 연습 ↔ 합주(10/26 «개인연습도 가능하게 하고 합주도 가능하게»): 합주일 때만 ▶가 멤버 모두에게 같이 걸린다
@@ -400,7 +404,9 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    let found=null;const look=async()=>{const c=$('jc').value.trim();found=null;$('jn').textContent='';if(!/^\d{4}$/.test(c))return;
     const b=await J(c+'/band').catch(()=>null);if(b&&b.name){found={c,...b};$('jn').innerHTML=`🎸 <b>${esc(b.name)}</b> 밴드예요`}else $('jn').textContent='그런 밴드가 없어요 — 코드를 확인해 주세요'};
    $('jc').oninput=look;look();$('jb').onclick=()=>home('start');
-   $('jk').onclick=()=>{const me=$('jm').value.trim();if(!found){$('jk').textContent='밴드 코드를 확인해 주세요';return}if(!me){$('jk').textContent='내 이름을 넣어 주세요';return}
+   $('jk').onclick=async()=>{const me=$('jm').value.trim();if(!found){$('jk').textContent='밴드 코드를 확인해 주세요';return}if(!me){$('jk').textContent='내 이름을 넣어 주세요';return}
+    {const nk=s=>String(s||'').replace(/\s+/g,'').toLowerCase(),m=await J(found.c+'/m').catch(()=>null)||{};const hit=Object.entries(m).filter(([k,v])=>k!==cid&&v&&nk(v.name)===nk(me)).sort((a,b)=>(b[1].t||0)-(a[1].t||0))[0];
+     if(hit&&confirm(`이미 «${hit[1].name}»이 있어요.\n이 사람이 나예요? (확인 = 이어서 쓰기, 취소 = 새 멤버)`)){cid=hit[0];LSet('cid',cid)}} // 같은 이름이면 그 자리 이어 쓰기(멤버 쌓임 방지)
     const b={code:found.c,name:found.name,me,part:$('jp').value};
     if(found.k&&found.k!==q.get('k')){try{localStorage.setItem('at_k',found.k)}catch(e){}LSet('band',b);q.set('k',found.k);q.delete('b');location.search=q.toString();return}
     enter(b);home()};return}
@@ -512,7 +518,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261027m';
+const ATVER='20261027n';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);

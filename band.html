@@ -197,7 +197,7 @@ async function render(){const h=location.hash||'#/',p=h.slice(2).split('/');
  if(p[0]==='b'&&p[1]){const c=p[1],t=p[2]||'home';
   if(!myBand(c)){go('#/join/'+c);return}
   if(!B||B.code!==c){V('<main><p class="empty">불러오는 중…</p></main>');if(!await load(c)){V('<main><div class="card">밴드를 못 찾았어요. 인터넷 연결을 확인해 주세요.</div><a class="btn b2" href="#/">← 내 밴드</a></main>');return}}
-  const mb=myBand(c);LSet('band',mb);hello(mb);B.m[cid]={...(B.m[cid]||{}),name:mb.me,part:mb.part,t:Date.now(),...(mb.pp?{pp:true}:{})};bandTabs(c,t);
+  const mb=myBand(c);LSet('band',mb);adopt(c,mb.me,B.m);hello(mb);B.m[cid]={...(B.m[cid]||{}),name:mb.me,part:mb.part,t:Date.now(),...(mb.pp?{pp:true}:{})};bandTabs(c,t);
   ({home:vHome,cal:vCal,score:vScore,mem:vMem,fee:vFee})[t]?.(mb);return}
  if(p[0]==='join'){vJoin(p[1]);return}
  if(p[0]==='make'){vMake();return}
@@ -205,6 +205,13 @@ async function render(){const h=location.hash||'#/',p=h.slice(2).split('/');
  if(p[0]==='find'){appTabs('#/find');vFind();return}
  if(p[0]==='me'){appTabs('#/me');vMe();return}
  appTabs('#/');vApp()}
+// 같은 이름 멤버가 이미 있으면 그 자리를 이어 씀(10/27 «매번 가입하기로 들어가니 멤버에 이름이 엄청 쌓여» — 아이폰은 사파리·홈 화면 앱 저장 공간이 따로라 새 기기로 보임)
+const nmK=s=>String(s||'').replace(/\s+/g,'').toLowerCase();
+async function sameMe(c,nm){const m=await J(c+'/m').catch(()=>null)||{};const hit=Object.entries(m).filter(([k,v])=>k!==cid&&v&&nmK(v.name)===nmK(nm)).sort((a,b)=>(b[1].t||0)-(a[1].t||0))[0];
+ if(hit&&confirm(`이미 «${hit[1].name}»(${pn(hit[1].part)})이 있어요.\n이 사람이 나예요? (확인 = 이어서 쓰기, 취소 = 새 멤버)`)){cid=hit[0];LSet('cid',cid)}}
+// 이미 가입한 기기들도: 같은 이름 줄이 여럿이면 가장 앞 번호 하나로 모으고 나머지는 지움(기기마다 열 때 같은 줄로 모임)
+function adopt(c,nm,m){const same=Object.keys(m||{}).filter(k=>m[k]&&nmK(m[k].name)===nmK(nm)).concat(cid).filter((k,i,a)=>a.indexOf(k)===i).sort();if(same.length<2)return;
+ const keep=same[0];same.slice(1).forEach(k=>{DEL(c+'/m/'+k).catch(()=>{});if(B&&B.m)delete B.m[k]});if(keep!==cid){cid=keep;LSet('cid',cid)}}
 function hello(mb){PUT(mb.code+'/m/'+cid,{name:mb.me,part:mb.part,t:{'.sv':'timestamp'},...(mb.pp?{pp:true}:{})}).catch(()=>{})}
 
 // ── 일정 펼치기: 매주 반복은 시작일부터 1년
@@ -281,7 +288,8 @@ async function vJoin(c){$('tabs').innerHTML='';V('<main><p class="empty">밴드 
  <label class="l">내 이름</label><input id="jm" maxlength="20" value="${esc(me.name||'')}" placeholder="밴드에서 부르는 이름">
  <label class="l">내 파트</label>${partSel('jp',me.part||'g1')}
  <button class="btn" id="jk">가입하기</button></div></main>`);
- $('jk').onclick=()=>{const nm=$('jm').value.trim();if(!nm){toast('이름을 넣어 주세요');return}
+ $('jk').onclick=async()=>{const nm=$('jm').value.trim();if(!nm){toast('이름을 넣어 주세요');return}
+  await sameMe(c,nm);
   const mb={code:c,name:o.name,me:nm,part:$('jp').value};bands=bands.filter(x=>x.code!==c);bands.unshift(mb);saveBands();if(!me.name){me={...me,name:nm,part:mb.part};LSet('me',me)}
   B=null;const back=sessionStorage.getItem('wb_after');sessionStorage.removeItem('wb_after');go(back||'#/b/'+c+'/home')}}
 function vFind(){V(`<div class="top g"><small>위밴드</small><h1>세션·밴드 찾기</h1></div><main>
