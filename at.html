@@ -638,7 +638,9 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  try{facing=localStorage.getItem('band_play_facing')?JSON.parse(localStorage.getItem('band_play_facing')):'user'}catch(e){}
  const st=t=>{$('st').textContent=t};
  async function cam(){if(stream)return true;try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1920},height:{ideal:1080}},audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}})}
-  catch(e){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:true})}catch(e2){st('카메라를 쓸 수 없어요 — 설정에서 사파리 카메라·마이크 허용을 확인해 주세요');return false}}
+  catch(e){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:true})}catch(e2){const nat=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()),n=(e2&&e2.name)||'';(window.__errs||[]).push('cam '+n+' '+(e2&&e2.message)+' md:'+!!navigator.mediaDevices+' sc:'+window.isSecureContext);
+   // 10/28 «아이패드 앱은 팝업 없이 "사파리 카메라 허용"이 떠» → 앱/브라우저·원인별로 안내
+   st(!navigator.mediaDevices?'카메라를 열 수 없는 화면이에요 ('+(window.isSecureContext?'장치 없음':'보안 연결 아님')+')':n==='NotAllowedError'?(nat?'카메라가 꺼져 있어요 — 아이패드 설정 → 위밴드 → 카메라·마이크 켜기':'카메라가 막혀 있어요 — 사파리 주소창 «가가» → 웹사이트 설정 → 카메라·마이크 허용'):n==='NotFoundError'?'카메라를 찾지 못했어요':'카메라 오류: '+n+' '+((e2&&e2.message)||''));return false}}
   const v=$('vid');v.srcObject=stream;v.classList.toggle('mirror',facing==='user');$('camBox').style.display='block';try{await v.play()}catch(e){}return true}
  function camOff(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('vid').srcObject=null;$('camBox').style.display='none'}
  const type=()=>['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9,opus','video/webm'].find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||'';
@@ -675,7 +677,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261028i';
+const ATVER='20261028j';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
