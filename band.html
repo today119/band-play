@@ -2,7 +2,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3"><link rel="icon" type="image/png" href="icon-512.png?v=3"><meta name="apple-mobile-web-app-title" content="위밴드"><title>위밴드</title>
 <style>
-#spl{position:fixed;inset:0;background:radial-gradient(120% 80% at 50% 42%,#1c1c1f 0%,#0a0a0b 60%,#000 100%);z-index:100000;color:#fff;font-family:-apple-system,"Apple SD Gothic Neo","Helvetica Neue",sans-serif;overflow:hidden}
+#spl{position:fixed;inset:0;bottom:calc(-1px - env(safe-area-inset-bottom));min-height:100lvh;background:radial-gradient(120% 80% at 50% 42%,#1c1c1f 0%,#0a0a0b 60%,#000 100%);z-index:100000;color:#fff;font-family:-apple-system,"Apple SD Gothic Neo","Helvetica Neue",sans-serif;overflow:hidden}
 #spl .stg{position:absolute;left:50%;top:44%;width:0;height:0}
 #spl .ln{position:absolute;left:0;top:0;transform:translate(-50%,-50%);white-space:nowrap;display:flex}
 #spl .ln span{display:inline-block;opacity:0}
@@ -97,8 +97,9 @@ input,select,textarea{border-color:#dcdce0}input:focus,select:focus,textarea:foc
  // 순서(10/26 «WePlay → WeBand 뿅 → 한글 위밴드, 모스처럼» / «모스보다 부자연스러워» → 모스처럼 글자 단위·같은 이징으로 다시)
  //  ① WePlay 글자가 하나씩 올라옴 ② Play 가 한 글자씩 빠지고 Band 가 올라옴 + 작은 불꽃 ③ 악기 이모지
  //  ④ 영문은 아래로 작아지며 부제가 되고, 가운데에 큰 「위밴드」 ⑤ 사라짐
- if(seen||/[?&]nosplash/.test(location.search)||!e.animate){e.remove();return}try{sessionStorage.setItem('wb_spl',1)}catch(x){}
- let gone=false;const end=(d=380)=>{if(gone)return;gone=true;e.animate([{opacity:1},{opacity:0}],{duration:d,fill:'forwards'}).onfinish=()=>e.remove()};
+ const dk=on=>{document.documentElement.style.background=on?'#000':'';document.body.style.background=on?'#000':''};
+ if(seen||/[?&]nosplash/.test(location.search)||!e.animate){e.remove();return}dk(1);window.__splDk=dk; // 인트로 동안 바탕도 검정(아래 홈 막대 자리 밝은 띠, 10/27)try{sessionStorage.setItem('wb_spl',1)}catch(x){}
+ let gone=false;const end=(d=380)=>{if(gone)return;gone=true;e.animate([{opacity:1},{opacity:0}],{duration:d,fill:'forwards'}).onfinish=()=>{e.remove();if(!window.__loginOn)dk(0)}};
  e.onclick=()=>end(180);
  const ease='cubic-bezier(.2,.8,.2,1)',A=(el,kf,o)=>el.animate(kf,Object.assign({fill:'both',easing:ease},o));
  const en=e.querySelector('#sEn'),ko=e.querySelector('#sKo'),em=e.querySelector('#sEm'),stg=e.querySelector('.stg');
@@ -224,7 +225,7 @@ let lastH=null;const V=h=>{const y=scrollY,a=$('app');a.innerHTML=h;if(location.
 
 // 로그인 화면(10/27 «인트로 나간 다음에 구글 로그인이 뜨고, 로그인하면 앱 홈으로») — 로그인 전엔 어떤 화면도 이걸 먼저(초대 링크면 로그인 뒤 그 밴드 가입으로)
 let authKnown=!auth;setTimeout(()=>{if(!authKnown){authKnown=true;render()}},4000);
-function vLogin(){$('tabs').innerHTML='';$('tabs').style.display='none';const jm=location.hash.match(/^#\/join\/(\d{4})/);
+function vLogin(){$('tabs').innerHTML='';$('tabs').style.display='none';window.__loginOn=1;document.documentElement.style.background=document.body.style.background='#000';const jm=location.hash.match(/^#\/join\/(\d{4})/);
  V(`<div style="min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;background:#000;color:#fff">
  <div style="font:900 44px Pretendard,-apple-system,sans-serif;letter-spacing:-.02em"><span style="color:#5EC4BE">We</span><span style="color:#FF3B47">Ba</span>nd</div>
  <div style="font:800 22px Pretendard,-apple-system,sans-serif;margin-top:4px">위밴드</div>
@@ -234,7 +235,7 @@ function vLogin(){$('tabs').innerHTML='';$('tabs').style.display='none';const jm
  <button onclick="LSet('guest',1);render()" style="margin-top:22px;background:none;border:0;color:#777;font-size:14px;text-decoration:underline">로그인 없이 둘러보기</button></div>`);
  if(jm)J(jm[1]+'/band').then(o=>{if(o&&o.name&&$('lgj'))$('lgj').innerHTML=`🎸 <b style="color:#fff">${esc(o.name)}</b> 밴드 초대를 받았어요<br>로그인하면 바로 가입해요`}).catch(()=>{})}
 async function render(){const h=location.hash||'#/',p=h.slice(2).split('/');
- if(GU||LG('guest'))$('tabs').style.display='';
+ if(GU||LG('guest')){$('tabs').style.display='';if(window.__loginOn){window.__loginOn=0;document.documentElement.style.background=document.body.style.background=''}}
  if(!GU&&!LG('guest')){if(!authKnown){$('tabs').innerHTML='';V('<main><p class="empty">　</p></main>');return}vLogin();return}
  if(p[0]==='b'&&p[1]){const c=p[1],t=p[2]||'home';
   if(!myBand(c)){go('#/join/'+c);return}
