@@ -25,7 +25,7 @@ body{margin:0;touch-action:manipulation;overflow-x:hidden;font-family:-apple-sys
 #bnl{position:absolute;left:0;top:0;pointer-events:none}#bnl b{position:absolute;transform:translateY(-100%);font:500 12px Georgia,serif;color:#c0392b;white-space:nowrap}#bnl i{font-style:normal;font-size:11px;margin-left:1px;color:#7c3aed}
 #more{display:none!important}#mp{display:none}
 /* 폰 가로(낮은 화면): 도구 막대 한 줄 — 빠르기·소리·일정·원곡·녹화는 ⋯ 메뉴로(10/27 «폰 메뉴 정리 필요») */
-@media(max-height:500px){#bar{padding-top:calc(4px + env(safe-area-inset-top))}.tb{flex-wrap:nowrap;gap:5px}.tb>*{order:0!important}.tb .br,.tb .vsep{display:none!important}#bar.x2 .tb{flex-wrap:wrap;row-gap:6px}#bar.x2 #more{display:none!important}#bar.x2 .tb .fx2{flex-basis:100%;order:0}
+@media(max-height:500px){#bar{padding-top:calc(4px + env(safe-area-inset-top))}.tb{flex-wrap:nowrap;gap:5px}.tb>*{order:0!important}.tb .br,.tb .vsep{display:none!important}#bar.x2 .tb{flex-wrap:wrap;row-gap:6px}#bar.x2 #more{display:none!important}#bar.x2 .tb .fx2{flex-basis:100%;order:0}#bar.x2 #ytb{margin-left:auto}#bar.x2 #hideb{margin-left:10px;border-color:#3a3a3e}#bar.x2 #mt{margin-left:-7px}
  #bar .ib{height:34px;min-width:34px;padding:0 7px}#rm span,#md button span{display:none}#md{height:34px}#md button{padding:0 10px}#p{width:38px;height:38px}
  .lcd{height:34px;padding:0 8px;font-size:14px}#ltt{display:none}#sg{max-width:170px}#pt{max-width:120px}#sg,#pt{height:34px}
  #more{display:inline-flex!important}#foot{height:16px}#grip{padding:3px 34px 6px}
@@ -503,7 +503,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261027h';
+const ATVER='20261027i';
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
   if(m&&m[1]!==ATVER&&!(window.api&&api.playerState===1))location.reload()}).catch(()=>{})};
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)chk()});setInterval(chk,60000)}
