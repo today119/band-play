@@ -25,12 +25,12 @@ body{margin:0;touch-action:manipulation;overflow-x:hidden;font-family:-apple-sys
 #bnl{position:absolute;left:0;top:0;pointer-events:none}#bnl b{position:absolute;transform:translateY(-100%);font:500 12px Georgia,serif;color:#c0392b;white-space:nowrap}#bnl i{font-style:normal;font-size:11px;margin-left:1px;color:#7c3aed}
 #more{display:none!important}#mp{display:none}
 /* 폰 가로(낮은 화면): 도구 막대 한 줄 — 빠르기·소리·일정·원곡·녹화는 ⋯ 메뉴로(10/27 «폰 메뉴 정리 필요») */
-@media(max-height:500px){#bar{padding-top:calc(4px + env(safe-area-inset-top))}.tb{flex-wrap:nowrap;gap:5px}.tb>*{order:0!important}.tb .br,.tb .vsep,#hideb{display:none!important}
+@media(max-height:500px){#bar{padding-top:calc(4px + env(safe-area-inset-top))}.tb{flex-wrap:nowrap;gap:5px}.tb>*{order:0!important}.tb .br,.tb .vsep{display:none!important}#bar.x2 .tb{flex-wrap:wrap;row-gap:6px}#bar.x2 #more{display:none!important}#bar.x2 .tb .fx2{flex-basis:100%;order:0}
  #bar .ib{height:34px;min-width:34px;padding:0 7px}#rm span,#md button span{display:none}#md{height:34px}#md button{padding:0 10px}#p{width:38px;height:38px}
  .lcd{height:34px;padding:0 8px;font-size:14px}#ltt{display:none}#sg{max-width:170px}#pt{max-width:120px}#sg,#pt{height:34px}
  #more{display:inline-flex!important}#foot{height:16px}#grip{padding:3px 34px 6px}
  #mp{position:absolute;top:calc(100% + 6px);right:max(8px,env(safe-area-inset-right));background:#1b1b1d;border:1px solid #333;border-radius:12px;padding:8px;flex-direction:column;align-items:stretch;gap:6px;box-shadow:0 10px 30px #0008;z-index:11}
- #mp.on{display:flex}#mp .ib{justify-content:flex-start;height:40px}#mp .ib span{display:inline!important}#mp .tempo{justify-content:space-between}}
+ #mp.on{display:flex}#tab{padding-bottom:10px}#tab span{width:auto;height:auto;padding:5px 16px 7px;border-radius:0 0 12px 12px;background:#1b1b1d;color:#e8e8ea;font:700 13px/1.3 -apple-system,sans-serif;box-shadow:0 2px 8px #0006}#tab span:after{content:'▾ 메뉴'}#mp .ib{justify-content:flex-start;height:40px}#mp .ib span{display:inline!important}#mp .tempo{justify-content:space-between}}
 #bar.hide{transform:translateY(calc(-100% - 12px))}#barsp{height:var(--bh,100px);transition:height .28s cubic-bezier(.2,.8,.2,1)}body.bh #barsp{height:0}
 #tab{position:fixed;top:0;left:50%;transform:translate(-50%,-100%);z-index:9;background:transparent;border:0;padding:calc(6px + env(safe-area-inset-top)) 44px 16px;transition:transform .28s,opacity .2s;touch-action:none;opacity:.85}#tab span{display:block;width:64px;height:7px;border-radius:4px;background:#333;box-shadow:0 0 0 2px #fffb,0 2px 6px #0005}body.bh #tab{transform:translate(-50%,0)}#tab.drag{opacity:0}
 #at{padding:0 6px}
@@ -120,7 +120,7 @@ body{margin:0;touch-action:manipulation;overflow-x:hidden;font-family:-apple-sys
   A(em,[{opacity:1},{opacity:.0}],{delay:200,duration:400});
 },2500);
  setTimeout(()=>end(),4200)})();
-</script><div id="bar"><div class="tb"><button id="rm" class="ib" title="밴드 홈"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>밴드</span></button><select id="sg"></select><select id="pt"></select><span class="fx"></span><span id="md" hidden><button id="mdS"><svg viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4.5" height="6" rx="1.5"/><rect x="16.5" y="14" width="4.5" height="6" rx="1.5"/></svg><span>개인</span></button><button id="mdJ"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.5 2.4 3.5 5.5"/></svg><span>합주</span></button></span><i class="br"></i><button id="h" class="ib" title="처음으로"><svg viewBox="0 0 24 24"><path d="M6 5v14"/><path d="M19 5.5v13L9 12z" fill="currentColor"/></svg></button><button id="p" title="재생"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></button><span class="lcd" title="지금 마디 · 시간"><b id="lbar">1</b><small id="lbn">/ –</small><i></i><b id="ltm">0:00</b><small id="ltt"></small></span><span class="tempo" title="빠르기"><button id="dn" class="ib">−</button><b id="sp">100%</b><button id="up" class="ib">+</button></span><span class="fx fx2"></span><button id="mt" class="ib" title="소리"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg><span>소리</span></button><button id="cm" class="ib" title="재생바 움직임"></button><button id="ex" class="ib" title="도돌이 펼치기"></button><button id="ytb" class="ib" title="원곡"><svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="3"/><path d="M10 9.3v5.4l4.8-2.7z" fill="currentColor"/></svg><span>원곡</span></button><button id="rec" class="ib" title="녹화"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2" fill="#FF3B47" stroke="none"/></svg><span>녹화</span></button><button id="bx" hidden>나가기</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><span class="vsep"></span><button id="more" class="ib" title="더 보기"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/></svg></button><button id="hideb" class="ib" title="메뉴 넣기"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button></div><div id="mp"></div><div id="foot"><span id="st">불러오는 중…</span><div id="grip"><span></span></div></div></div><div id="barsp"></div><button id="tab" aria-label="메뉴 꺼내기"><span></span></button>
+</script><div id="bar"><div class="tb"><button id="rm" class="ib" title="밴드 홈"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>밴드</span></button><select id="sg"></select><select id="pt"></select><span class="fx"></span><span id="md" hidden><button id="mdS"><svg viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4.5" height="6" rx="1.5"/><rect x="16.5" y="14" width="4.5" height="6" rx="1.5"/></svg><span>개인</span></button><button id="mdJ"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.5 2.4 3.5 5.5"/></svg><span>합주</span></button></span><i class="br"></i><button id="h" class="ib" title="처음으로"><svg viewBox="0 0 24 24"><path d="M6 5v14"/><path d="M19 5.5v13L9 12z" fill="currentColor"/></svg></button><button id="p" title="재생"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></button><span class="lcd" title="지금 마디 · 시간"><b id="lbar">1</b><small id="lbn">/ –</small><i></i><b id="ltm">0:00</b><small id="ltt"></small></span><span class="tempo" title="빠르기"><button id="dn" class="ib">−</button><b id="sp">100%</b><button id="up" class="ib">+</button></span><span class="fx fx2"></span><button id="mt" class="ib" title="소리"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg><span>소리</span></button><button id="cm" class="ib" title="재생바 움직임"></button><button id="ex" class="ib" title="도돌이 펼치기"></button><button id="ytb" class="ib" title="원곡"><svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="3"/><path d="M10 9.3v5.4l4.8-2.7z" fill="currentColor"/></svg><span>원곡</span></button><button id="rec" class="ib" title="녹화"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2" fill="#FF3B47" stroke="none"/></svg><span>녹화</span></button><button id="bx" hidden>나가기</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><span class="vsep"></span><button id="more" class="ib" title="내리기 — 메뉴 두 줄로"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><button id="hideb" class="ib" title="메뉴 넣기"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button></div><div id="mp"></div><div id="foot"><span id="st">불러오는 중…</span><div id="grip"><span></span></div></div></div><div id="barsp"></div><button id="tab" aria-label="메뉴 꺼내기"><span></span></button>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
  <div><button id="o1">◀ 0.05초</button> <button id="o2">0.05초 ▶</button></div><small id="yinfo">원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요</small></div></div>
@@ -432,7 +432,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  const off=()=>{try{if(window.api){api.settings.player.scrollOffsetY=bd.classList.contains('bh')?-20:-(bh+10);api.updateSettings()}}catch(e){}};
  const meas=()=>{bh=B.offsetHeight;document.documentElement.style.setProperty('--bh',bh+'px');document.documentElement.style.setProperty('--bt',(bd.classList.contains('bh')?0:bh)+'px');off()};
  new ResizeObserver(meas).observe(B);
- const set=h=>{B.classList.toggle('hide',h);bd.classList.toggle('bh',h);try{localStorage.setItem('band_play_bh',h?'1':'')}catch(e){}meas()};
+ const set=h=>{if(h&&window.__x2Off)window.__x2Off();B.classList.toggle('hide',h);bd.classList.toggle('bh',h);try{localStorage.setItem('band_play_bh',h?'1':'')}catch(e){}meas()};
  try{if(localStorage.getItem('band_play_bh'))set(true)}catch(e){}
  document.getElementById('hideb').onclick=()=>set(true);
  // 끌기(10/26 «당기면 아래로 여유 있게 나오고, 넣기 누르면 위로 싹»): 메뉴바가 손가락을 따라 내려오고/올라감, 놓을 때 반 넘게 움직였으면 끝까지
@@ -440,14 +440,14 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
   el.addEventListener('pointerdown',e=>{y0=e.clientY;d=0;el.setPointerCapture(e.pointerId);B.style.transition='none';if(open){T.classList.add('drag');B.style.transform=`translateY(${-H()}px)`}});
   el.addEventListener('pointermove',e=>{if(y0==null)return;d=e.clientY-y0;const h=H();B.style.transform=open?`translateY(${Math.min(0,d-h)}px)`:`translateY(${Math.min(0,d)}px)`});
   const end=()=>{if(y0==null)return;y0=null;B.style.transition='';B.style.transform='';T.classList.remove('drag');const h=H();
-   if(open)set(!(Math.abs(d)<6||d>Math.min(60,h/3)));else set(Math.abs(d)<6||d<-Math.min(40,h/4))};
+   if(open)set(!(Math.abs(d)<6||d>Math.min(60,h/3)));else if(d>30&&window.__x2Up&&window.__x2Up()){}else if(d<-Math.min(40,h/4)&&window.__x2Down&&window.__x2Down()){}else set(Math.abs(d)<6||d<-Math.min(40,h/4))};
   el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end)};
  follow(T,true);follow(document.getElementById('grip'),false);
  // 화면 세 번 톡톡톡(0.6초 안, 손가락 거의 안 움직임): 메뉴바 꺼내기/넣기 — 악보가 터치를 먹어도 잡히게 capture 단계에서
  let taps=[],pd=null;document.addEventListener('pointerdown',e=>{pd=[e.clientX,e.clientY]},true);
  document.addEventListener('pointerup',e=>{if(B.contains(e.target)||T.contains(e.target)||e.target.closest('#home,#camBox,#yt'))return;
   if(pd&&Math.hypot(e.clientX-pd[0],e.clientY-pd[1])>12){taps=[];return}
-  const n=performance.now();taps=taps.filter(t=>n-t<650);taps.push(n);if(taps.length>=3){taps=[];set(!bd.classList.contains('bh'))}},true);
+  const n=performance.now();taps=taps.filter(t=>n-t<650);taps.push(n);if(taps.length>=3){taps=[];if(window.__x2Down&&window.__x2Down())return;set(!bd.classList.contains('bh'))}},true);
  setInterval(()=>{if(window.api&&!window.__offset){window.__offset=1;off()}},500);
 })();
 </script><div id="camBox"><video id="vid" playsinline muted autoplay></video><b id="recT">● 0:00</b><button class="cb" id="flip" style="left:6px">🔄</button><button class="cb" id="camX" style="right:6px">✕</button></div>
@@ -482,8 +482,14 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
 // 폰 가로 도구 막대(10/27): 낮은 화면에선 빠르기·소리·일정·원곡·녹화를 ⋯ 메뉴 안으로 옮김(버튼은 그대로라 기능 같음), 화면이 바뀌면 제자리로
 {const mq=matchMedia('(max-height:500px)'),mp=document.getElementById('mp'),mb=document.getElementById('more');
  const items=['.tempo','#mt','#cm','#ex','#ytb','#rec'].map(q=>document.querySelector(q)).filter(Boolean),home=items.map(e=>{const m=document.createComment('');e.before(m);return m});
- const put=()=>{if(mq.matches)items.forEach(e=>mp.appendChild(e));else{items.forEach((e,i)=>home[i].after(e));mp.classList.remove('on')}};
+ const bar=document.getElementById('bar'),put=()=>{if(mq.matches&&!bar.classList.contains('x2'))items.forEach(e=>mp.appendChild(e));else{items.forEach((e,i)=>home[i].after(e));mp.classList.remove('on')}};
+ // 폰 가로 3단계(10/27 «내리기로 2줄, 올리기로 1줄, 더 올리면 악보만+내리기 조금, 화면 세 번 = 1줄»): 2줄 ⇄ 1줄 ⇄ 악보만
+ const x2=v=>{bar.classList.toggle('x2',v);put()};
+ window.__x2Down=()=>{if(mq.matches&&bar.classList.contains('x2')){x2(false);return true}return false}; // 2줄 → 1줄
+ window.__x2Up=()=>{if(mq.matches&&!bar.classList.contains('x2')&&!document.body.classList.contains('bh')){x2(true);return true}return false}; // 1줄 → 2줄
+ window.__x2Off=()=>{if(bar.classList.contains('x2'))x2(false)};
+ {const hb=document.getElementById('hideb'),o=hb.onclick;hb.onclick=e=>{if(!window.__x2Down())o&&o(e)}}
  put();(mq.addEventListener?mq.addEventListener('change',put):mq.addListener(put));
- mb.onclick=e=>{e.stopPropagation();mp.classList.toggle('on');mb.classList.toggle('on',mp.classList.contains('on'))};
+ mb.onclick=e=>{e.stopPropagation();window.__x2Up()};
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 </script></body></html>
