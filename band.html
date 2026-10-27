@@ -190,10 +190,10 @@ async function onLogin(u){GU={uid:u.uid,u,name:u.displayName||'',email:u.email||
  const [jc,jp]=(sessionStorage.getItem('wb_join')||'').split('|');sessionStorage.removeItem('wb_join');
  if(jc&&!myBand(jc)){const b=await J(jc+'/band').catch(()=>null);if(b&&b.name){bands=bands.filter(x=>x.code!==jc);bands.unshift({code:jc,name:b.name,me:me.name||GU.name||'멤버',part:jp||me.part||'g1'});saveBands();toast('🎸 «'+b.name+'» 가입했어요');go('#/b/'+jc+'/home');return}}
  render()}
-if(auth)auth.onAuthStateChanged(u=>{if(u){if(!GU||GU.uid!==u.uid)onLogin(u)}else if(GU){GU=null;render()}});
+if(auth)auth.onAuthStateChanged(u=>{const first=!authKnown;authKnown=true;if(u){if(!GU||GU.uid!==u.uid)onLogin(u)}else if(GU){GU=null;render()}else if(first)render()});
 async function gLogin(){if(!auth){toast('로그인 준비가 안 됐어요 — 인터넷 확인');return}const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
  try{await auth.signInWithPopup(p)}catch(e){if(/popup|not-supported|cancelled-popup/.test(e.code||'')&&!/closed-by-user/.test(e.code||''))auth.signInWithRedirect(p);else if(!/closed-by-user/.test(e.code||''))toast('로그인 못 했어요 — '+(e.code||e.message))}}
-function gOut(){if(!auth)return;if(!confirm('로그아웃할까요? (이 기기의 밴드 목록은 그대로 있어요)'))return;auth.signOut();cid=Math.random().toString(36).slice(2,10);LSet('cid',cid)}
+function gOut(){if(!auth)return;if(!confirm('로그아웃할까요? (이 기기의 밴드 목록은 그대로 있어요)'))return;auth.signOut();try{localStorage.removeItem('band_play_guest')}catch(e){}cid=Math.random().toString(36).slice(2,10);LSet('cid',cid)}
 const gCard=()=>GU?`<div class="card"><div class="row"><span>✅ <b>${esc(GU.email)}</b><br><small style="color:var(--mu)">어느 기기에서 열어도 내 밴드가 그대로예요</small></span><button class="sm b2" onclick="gOut()">로그아웃</button></div></div>`
  :`<div class="card"><h3>구글로 로그인</h3><div style="font-size:14px;color:var(--mu);margin-bottom:8px">폰·홈 화면 앱·아이패드·컴퓨터 어디서 열어도 같은 사람으로 — 다시 가입할 필요 없어요</div><button class="btn" onclick="gLogin()">G 구글로 로그인</button></div>`;
 const myBand=c=>bands.find(x=>x.code===c);
@@ -222,7 +222,20 @@ let lastH=null;const V=h=>{const y=scrollY,a=$('app');a.innerHTML=h;if(location.
   if(lastH!=null){const [g0,i0]=tIdx(lastH),[g1,i1]=tIdx(location.hash);a.className='';void a.offsetWidth;a.className=g0!==g1?(g1>g0?'inR':'inL'):i1>i0?'inR':i1<i0?'inL':'inF'}
   lastH=location.hash;scrollTo(0,0)}else scrollTo(0,y)};
 
+// 로그인 화면(10/27 «인트로 나간 다음에 구글 로그인이 뜨고, 로그인하면 앱 홈으로») — 로그인 전엔 어떤 화면도 이걸 먼저(초대 링크면 로그인 뒤 그 밴드 가입으로)
+let authKnown=!auth;setTimeout(()=>{if(!authKnown){authKnown=true;render()}},4000);
+function vLogin(){$('tabs').innerHTML='';$('tabs').style.display='none';const jm=location.hash.match(/^#\/join\/(\d{4})/);
+ V(`<div style="min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;background:#000;color:#fff">
+ <div style="font:900 44px Pretendard,-apple-system,sans-serif;letter-spacing:-.02em"><span style="color:#5EC4BE">We</span><span style="color:#FF3B47">Ba</span>nd</div>
+ <div style="font:800 22px Pretendard,-apple-system,sans-serif;margin-top:4px">위밴드</div>
+ <div id="lgj" style="color:#aaa;font-size:15px;margin:18px 0 28px;line-height:1.6">${jm?'🎸 밴드 초대를 받았어요<br>로그인하면 바로 가입해요':'함께 연주하는 밴드 앱<br>폰·아이패드·컴퓨터 어디서나 같은 나'}</div>
+ <button onclick="gLogin()" style="display:flex;align-items:center;gap:12px;justify-content:center;width:min(320px,100%);padding:15px;border:0;border-radius:14px;background:#fff;color:#111;font:700 17px Pretendard,-apple-system,sans-serif">
+ <svg width="22" height="22" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.7 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.2-13.4-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>Google로 계속하기</button>
+ <button onclick="LSet('guest',1);render()" style="margin-top:22px;background:none;border:0;color:#777;font-size:14px;text-decoration:underline">로그인 없이 둘러보기</button></div>`);
+ if(jm)J(jm[1]+'/band').then(o=>{if(o&&o.name&&$('lgj'))$('lgj').innerHTML=`🎸 <b style="color:#fff">${esc(o.name)}</b> 밴드 초대를 받았어요<br>로그인하면 바로 가입해요`}).catch(()=>{})}
 async function render(){const h=location.hash||'#/',p=h.slice(2).split('/');
+ if(GU||LG('guest'))$('tabs').style.display='';
+ if(!GU&&!LG('guest')){if(!authKnown){$('tabs').innerHTML='';V('<main><p class="empty">　</p></main>');return}vLogin();return}
  if(p[0]==='b'&&p[1]){const c=p[1],t=p[2]||'home';
   if(!myBand(c)){go('#/join/'+c);return}
   if(!B||B.code!==c){V('<main><p class="empty">불러오는 중…</p></main>');if(!await load(c)){V('<main><div class="card">밴드를 못 찾았어요. 인터넷 연결을 확인해 주세요.</div><a class="btn b2" href="#/">← 내 밴드</a></main>');return}}
@@ -283,7 +296,7 @@ let bip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();bip=e
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 const instCard=()=>standalone||LG('ih')?'':`<div class="card" id="inst" style="border:2px solid #5EC4BE"><div class="row" style="padding:0"><b>📲 홈 화면에 앱으로 추가</b><a href="javascript:void 0" onclick="LSet('ih',1);$('inst').remove()" style="color:var(--mu);text-decoration:none;font-size:14px">닫기</a></div><div style="font-size:14px;color:var(--mu);margin-top:6px;line-height:1.55">${bip?'주소창 없이 진짜 앱처럼 열려요.':ios?'Safari 아래 <b>공유(□↑)</b> → <b>홈 화면에 추가</b>. 주소창 없이 앱처럼 열려요.<br>카톡에서 열었으면 먼저 ⋯ → <b>Safari로 열기</b>':'브라우저 메뉴(⋮) → <b>홈 화면에 추가</b> 또는 <b>앱 설치</b>'}</div>${bip?'<button class="btn" onclick="bip.prompt()">설치</button>':''}</div>`;
 async function vApp(){
- V(`<div class="top g"><small>${me.name?'안녕하세요, '+esc(me.name)+(me.part?' · '+esc(PN[me.part]||''):''):'함께 연주하는 밴드 앱'}</small><h1 style="font:900 25px Pretendard,-apple-system,sans-serif;letter-spacing:-.02em"><span style="color:#5EC4BE">We</span><span style="color:#FF3B47">Ba</span>nd</h1></div><main>${instCard()}${gCard()}
+ V(`<div class="top g"><small>${me.name?'안녕하세요, '+esc(me.name)+(me.part?' · '+esc(PN[me.part]||''):''):'함께 연주하는 밴드 앱'}</small><h1 style="font:900 25px Pretendard,-apple-system,sans-serif;letter-spacing:-.02em"><span style="color:#5EC4BE">We</span><span style="color:#FF3B47">Ba</span>nd</h1></div><main>${instCard()}${GU?'':gCard()}
  <div class="card"><h3>내 밴드</h3><div id="bl">${bands.length?'':'<p class="empty">아직 밴드가 없어요.<br>만들거나, 받은 초대 코드로 가입하세요.</p>'}</div></div>
  <a class="btn" href="#/make">＋ 밴드 만들기</a><button class="btn b2" onclick="askCode()">🔗 초대 코드로 가입</button>
  <div class="card" style="margin-top:12px"><h3>🎧 혼자 연습</h3><div class="row"><span style="color:var(--mu);font-size:14px">밴드 없이 악보만 열어 연습하기</span><a class="go" href="at.html?solo=1">악보 열기</a></div></div>
@@ -316,7 +329,7 @@ async function vJoin(c){$('tabs').innerHTML='';V('<main><p class="empty">밴드 
  if(!o){V(`<main><div class="card">코드 <b>${esc(c)}</b> 밴드를 못 찾았어요.</div><a class="btn b2" href="#/">← 내 밴드</a></main>`);return}
  V(`<div class="top"><a href="#/"><small>← 내 밴드</small></a><h1>🎸 ${esc(o.name)}</h1></div><main><div class="card"><h3>가입하기</h3>
  ${GU?'':`<label class="l">내 파트</label>${partSel('jp',me.part||'g1')}<button class="btn" onclick="sessionStorage.setItem('wb_join','${esc(c)}|'+$('jp').value);gLogin()">G 구글로 로그인하고 가입</button><div style="text-align:center;color:var(--mu);font-size:13px;margin:6px 0 10px">또는 이름만 넣고 가입</div>`}
- <label class="l">내 이름</label><input id="jm" maxlength="20" value="${esc(me.name||'')}" placeholder="밴드에서 부르는 이름">
+ <label class="l">내 이름</label><input id="jm" maxlength="20" value="${esc(me.name||(GU&&GU.name)||'')}" placeholder="밴드에서 부르는 이름">
  ${GU?`<label class="l">내 파트</label>${partSel('jp',me.part||'g1')}`:''}
  <button class="btn" id="jk">가입하기</button></div></main>`);
  $('jk').onclick=async()=>{const nm=$('jm').value.trim();if(!nm){toast('이름을 넣어 주세요');return}
