@@ -37,7 +37,7 @@ label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight
 .song{display:flex;gap:12px;align-items:center}.song .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:24px;background:#f4eefa;flex:none}.song>div{flex:1;min-width:0}.song small{color:var(--mu)}
 .prog{height:8px;background:var(--li);border-radius:4px;overflow:hidden;margin-top:6px}.prog i{display:block;height:100%;background:var(--p2)}
 .seg{display:flex;background:var(--li);border-radius:12px;padding:3px;margin-bottom:12px}.seg a{flex:1;text-align:center;padding:8px;border-radius:10px;font-weight:700;font-size:14px;color:var(--mu);text-decoration:none}.seg a.on{background:#fff;color:var(--p)}
-.tag{font-size:12px;color:var(--p2);font-weight:800}.rt{font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--li);color:var(--p);margin-left:2px;white-space:nowrap}.rt-lead{background:#111;color:#FFD54A}.tag.g{color:#db2777}
+.tag{font-size:12px;color:var(--p2);font-weight:800}.rt{font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--li);color:var(--p);margin-left:2px;white-space:nowrap}.rt-lead{background:#111;color:#FFD54A}.rt-chief{background:#FFD54A;color:#111}.tag.g{color:#db2777}
 .mh{display:flex;justify-content:space-between;align-items:center;font-size:16px;color:var(--p);margin-bottom:6px}.mh a{padding:4px 12px;font-size:20px;color:var(--p);text-decoration:none}
 .wk,.gd{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}.wk span{font-size:11px;color:#9a88ad}
 .gd a{height:44px;font-size:14px;position:relative;display:flex;justify-content:center;padding-top:4px;border-radius:10px;color:var(--fg);text-decoration:none}
@@ -252,14 +252,16 @@ function vLogin(){$('tabs').innerHTML='';$('tabs').style.display='none';window._
 // ── 역할·권한(10/27 «밴드장·총무·회계 역할 + 집행부 권한 → 회원 관리·신규 가입 승인»)
 //  밴드장은 늘 다 됨 · 각 일(공지/일정/멤버 관리/회비)을 «모든 멤버 / 집행부 / 밴드장만» 중에서 밴드장이 정함
 //  가입 승인제: 밴드장이 있는 밴드는 초대 링크로 와도 «신청»만 → 집행부가 승인해야 멤버(밴드장이 없으면 예전처럼 바로 가입)
-const RN={lead:'👑 밴드장',vice:'⭐ 부밴드장',sec:'📋 총무',acct:'💰 회계'},RK=Object.keys(RN);
+const RN={lead:'👑 밴드장',chief:'🎖️ 단장',vice:'⭐ 부밴드장',mgr:'🎧 매니저',sec:'📋 총무',acct:'💰 회계'},RK=Object.keys(RN);
+// 집행부 = 역할 있는 사람 전부(밴드장 포함). 목록에 없는 직책은 'c:이름'으로 직접 입력(10/27 «집행부는 총무·회계·밴드장·단장 등을 총칭»)
+const rName=r=>!r?'':RN[r]||'🏷️ '+String(r).replace(/^c:/,'');
 const PMN={note:'📢 공지 쓰기',cal:'📅 일정 만들기·지우기',mem:'👥 가입 승인·멤버 관리',fee:'💰 회비 관리'},PMD={note:'staff',cal:'all',mem:'staff',fee:'staff'};
 const LVN={all:'모든 멤버',staff:'집행부',lead:'밴드장만'};
 const roleOf=k=>B&&B.ro&&B.ro[k]||'',hasLead=b=>Object.values((b||B||{}).ro||{}).includes('lead');
 const apprOn=b=>{b=b||B;return !!b&&(b.cfg||{}).appr!==false&&hasLead(b)};
 function can(a){if(!B||!B.m[cid])return false;const r=roleOf(cid);if(r==='lead')return true;const l=((B.cfg||{}).pm||{})[a]||PMD[a];return l==='all'||(l==='staff'&&!!r)}
 const deny=a=>{toast(PMN[a].replace(/^\S+ /,'')+'은(는) '+LVN[((B.cfg||{}).pm||{})[a]||PMD[a]]+'만 할 수 있어요');return true};
-const rTag=k=>{const r=roleOf(k);return r?` <span class="rt rt-${r}">${RN[r].replace(/^\S+ /,'')}</span>`:''};
+const rTag=k=>{const r=roleOf(k);return r?` <span class="rt rt-${RN[r]?r:'c'}">${esc(rName(r).replace(/^\S+ /,''))}</span>`:''};
 // 가입: 승인제면 신청서(rq)를, 아니면 바로 내 밴드 목록에(멤버 줄은 밴드 열 때 hello가 씀)
 async function joinBand(c,name,nm,part){const [ro,cfg]=await Promise.all([J(c+'/ro').catch(()=>null),J(c+'/cfg').catch(()=>null)]);
  const pend=apprOn({ro:ro||{},cfg:cfg||{}})&&!(await J(c+'/m/'+cid).catch(()=>null));
@@ -511,7 +513,7 @@ function reqModal(){const mine=LG('reqs')||[];
   mine.unshift({song,d:today()});LSet('reqs',mine.slice(0,20));closeM();toast('✅ 요청 보냈어요')}}
 
 // 👥 멤버
-function vMem(mb){const now=Date.now(),PK=Object.keys(PN),ro=k=>{const i=RK.indexOf(roleOf(k));return i<0?9:i};
+function vMem(mb){const now=Date.now(),PK=Object.keys(PN),ro=k=>{const r=roleOf(k),i=RK.indexOf(r);return i>=0?i:r?8:9};
  const mem=Object.entries(B.m).filter(([k,v])=>v&&v.name).sort((a,b)=>ro(a[0])-ro(b[0])||PK.indexOf(a[1].part)-PK.indexOf(b[1].part));
  const ws=weekStart(today()),wk=k=>{const [t]=sumPr(B.pr[k]||{},ws,today());return t},rq=Object.entries(B.rq).filter(([k,v])=>v&&v.name),mg=can('mem'),ld=roleOf(cid)==='lead';
  V(head(mb,'👥 멤버')+`<main>
@@ -537,10 +539,11 @@ async function okRq(k){const v=B.rq[k];if(!v)return;
 async function noRq(k){const v=B.rq[k];if(!v||!confirm(`«${v.name}» 가입 신청을 거절할까요?`))return;DEL(B.code+'/rq/'+k).catch(()=>{});delete B.rq[k];render()}
 function memMenu(k){const v=B.m[k];if(!v)return;const ld=roleOf(cid)==='lead',r=roleOf(k),kick=can('mem')&&r!=='lead'&&(ld||!r);
  modal(`<h2>${pe(v.part)} ${esc(v.name)}${rTag(k)}</h2><div style="color:var(--mu);margin-bottom:6px">${pn(v.part)}</div>
- ${ld?`<label class="l">역할 (집행부)</label><div class="chk">${['',...RK.filter(x=>x!=='lead')].map(x=>`<label><input type="radio" name="rr" value="${x}" ${r===x?'checked':''}>${x?RN[x]:'일반 멤버'}</label>`).join('')}</div>
+ ${ld?`<label class="l">역할 — 역할이 있으면 집행부예요</label><div class="chk">${['',...RK.filter(x=>x!=='lead')].map(x=>`<label><input type="radio" name="rr" value="${x}" ${r===x?'checked':''}>${x?RN[x]:'일반 멤버'}</label>`).join('')}<label><input type="radio" name="rr" value="c" ${/^c:/.test(r)?'checked':''}>🏷️ 직접 입력</label></div>
+  <input id="rcx" maxlength="10" placeholder="예: 음향감독, 홍보" value="${/^c:/.test(r)?esc(r.slice(2)):''}" style="margin-top:6px" oninput="document.querySelector('input[name=rr][value=c]').checked=true">
   <button class="btn" id="rsv">역할 저장</button><button class="btn b2" onclick="giveLead('${k}')">👑 밴드장 넘기기</button>`:''}
  ${kick?`<button class="btn gh" style="color:#dc2626" onclick="kick('${k}')">밴드에서 내보내기</button>`:''}<button class="btn gh" onclick="closeM()">닫기</button>`);
- if(ld)$('rsv').onclick=()=>{const x=(document.querySelector('input[name=rr]:checked')||{}).value||'';closeM();if(x){B.ro[k]=x;PUT(B.code+'/ro/'+k,x).catch(()=>toast('⚠️ 저장 못 했어요'))}else{delete B.ro[k];DEL(B.code+'/ro/'+k).catch(()=>{})}toast('저장했어요');render()}}
+ if(ld)$('rsv').onclick=()=>{let x=(document.querySelector('input[name=rr]:checked')||{}).value||'';if(x==='c'){const t=$('rcx').value.trim().replace(/[.#$\[\]\/]/g,'');if(!t){toast('직책 이름을 넣어 주세요');return}x='c:'+t}closeM();if(x){B.ro[k]=x;PUT(B.code+'/ro/'+k,x).catch(()=>toast('⚠️ 저장 못 했어요'))}else{delete B.ro[k];DEL(B.code+'/ro/'+k).catch(()=>{})}toast('저장했어요');render()}}
 async function giveLead(k){const v=B.m[k];if(!confirm(`«${v.name}»에게 밴드장을 넘길까요?\n나는 부밴드장이 돼요.`))return;closeM();
  B.ro[k]='lead';B.ro[cid]='vice';await PUT(B.code+'/ro/'+k,'lead').catch(()=>{});await PUT(B.code+'/ro/'+cid,'vice').catch(()=>{});toast('👑 밴드장을 넘겼어요');render()}
 async function kick(k){const v=B.m[k];if(!confirm(`«${v.name}»을(를) 밴드에서 내보낼까요?\n다시 들어오려면 가입 신청을 해야 해요.`))return;closeM();
@@ -551,8 +554,8 @@ async function claimLead(){if(!confirm('이 밴드의 밴드장을 맡을까요?
 // ⚙️ 밴드 설정(밴드장만): 가입 승인제 · 일별 권한 · 밴드 이름
 function setCard(){const pm=(B.cfg||{}).pm||{};return `<div class="card"><h3>⚙️ 밴드 설정 <small style="font-weight:400">(밴드장만 보여요)</small></h3>
  <label class="l">밴드 이름</label><input id="sbn" maxlength="30" value="${esc(B.band.name)}">
- <label class="chk" style="margin-top:10px"><label><input type="checkbox" id="sap" ${(B.cfg||{}).appr!==false?'checked':''}>가입 승인제 — 초대 링크로 와도 집행부가 승인해야 들어와요</label></label>
- <h3 style="margin-top:14px">집행부 권한</h3><small style="color:var(--mu)">집행부 = 부밴드장·총무·회계 · 밴드장은 늘 다 할 수 있어요</small>
+ <label class="chk" style="margin-top:10px"><label><input type="checkbox" id="sap" ${(B.cfg||{}).appr!==false?'checked':''}>가입 승인제 — 초대 링크로 와도 집행부(가입 승인 권한)가 승인해야 들어와요</label></label>
+ <h3 style="margin-top:14px">누가 할 수 있나</h3><small style="color:var(--mu)">집행부 = 밴드장·단장·부밴드장·매니저·총무·회계 등 역할을 맡은 사람 전부 · 밴드장은 늘 다 할 수 있어요 (역할은 멤버 이름을 눌러 정해요)</small>
  ${Object.entries(PMN).map(([a,n])=>`<div class="row"><span>${n}</span><select id="pm_${a}" style="width:auto">${Object.entries(LVN).map(([l,t])=>`<option value="${l}"${(pm[a]||PMD[a])===l?' selected':''}>${t}</option>`).join('')}</select></div>`).join('')}
  <button class="btn" onclick="saveSet()">설정 저장</button></div>`}
 async function saveSet(){const n=$('sbn').value.trim(),cfg={appr:$('sap').checked,pm:Object.fromEntries(Object.keys(PMN).map(a=>[a,$('pm_'+a).value]))};
