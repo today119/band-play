@@ -1,6 +1,6 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#000000">
-<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-512.png"><meta name="apple-mobile-web-app-title" content="위밴드"><title>위밴드</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-512.png"><meta name="apple-mobile-web-app-title" content="위밴드"><title>위밴드</title>
 <style>
 #spl{position:fixed;inset:0;background:radial-gradient(120% 80% at 50% 42%,#5a1683 0%,#3B0A57 60%,#2a0640 100%);z-index:100000;color:#fff;font-family:-apple-system,"Apple SD Gothic Neo","Helvetica Neue",sans-serif;overflow:hidden}
 #spl .stg{position:absolute;left:50%;top:44%;width:0;height:0}
@@ -53,6 +53,19 @@ label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1e1030;color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;z-index:30;font-size:14px}
 .rs{display:flex;gap:6px}.rs button{flex:1;padding:10px;font-size:15px;background:var(--li);color:var(--p)}.rs button.on1{background:#16a34a;color:#fff}.rs button.on0{background:#dc2626;color:#fff}
 .note{white-space:pre-wrap;font-size:15px}
+/* 앱처럼(10/27 «프로그램이 아니라 홈페이지 같다»): 붙어 있는 얇은 제목줄 · 선 아이콘 · 눌림 · 글자 선택/튕김 막기 · 화면 넘김 */
+html,body{overscroll-behavior-y:none}body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}input,textarea,.note{-webkit-user-select:text;user-select:text}
+.top{position:sticky;top:0;z-index:8;padding:calc(10px + env(safe-area-inset-top)) 20px 12px}.top h1{font-size:22px;letter-spacing:-.02em}.top small{font-size:12px}
+.hd{position:sticky;top:0;z-index:8}.hd .top{position:static;display:flex;align-items:center;gap:6px;padding:calc(6px + env(safe-area-inset-top)) 14px 8px 4px}.hd .top h1{font-size:19px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hd .top>div{min-width:0}
+.bk{font-size:34px;line-height:1;padding:0 10px 4px;color:#fff;text-decoration:none;font-weight:300}
+.hd .btabs{position:static}.btabs a b,.tabs a b{display:block;height:24px;filter:none!important;opacity:1!important}.btabs a b{height:21px}
+.ic2{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:top}.btabs .ic2{width:21px;height:21px}
+.on .ic2{fill:currentColor;fill-opacity:.16;stroke-width:2.3}
+.btn,button,.go{transition:transform .12s,opacity .12s}.btn:active,button:active,.go:active{transform:scale(.97);opacity:.85}.tabs a:active,.btabs a:active,.song:active{opacity:.6}
+.rs button.sel{background:var(--p);color:#fff}
+@keyframes inR{from{transform:translateX(28px);opacity:0}}@keyframes inL{from{transform:translateX(-28px);opacity:0}}@keyframes inF{from{opacity:0;transform:translateY(6px)}}
+#app.inR main{animation:inR .22s ease-out}#app.inL main{animation:inL .22s ease-out}#app.inF{animation:inF .2s ease-out}
+@media (prefers-reduced-motion:reduce){#app main,#app{animation:none!important}}
 </style>
 <style id="th-k">
 /* 블랙&화이트(10/26 «올블랙은 좀 그렇고 블랙엔 화이트지, 건반처럼») — 머리·밴드 메뉴·주 버튼은 검정, 내용은 흰 바탕·검정 글씨, 색은 갑니다 초록·못 가요/오늘 빨강·인트로 We 민트만 */
@@ -61,7 +74,7 @@ label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight
 .card{background:#fff;box-shadow:none;border:1px solid #e4e4e8}
 /* 밴드 메뉴 띠는 연회색 바탕+진한 글씨(10/26 «톤 다운» → «메뉴들이 그레이에 묻혀 있는 듯» → 글씨 대비 살림) */
 .btabs{background:var(--bg);border-bottom:1px solid #dcdce0;box-shadow:0 2px 6px #0001}.btabs a{color:#55555c}.btabs a b{filter:grayscale(.3);opacity:.85}.btabs a.on{color:#000;font-weight:900;border-bottom-color:#000}
-.tabs{background:#fff;border-top:1px solid #e2e2e6}.tabs a.on{color:#000}
+.tabs{background:#fff;border-top:1px solid #e2e2e6}.tabs a{color:#8e8e93}.tabs a.on{color:#000}
 .seg a.on{background:#fff;color:#000;box-shadow:0 1px 3px #0002}
 .pill{background:#efeff2;color:#333}.pill.ok{background:#dcfce7;color:#166534}.pill.no{background:#fee2e2;color:#991b1b}.pill.q{background:#fef9c3;color:#854d0e}.song .ic{background:#f0f0f2}
 .go{background:#000;color:#fff}.b2{background:#e9e9ec;color:#111}
@@ -69,6 +82,7 @@ label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight
 .prog{background:#e9e9ec}.prog i{background:#111}
 .tag{color:#111}.tag.g{color:#FF3B47}.code{color:#000}
 body::before{background:#000}
+input,select,textarea{border-color:#dcdce0}input:focus,select:focus,textarea:focus{outline:none;border-color:#111}.rs button.sel{background:#111}
 </style>
 <script>/* 테마 고르기(10/26 «블랙톤하고 보라톤 둘 다 선택») — 기본 블랙&화이트, 내 정보에서 바꿈 */try{if(JSON.parse(localStorage.getItem("band_play_theme"))==="p"){document.getElementById("th-k").disabled=true;document.querySelector("meta[name=theme-color]").content="#3B0A57"}}catch(e){}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard-subset.css">
 </head><body>
@@ -160,12 +174,24 @@ let B=null; // 지금 밴드 데이터 {code, band, m, ev, rs, nt, pr}
 async function load(code){const o=await J(code).catch(()=>null);if(!o||!o.band)return null;B={code,...o,m:o.m||{},ev:o.ev||{},rs:o.rs||{},pr:o.pr||{}};return B}
 function go(h){if(location.hash===h)render();else location.hash=h}
 window.addEventListener('hashchange',render);
-const tabs=(list,on)=>{$('tabs').classList.remove('dim');$('tabs').innerHTML=list.map(([h,ic,t])=>`<a href="${h}" class="${h===on?'on':''}"><b>${ic}</b>${t}</a>`).join('')};
-const appTabs=on=>tabs([['#/','🎸','내 밴드'],['#/lib','🎼','내 악보'],['#/find','🔍','찾기'],['#/me','🙋','내 정보']],on);
+// 선 아이콘(이모지 대신 — 고르면 속이 차요)
+const IC={band:'<path d="M14 10 20.5 3.5M18.5 2l3.5 3.5"/><path d="M12.6 11.4c-1.6-1.9-4.3-1.7-5.4.1-.6 1-.4 2-1.7 2.7-1.6.8-2.3 3.1-.6 5l1 1c1.9 1.7 4.2 1 5-.6.7-1.3 1.7-1.1 2.7-1.7 1.8-1.1 2-3.8.1-5.4z"/><circle cx="9.8" cy="14.2" r="1.4"/>',
+ note:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',find:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+ me:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/>',home:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/>',
+ cal:'<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/>',mem:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.5 2.4 3.5 5.5"/>',
+ fee:'<rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 10h19"/><circle cx="16.5" cy="14.5" r="1.3"/>'};
+const svg=k=>`<svg class="ic2" viewBox="0 0 24 24">${IC[k]}</svg>`;
+const tabs=(list,on)=>{$('tabs').classList.remove('dim');$('tabs').innerHTML=list.map(([h,ic,t])=>`<a href="${h}" class="${h===on?'on':''}"><b>${svg(ic)}</b>${t}</a>`).join('')};
+const APT=[['#/','band','내 밴드'],['#/lib','note','내 악보'],['#/find','find','찾기'],['#/me','me','내 정보']];
+const appTabs=on=>tabs(APT,on);
 // 모스처럼(10/26 «하단 메뉴는 1층 메뉴, 밴드 메뉴는 상단 메뉴로»): 아래 = 늘 앱 메뉴, 밴드 안 메뉴는 머리 밑 띠(스크롤해도 붙어 있음)
 let bTab='home';const bandTabs=(c,on)=>{bTab=on;appTabs('#/')};
-const BT=[['home','🏠','홈'],['cal','📅','일정'],['score','🎼','악보'],['mem','👥','멤버'],['fee','💰','회비']];
-let lastH=null;const V=h=>{const y=scrollY;$('app').innerHTML=h;if(location.hash!==lastH){lastH=location.hash;scrollTo(0,0)}else scrollTo(0,y)};
+const BT=[['home','home','홈'],['cal','cal','일정'],['score','note','악보'],['mem','mem','멤버'],['fee','fee','회비']];
+// 화면 넘김: 옆 메뉴로 가면 그쪽에서 밀려 들어오고, 밴드 들어가기/나오기도 좌우로
+const tIdx=h=>{const m=h.match(/^#\/b\/\d+\/(\w+)/);if(m)return [1,BT.findIndex(x=>x[0]===m[1])];const i=APT.findIndex(x=>x[0]===(h||'#/').split('/').slice(0,2).join('/'));return [0,i<0?0:i]};
+let lastH=null;const V=h=>{const y=scrollY,a=$('app');a.innerHTML=h;if(location.hash!==lastH){
+  if(lastH!=null){const [g0,i0]=tIdx(lastH),[g1,i1]=tIdx(location.hash);a.className='';void a.offsetWidth;a.className=g0!==g1?(g1>g0?'inR':'inL'):i1>i0?'inR':i1<i0?'inL':'inF'}
+  lastH=location.hash;scrollTo(0,0)}else scrollTo(0,y)};
 
 async function render(){const h=location.hash||'#/',p=h.slice(2).split('/');
  if(p[0]==='b'&&p[1]){const c=p[1],t=p[2]||'home';
@@ -214,8 +240,13 @@ const sumPr=(pr,from,to)=>{let t=0;const by={};for(const [day,o] of Object.entri
 const weekStart=s=>{const d=pd(s),k=(d.getDay()+6)%7;return addD(s,-k)};
 
 // ════════ 앱 홈 ════════
+// 홈 화면 앱으로 설치 안내(설치해서 열면 안 보임) — 안드로이드는 [설치] 버튼, 아이폰은 공유 → 홈 화면에 추가
+const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true,ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
+let bip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();bip=e;if((location.hash||'#/')==='#/')render()});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+const instCard=()=>standalone||LG('ih')?'':`<div class="card" id="inst" style="border:2px solid #5EC4BE"><div class="row" style="padding:0"><b>📲 홈 화면에 앱으로 추가</b><a href="javascript:void 0" onclick="LSet('ih',1);$('inst').remove()" style="color:var(--mu);text-decoration:none;font-size:14px">닫기</a></div><div style="font-size:14px;color:var(--mu);margin-top:6px;line-height:1.55">${bip?'주소창 없이 진짜 앱처럼 열려요.':ios?'Safari 아래 <b>공유(□↑)</b> → <b>홈 화면에 추가</b>. 주소창 없이 앱처럼 열려요.<br>카톡에서 열었으면 먼저 ⋯ → <b>Safari로 열기</b>':'브라우저 메뉴(⋮) → <b>홈 화면에 추가</b> 또는 <b>앱 설치</b>'}</div>${bip?'<button class="btn" onclick="bip.prompt()">설치</button>':''}</div>`;
 async function vApp(){
- V(`<div class="top g"><small>${me.name?'안녕하세요, '+esc(me.name)+(me.part?' · '+esc(PN[me.part]||''):''):'함께 연주하는 밴드 앱'}</small><h1 style="font:900 28px Pretendard,-apple-system,sans-serif;letter-spacing:-.02em"><span style="color:#5EC4BE">We</span><span style="color:#FF3B47">Ba</span>nd</h1></div><main>
+ V(`<div class="top g"><small>${me.name?'안녕하세요, '+esc(me.name)+(me.part?' · '+esc(PN[me.part]||''):''):'함께 연주하는 밴드 앱'}</small><h1 style="font:900 25px Pretendard,-apple-system,sans-serif;letter-spacing:-.02em"><span style="color:#5EC4BE">We</span><span style="color:#FF3B47">Ba</span>nd</h1></div><main>${instCard()}
  <div class="card"><h3>내 밴드</h3><div id="bl">${bands.length?'':'<p class="empty">아직 밴드가 없어요.<br>만들거나, 받은 초대 코드로 가입하세요.</p>'}</div></div>
  <a class="btn" href="#/make">＋ 밴드 만들기</a><button class="btn b2" onclick="askCode()">🔗 초대 코드로 가입</button>
  <div class="card" style="margin-top:12px"><h3>🎧 혼자 연습</h3><div class="row"><span style="color:var(--mu);font-size:14px">밴드 없이 악보만 열어 연습하기</span><a class="go" href="at.html?solo=1">악보 열기</a></div></div>
@@ -253,9 +284,9 @@ async function vJoin(c){$('tabs').innerHTML='';V('<main><p class="empty">밴드 
  $('jk').onclick=()=>{const nm=$('jm').value.trim();if(!nm){toast('이름을 넣어 주세요');return}
   const mb={code:c,name:o.name,me:nm,part:$('jp').value};bands=bands.filter(x=>x.code!==c);bands.unshift(mb);saveBands();if(!me.name){me={...me,name:nm,part:mb.part};LSet('me',me)}
   B=null;const back=sessionStorage.getItem('wb_after');sessionStorage.removeItem('wb_after');go(back||'#/b/'+c+'/home')}}
-function vFind(){V(`<div class="top g"><small>위밴드</small><h1>🔍 세션·밴드 찾기</h1></div><main>
+function vFind(){V(`<div class="top g"><small>위밴드</small><h1>세션·밴드 찾기</h1></div><main>
  <div class="card"><h3>곧 열려요</h3><div style="font-size:15px;line-height:1.6">• 🥁 <b>세션 구해요</b> — 합주에 빠진 파트를 근처 연주자에게<br>• 🎹 <b>밴드 구해요</b> — 밴드 찾는 연주자 등록<br><span style="color:var(--mu);font-size:14px">여러 밴드가 쓰기 시작하면 열게요.</span></div></div></main>`)}
-function vMe(){V(`<div class="top g"><small>이 기기에 저장돼요</small><h1>🙋 내 정보</h1></div><main><div class="card">
+function vMe(){V(`<div class="top g"><small>이 기기에 저장돼요</small><h1>내 정보</h1></div><main><div class="card">
  <label class="l">이름</label><input id="mn" maxlength="20" value="${esc(me.name||'')}">
  <label class="l">주 파트</label>${partSel('mp',me.part||'g1')}
  <label class="l">지역 (나중에 찾기에서 써요)</label><input id="mr" maxlength="20" value="${esc(me.region||'')}" placeholder="예: 인천 중구">
@@ -263,13 +294,13 @@ function vMe(){V(`<div class="top g"><small>이 기기에 저장돼요</small><h
  <div class="card"><h3>🎨 화면 색</h3><div class="rs"><button id="thk">🎹 블랙&화이트</button><button id="thp">💜 보라</button></div></div>
  <div class="card"><h3>🎧 내 연습 (이 기기)</h3><div id="mpr"></div></div></main>`);
  $('ms').onclick=()=>{me={name:$('mn').value.trim(),part:$('mp').value,region:$('mr').value.trim()};LSet('me',me);toast('저장했어요')};
- const th=()=>{const p=LG('theme')==='p';$('th-k').disabled=p;document.querySelector('meta[name=theme-color]').content=p?'#3B0A57':'#000000';$('thk').className=p?'':'on1';$('thp').className=p?'on1':''};
+ const th=()=>{const p=LG('theme')==='p';$('th-k').disabled=p;document.querySelector('meta[name=theme-color]').content=p?'#3B0A57':'#000000';$('thk').className=p?'':'sel';$('thp').className=p?'sel':''};
  $('thk').onclick=()=>{LSet('theme','k');th()};$('thp').onclick=()=>{LSet('theme','p');th()};th();
  const pr=myPr(),[m,by]=sumPr(pr,today().slice(0,8)+'01',today()),[w]=sumPr(pr,weekStart(today()),today());
  $('mpr').innerHTML=`<div class="row"><span>이번 주</span><b>${mins(w)}</b></div><div class="row"><span>이번 달</span><b>${mins(m)}</b></div>`+Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([s,v])=>`<div class="row"><span>${esc(SN[s]||s)}</span><span>${mins(v)}</span></div>`).join('')}
 
 // ════════ 밴드 홈 ════════
-const head=(mb,t,sub)=>`<div class="top" style="padding-bottom:12px"><a href="#/"><small>← 내 밴드</small></a><h1>🎸 ${esc(B.band.name)}</h1><small style="margin-top:3px">코드 ${mb.code} · 나 ${esc(mb.me)} ${pe(mb.part)} ${pn(mb.part)}</small></div><nav class="btabs">${BT.map(([k,ic,n])=>`<a href="#/b/${mb.code}/${k}" class="${k===bTab?'on':''}"><b>${ic}</b>${n}</a>`).join('')}</nav>${sub?'<div class="sub">'+sub+'</div>':''}`;
+const head=(mb,t,sub)=>`<div class="hd"><div class="top"><a class="bk" href="#/" aria-label="내 밴드">‹</a><div><h1>${esc(B.band.name)}</h1><small>코드 ${mb.code} · ${esc(mb.me)} ${pn(mb.part)}</small></div></div><nav class="btabs">${BT.map(([k,ic,n])=>`<a href="#/b/${mb.code}/${k}" class="${k===bTab?'on':''}"><b>${svg(ic)}</b>${n}</a>`).join('')}</nav></div>${sub?'<div class="sub">'+sub+'</div>':''}`;
 const atUrl=(mb,song)=>{const k=B.band.k||DEFK;let s=song;if(!s){try{s=(localStorage.getItem('at_s')||'butterfly_g1').split('_')[0]}catch(e){s='butterfly'}}return `at.html?k=${k}&s=${s}_${mb.part}`};
 function vHome(mb){const n=nextOf('j'),g=nextOf('g'),nt=B.nt;
  const pr=myPr(),[w]=sumPr(pr,weekStart(today()),today()),[lw]=sumPr(pr,addD(weekStart(today()),-7),addD(weekStart(today()),-1));
@@ -352,7 +383,7 @@ async function vScore(mb){V(head(mb,'🎼 악보함','내 파트: '+(PN[mb.part]
 // 🎼 내 악보(1층, 10/26 «혼자 연습하려면 1층 메뉴에도 악보가 있어야 하나? 악보를 넣는 메뉴가 없네»)
 //   위밴드 악보함 곡 전부를 파트 골라 혼자 연습 + 악보 넣기(내 PDF는 이 기기 index.html / 새로 그려 달라는 요청은 band_play_req)
 async function vLib(){let k=DEFK;try{k=localStorage.getItem('at_k')||DEFK}catch(e){}const part=me.part||'g1';
- V(`<div class="top g"><small>파트를 골라 혼자 연습해요</small><h1>🎼 내 악보</h1></div><main><label class="l" style="margin-top:0">내 파트</label>${partSel('lp',part)}<div id="ll" style="margin-top:12px"><p class="empty">불러오는 중…</p></div></main>`);
+ V(`<div class="top g"><small>파트를 골라 혼자 연습해요</small><h1>내 악보</h1></div><main><label class="l" style="margin-top:0">내 파트</label>${partSel('lp',part)}<div id="ll" style="margin-top:12px"><p class="empty">불러오는 중…</p></div></main>`);
  $('lp').onchange=()=>{me={...me,part:$('lp').value};LSet('me',me);vLib()};
  let o={};try{o=await fetch(LIB+k+'/tex.json?shallow=true').then(r=>r.json())||{}}catch(e){}
  const songs=[...new Set(Object.keys(o).map(x=>x.split('_')[0]))],cov=LG('cov')||{},[,by]=sumPr(myPr(),'2000-01-01','2999-12-31'),pdf=LG('pdfs')||0;
@@ -410,5 +441,5 @@ document.addEventListener('visibilitychange',refresh);setInterval(refresh,30000)
   if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*2||Date.now()-t0>700)return;const dir=dx<0?1:-1;
   if(on){const [y,m]=calM.split('-').map(Number);calM=ymd(new Date(y,m-1+dir,1)).slice(0,7);render();return}
   const i=BT.findIndex(x=>x[0]===bTab),j=i+dir;if(j<0||j>=BT.length)return;
-  const a=$('app');a.animate([{transform:`translateX(${-dir*40}px)`,opacity:.3},{transform:'none',opacity:1}],{duration:220,easing:'ease-out'});go('#/b/'+B.code+'/'+BT[j][0])},{passive:true})}
+  go('#/b/'+B.code+'/'+BT[j][0])},{passive:true})}
 </script></body></html>
