@@ -4,22 +4,32 @@
 <style>
 :root{--bg:#fff;--fg:#111}
 body{margin:0;touch-action:manipulation;overflow-x:hidden;font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--fg)}
-#bar{position:fixed;left:0;right:0;top:0;background:#111;color:#fff;padding:calc(12px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-left)) 2px;z-index:9;display:flex;flex-direction:column;gap:12px;transition:transform .28s cubic-bezier(.2,.8,.2,1);box-shadow:0 2px 10px #0004}
+/* 도구 막대(10/27 «어도비·파이널컷 같은 소프트웨어 느낌 — 악보 창과 메뉴 창 기능이 명확하고 선이 깔끔하게»):
+   흑연색 막대 한 줄(좁으면 두 줄) — [밴드·곡·파트] [⏮ ▶ 위치판 템포] [개인/합주 소리 원곡 녹화 넣기], 아래 얇은 상태줄 */
+#bar{position:fixed;left:0;right:0;top:0;background:#1b1b1d;color:#e8e8ea;padding:calc(8px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));z-index:9;display:flex;flex-direction:column;transition:transform .28s cubic-bezier(.2,.8,.2,1);border-bottom:1px solid #000;box-shadow:inset 0 -1px 0 #ffffff0f,0 6px 18px #0000002e;font-family:-apple-system,system-ui,sans-serif;-webkit-user-select:none;user-select:none}
+.tb{display:flex;flex-wrap:wrap;align-items:center;gap:8px 6px}.tb .fx{flex:1 1 4px}.tb .br{display:none;flex-basis:100%;height:0}.vsep{width:1px;height:22px;background:#3a3a3e;margin:0 2px}
+#bar svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#bar .ib{height:38px;min-width:38px;padding:0 9px;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:transparent;border:1px solid transparent;border-radius:9px;color:#d8d8dc;font:600 13px -apple-system,system-ui,sans-serif;transition:background .12s,transform .12s}
+#bar .ib:active,#md button:active{background:#333336;transform:scale(.95)}#bar .ib.on{background:#5EC4BE1f;color:#5EC4BE;border-color:#5EC4BE55}#rec.on{color:#FF3B47!important;background:#FF3B471f!important;border-color:#FF3B4766!important}
+#rm{max-width:190px;color:#f2f2f4!important}#rm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:700}
+#p{width:44px;height:44px;border-radius:50%;background:#f2f2f4;color:#111;border:0;display:inline-flex;align-items:center;justify-content:center;transition:transform .12s,background .15s;box-shadow:0 1px 0 #fff3 inset}#p:active{transform:scale(.92)}#p svg{fill:currentColor;stroke:none;width:19px;height:19px}#p.on{background:#5EC4BE;color:#08201e}
+#sg,#pt{-webkit-appearance:none;appearance:none;height:38px;max-width:44vw;background:#2a2a2d url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23aaa' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 10px center/10px;border:1px solid #3a3a3e;border-radius:9px;color:#f2f2f4;font:700 15px -apple-system,system-ui,sans-serif;padding:0 28px 0 11px}#pt:empty{display:none}
+.lcd{height:38px;display:inline-flex;align-items:center;gap:6px;padding:0 12px;background:#0c0c0d;border:1px solid #333;border-radius:9px;font:600 15px ui-monospace,SFMono-Regular,Menlo,monospace;color:#5EC4BE;font-variant-numeric:tabular-nums;white-space:nowrap}.lcd small{color:#6e6e74;font:600 11px -apple-system,sans-serif}.lcd i{width:1px;height:18px;background:#333}
+.tempo{display:inline-flex;align-items:center;height:38px;border:1px solid #3a3a3e;border-radius:9px;background:#2a2a2d}.tempo .ib{height:36px!important;min-width:34px!important;font-size:20px!important;font-weight:400!important}#sp{font:600 14px ui-monospace,SFMono-Regular,Menlo,monospace;min-width:44px;text-align:center;color:#f2f2f4}
+#md{display:inline-flex;border:1px solid #3a3a3e;border-radius:9px;overflow:hidden;background:#2a2a2d;height:38px}#md[hidden]{display:none}#md button{background:transparent;border:0;color:#9a9aa0;padding:0 11px;display:inline-flex;align-items:center;gap:5px;font:700 13px -apple-system,sans-serif}#md button.on{background:#5EC4BE;color:#08201e}
+#bx{display:none!important}#rbox input{height:34px}#rgo{height:34px;border:0;border-radius:8px;background:#5EC4BE;color:#08201e;font-weight:800;padding:0 10px;margin-left:4px}
+#foot{position:relative;height:24px;display:flex;align-items:center}#st{font:600 12px -apple-system,sans-serif;color:#8e8e93;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(50% - 40px)}
+#grip{position:absolute;left:50%;top:0;transform:translateX(-50%);display:flex;justify-content:center;padding:8px 34px 10px;touch-action:none;cursor:grab}#grip span{width:44px;height:5px;border-radius:3px;background:#4a4a4e}
+@media(max-width:760px){.tb .br{display:block}#rm,#sg,#pt{order:1}.tb .fx:first-of-type{order:2}#md{order:3}.tb .br{order:4}#h,#p,.tempo,.lcd{order:5}.tb .fx2{order:6}#mt,#ytb,#rec,#rbox,.vsep,#hideb{order:7}}
+@media(max-width:560px){#bar .ib span,#md button span{display:none}.lcd,#bar #hideb,.vsep{display:none}#rm{max-width:40px}#sg{max-width:40vw}#pt{max-width:30vw}#bar .ib{padding:0 6px}.tb{gap:8px 4px}#md button{padding:0 9px}.tb:has(#md:not([hidden])) #sg{max-width:30vw}.tb:has(#md:not([hidden])) #pt{max-width:25vw}#sg,#pt{padding-right:24px;font-size:14px}} /* 폰: 넣기는 아래 손잡이 톡(또는 위로 밀기) */
 #bar.hide{transform:translateY(calc(-100% - 12px))}#barsp{height:var(--bh,100px);transition:height .28s cubic-bezier(.2,.8,.2,1)}body.bh #barsp{height:0}
-#grip{display:flex;justify-content:center;padding:8px 0 10px;touch-action:none;cursor:grab}#grip span{width:64px;height:6px;border-radius:3px;background:#555}
 #tab{position:fixed;top:0;left:50%;transform:translate(-50%,-100%);z-index:9;background:transparent;border:0;padding:calc(6px + env(safe-area-inset-top)) 44px 16px;transition:transform .28s,opacity .2s;touch-action:none;opacity:.85}#tab span{display:block;width:64px;height:7px;border-radius:4px;background:#333;box-shadow:0 0 0 2px #fffb,0 2px 6px #0005}body.bh #tab{transform:translate(-50%,0)}#tab.drag{opacity:0}
-#hideb{background:#2b2b2b!important;color:#bbb!important}
-#bar .row{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}#bar .row::-webkit-scrollbar{display:none}#bar .row>*{flex:none}
-@media(max-width:520px){#bar button{font-size:14px;padding:7px 8px}#bar .row{gap:4px}#sg{max-width:24vw}#pt{max-width:19vw}#bar .em{display:none}#rm{max-width:40px;overflow:hidden;text-overflow:clip;white-space:nowrap}#md button{padding:7px 6px}}
-#bar button{font-size:clamp(14px,2.3vw,17px);padding:7px clamp(9px,1.8vw,14px);border:0;border-radius:10px;background:#2b2b2b;color:#fff}
-#bar button.on{background:#dc2626}
-#md{display:inline-flex;border-radius:10px;overflow:hidden;background:#2b2b2b}#md[hidden]{display:none}#bar i.em{font-style:normal}#md button{border-radius:0;background:transparent;color:#aaa}#md button.on{background:#7c3aed;color:#fff}#bar b{font-size:15px}#pt,#sg{font-size:clamp(14px,2.2vw,16px);padding:6px;border-radius:10px;background:#2b2b2b;color:#fff;border:0}#pt:empty{display:none}#st{font-size:13px;opacity:.75}
 #at{padding:0 6px}
 #yt{display:none;background:#000;position:sticky;top:var(--bt,100px);z-index:8}#yt.on{display:flex;gap:8px;align-items:center;padding:6px;flex-wrap:wrap}
 #ytbox{width:min(320px,45vw);aspect-ratio:16/9}#ytbox iframe{width:100%;height:100%}
 #ytc{color:#fff;font-size:14px;display:flex;flex-direction:column;gap:6px}#ytc button{font-size:15px;padding:6px 10px;border:0;border-radius:8px;background:#333;color:#fff}
 #ytc .tap{background:#2563eb;font-size:16px}#ytc small{opacity:.75}@media(max-height:500px){#ytbox{width:190px}#ytc small{display:none}}
-#rbox input{width:96px;font-size:16px;padding:6px 8px;border-radius:10px;border:0}#rm.on{background:#16a34a}
+#rbox input{width:96px;font-size:16px;padding:6px 8px;border-radius:8px;border:0}
 #camBox{position:fixed;right:max(10px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));width:min(34vw,360px);aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;z-index:20;box-shadow:0 6px 20px #0006;display:none}
 #camBox video{width:100%;height:100%;object-fit:cover}#camBox video.mirror{transform:scaleX(-1)}
 #camBox b{position:absolute;left:8px;top:6px;background:#dc2626;color:#fff;font:800 14px ui-monospace,monospace;padding:2px 8px;border-radius:6px}
@@ -101,7 +111,7 @@ body{margin:0;touch-action:manipulation;overflow-x:hidden;font-family:-apple-sys
   A(em,[{opacity:1},{opacity:.0}],{delay:200,duration:400});
 },2500);
  setTimeout(()=>end(),4200)})();
-</script><div id="bar"><div class="row"><select id="sg"></select><select id="pt"></select><button id="rm">👥 합주 방</button><span id="md" hidden><button id="mdS"><i class="em">🎧 </i>개인</button><button id="mdJ"><i class="em">👥 </i>합주</button></span><button id="bx" hidden>🚪 나가기</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><button id="rec">⏺ 녹화</button><span id="st">불러오는 중…</span></div><div class="row"><button id="p">▶ 재생</button><button id="h">⏮</button><button id="dn">−</button><b id="sp">100%</b><button id="up">+</button><button id="mt">🔇 소리</button><button id="ytb">📺 원곡</button><button id="hideb">︿ 넣기</button></div><div id="grip"><span></span></div></div><div id="barsp"></div><button id="tab" aria-label="메뉴 꺼내기"><span></span></button>
+</script><div id="bar"><div class="tb"><button id="rm" class="ib" title="밴드 홈"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>밴드</span></button><select id="sg"></select><select id="pt"></select><span class="fx"></span><span id="md" hidden><button id="mdS"><svg viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4.5" height="6" rx="1.5"/><rect x="16.5" y="14" width="4.5" height="6" rx="1.5"/></svg><span>개인</span></button><button id="mdJ"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.5 2.4 3.5 5.5"/></svg><span>합주</span></button></span><i class="br"></i><button id="h" class="ib" title="처음으로"><svg viewBox="0 0 24 24"><path d="M6 5v14"/><path d="M19 5.5v13L9 12z" fill="currentColor"/></svg></button><button id="p" title="재생"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></button><span class="lcd" title="지금 마디 · 시간"><b id="lbar">1</b><small id="lbn">/ –</small><i></i><b id="ltm">0:00</b><small id="ltt">/ 0:00</small></span><span class="tempo" title="빠르기"><button id="dn" class="ib">−</button><b id="sp">100%</b><button id="up" class="ib">+</button></span><span class="fx fx2"></span><button id="mt" class="ib" title="소리"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg><span>소리</span></button><button id="ytb" class="ib" title="원곡"><svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="3"/><path d="M10 9.3v5.4l4.8-2.7z" fill="currentColor"/></svg><span>원곡</span></button><button id="rec" class="ib" title="녹화"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2" fill="#FF3B47" stroke="none"/></svg><span>녹화</span></button><button id="bx" hidden>나가기</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><span class="vsep"></span><button id="hideb" class="ib" title="메뉴 넣기"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button></div><div id="foot"><span id="st">불러오는 중…</span><div id="grip"><span></span></div></div></div><div id="barsp"></div><button id="tab" aria-label="메뉴 꺼내기"><span></span></button>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
  <div><button id="o1">◀ 0.05초</button> <button id="o2">0.05초 ▶</button></div><small id="yinfo">원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요</small></div></div>
@@ -110,6 +120,12 @@ body{margin:0;touch-action:manipulation;overflow-x:hidden;font-family:-apple-sys
 // 새로 그린 악보(alphaTex) — 음표 하나하나에 박자가 들어 있어 커서가 정확히 따라감(10/25 사용자 «너가 악보를 새로 그리는 게 정확하겠다»)
 // 구매 악보를 옮긴 것이라 저장소엔 넣지 않고 방 악보함(band_play_lib/{키}/tex)에서 읽는다
 const q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
+// 도구 막대 아이콘(선 아이콘 + 짧은 글자) — 버튼 글자 바꿀 땐 BL(버튼, 아이콘, 글자)
+const IC={play:'<svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>',pause:'<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4.2" height="14" rx="1"/><rect x="13.8" y="5" width="4.2" height="14" rx="1"/></svg>',
+ spk:'<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg>',mute:'<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
+ rec:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2" fill="#FF3B47" stroke="none"/></svg>',stop:'<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>',
+ save:'<svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 15.5v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg>',back:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>'};
+window.IC=IC;const BL=window.BL=(id,ic,t)=>{const b=$(id);if(b)b.innerHTML=IC[ic]+(t?'<span>'+t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[c])+'</span>':'')};
 // 한 주소로 여러 곡(10/25): 악보함 키·마지막 곡/파트를 기억해서 ?k 없이 at.html 만 열어도 됨
 {const g=k=>{try{return localStorage.getItem('at_'+k)}catch(e){return null}},p=(k,v)=>{try{localStorage.setItem('at_'+k,v)}catch(e){}};
  if(!q.get('k')&&g('k'))q.set('k',g('k'));if(q.get('k'))p('k',q.get('k'));
@@ -147,9 +163,9 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  if(!tex){$('st').textContent='악보를 못 찾았어요';return}
  const narrow=innerWidth<700;
  api=new alphaTab.AlphaTabApi($('at'),{core:{fontDirectory:CDN+'font/',tex:true},
-  display:{staveProfile:voc&&!q.get('v')?'Default':q.get('v')||({vocal:'Score',g1:'Tab',g2:'ScoreTab',bass:'ScoreTab',keys:'Score',drums:'Score'})[(q.get('s')||'').split('_')[1]]||'Tab',scale:narrow?0.95:1.15,layoutMode:'page'},
+  display:{staveProfile:alphaTab.StaveProfile[voc&&!q.get('v')?'Default':q.get('v')||({vocal:'Score',g1:'Tab',g2:'ScoreTab',bass:'ScoreTab',keys:'Score',drums:'Score'})[(q.get('s')||'').split('_')[1]]||'Tab']??alphaTab.StaveProfile.Default,scale:narrow?0.95:1.15,layoutMode:'page'},
   notation:{rhythmMode:alphaTab.TabRhythmMode.ShowWithBars},
-  player:{enablePlayer:true,enableCursor:true,enableAnimatedBeatCursor:true,soundFont:CDN+'soundfont/sonivox.sf2',scrollElement:document.scrollingElement,scrollOffsetY:-110}});
+  player:{enablePlayer:true,enableCursor:true,enableAnimatedBeatCursor:true,soundFont:CDN+'soundfont/sonivox.sf2',scrollElement:document.scrollingElement,scrollOffsetY:-110,scrollMode:alphaTab.ScrollMode.Off}});
  window.api=api;
  // 재생바를 직접 그림(10/26 «아직도 재생바가 버벅일 때가 있어»): alphaTab은 «이 음표→다음 음표»까지만 움직이고 다음 소리 신호가 늦으면
  // 그 자리에 멈췄다 튐 → 마지막 신호 + 흐른 시간으로 매 프레임 위치를 계산(살짝씩만 끌어당겨 맞춤), 멈춤 중엔 alphaTab이 놓는 그대로
@@ -159,7 +175,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    placeBeatCursor(c,bb,x){C.c=c;if(api.playerState===1&&C.ev)return;const v=bb.barBounds.masterBarBounds.visualBounds;c.transitionToX(0,x);c.setBounds(x,v.y,1,v.h)},
    transitionBeatCursor(c){C.c=c}};
   api.playerPositionChanged.on(e=>{C.ev={tk:e.currentTick,at:performance.now(),r:960*e.modifiedTempo/60000};if(e.isSeek)C.tk=-1});
-  api.playerStateChanged.on(e=>{if(e.state!==1){C.ev=null;C.tk=-1}});
+  api.playerStateChanged.on(e=>{if(e.state!==1){C.ev=null;C.tk=-1;C.sys=null}});
   // 음표 사이 간격이 박자 길이와 비례하지 않아 음표마다 속도가 «툭» 바뀜(10/26 «어떤 음에 따라 약간 튀기는 듯») →
   // 앞·뒤 음표까지 4점으로 단조 3차 곡선(Fritsch–Carlson) — 음표를 지날 때 속도가 이어짐
   const TR=()=>new Set(api.tracks.map(t=>t.index)),kn=(lb,r,sys)=>{const b=r&&r.beat&&lb.findBeat(r.beat);return b&&b.barBounds.masterBarBounds.staffSystemBounds===sys?b.onNotesX:null};
@@ -170,30 +186,43 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    const P0=p&&p.start<t1?[p.start,kn(lb,p,sys)]:null,q3=q&&q.nextBeat?kn(lb,q.nextBeat,sys):null,P3=q&&q.start===t2&&q3!=null&&q3>x2?[t2+q.tickDuration,q3]:null;
    const s12=(x2-bb.onNotesX)/Math.max(1,t2-t1),hm=(a,b)=>a>0&&b>0?2*a*b/(a+b):0,s=(A,B)=>(B[1]-A[1])/Math.max(1,B[0]-A[0]);
    const m1=P0&&P0[1]!=null&&P0[1]<bb.onNotesX?hm(s(P0,[t1,bb.onNotesX]),s12):s12,m2=P3?hm(s12,s([t2,x2],P3)):s12;
-   return {r:res,t1,t2,x1:bb.onNotesX,x2,m1,m2,y:mb.visualBounds.y,h:mb.visualBounds.h}};
+   return {r:res,t1,t2,x1:bb.onNotesX,x2,m1,m2,y:mb.visualBounds.y,h:mb.visualBounds.h,sys}};
   const draw=tk=>{const lb=api.renderer.boundsLookup,tc=api.tickCache;if(!lb||!tc||!C.c)return;
    const res=tc.findBeat(TR(),Math.floor(tk),C.hint);if(!res||!res.beat)return;C.hint=res;
    if(!K||K.r.beat!==res.beat||K.t1!==res.start||K.lb!==lb){K=knots(res,lb,tc);if(!K)return;K.lb=lb}
+   if(K.sys!==C.sys){C.sys=K.sys;autoScroll(lb,K.sys)}
    const L=K.t2-K.t1,u=L>0?Math.max(0,Math.min(1,(tk-K.t1)/L)):0,u2=u*u,u3=u2*u;
    const x=(2*u3-3*u2+1)*K.x1+(u3-2*u2+u)*L*K.m1+(-2*u3+3*u2)*K.x2+(u3-u2)*L*K.m2;
    C.c.transitionToX(0,x);C.c.setBounds(x,K.y,1,K.h)};
+  // 줄 넘김(10/27 밴드 친구 «아이패드는 세 줄 보이니 재생 줄을 늘 둘째 줄에 — 위아래 악보를 미리 보게»):
+  //  세 줄 넘게 들어가는 화면은 «위 = 방금 친 줄 · 가운데 = 지금 · 아래 = 다음 줄», 아니면(폰) 지금 줄을 맨 위로 — 둘 다 스르르
+  const autoScroll=(lb,sys)=>{const ss=lb.staffSystems||[],i=ss.indexOf(sys);if(i<0)return;
+   const top0=$('at').getBoundingClientRect().top+scrollY,bar=document.body.classList.contains('bh')?0:$('bar').offsetHeight,vh=innerHeight-bar;
+   const Y=s=>top0+s.realBounds.y,Hh=s=>s.realBounds.h,nx=ss[i+1]||sys;
+   const y=i>0&&vh>=Hh(ss[i-1])+Hh(sys)+Hh(nx)?Y(ss[i-1]):Y(sys);window.__sc={i,two:y!==Y(sys)};
+   scrollTo({top:Math.max(0,y-bar-4),behavior:'smooth'})};
   window.__cx=tk=>{draw(tk);return C.c&&C.c.lastBounds.x}; // 시험용
   (function loop(now){requestAnimationFrame(loop);const dt=Math.min(100,now-C.pf);C.pf=now;const e=C.ev;if(!e||api.playerState!==1)return;
    const est=e.tk+Math.min(400,now-e.at)*e.r;
    if(C.tk<0||Math.abs(est-C.tk)>480)C.tk=est;else{const p=C.tk+dt*e.r;C.tk=p+(est-p)*0.06}
    try{draw(C.tk)}catch(x){}})(0)}
- let mute=false,sp=1;api.masterVolume=1;$('mt').textContent='🔊 소리';
+ let mute=false,sp=1;api.masterVolume=1;BL('mt','spk','소리');
  api.error.on(e=>{$('st').textContent='오류: '+(e.message||e)});
  api.renderFinished.on(()=>{$('st').textContent='';window.__done=1});
  let ready=false;api.soundFontLoad.on(e=>{if(!ready&&e.total)$('st').textContent='소리 준비 '+Math.floor(e.loaded/e.total*100)+'%'});
  api.playerReady.on(()=>{ready=true;$('st').textContent=''});
- api.playerStateChanged.on(e=>{const on=e.state===1;$('p').textContent=on?'⏸ 멈춤':'▶ 재생';$('p').classList.toggle('on',on)});
+ api.playerStateChanged.on(e=>{const on=e.state===1;$('p').innerHTML=on?IC.pause:IC.play;$('p').title=on?'멈춤':'재생';$('p').classList.toggle('on',on)});
+ // 위치판(마디 · 시간) — 소프트웨어 재생기처럼 지금 어디인지 늘 보이게
+ const mmss=ms=>{const t=Math.max(0,Math.floor(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};let lsec=-1;
+ api.playerPositionChanged.on(e=>{const t=Math.floor(e.currentTime/1000);if(t!==lsec){lsec=t;$('ltm').textContent=mmss(e.currentTime);$('ltt').textContent='/ '+mmss(e.endTime)}});
+ api.scoreLoaded.on(sc=>{$('lbn').textContent='/ '+sc.masterBars.length});
+ api.playedBeatChanged.on(bt=>{try{$('lbar').textContent=bt.voice.bar.masterBar.index+1}catch(x){}});
  api.tex(tex,voc?[0,1]:undefined);
  if(voc)api.scoreLoaded.on(sc=>{try{api.changeTrackMute([sc.tracks[0]],true)}catch(e){}});
  $('p').onclick=()=>api.playPause();$('h').onclick=()=>api.stop();
  let S=d=>{sp=Math.max(0.5,Math.min(1.5,Math.round((sp+d)*20)/20));api.playbackSpeed=sp;$('sp').textContent=Math.round(sp*100)+'%'};
  $('dn').onclick=()=>S(-0.05);$('up').onclick=()=>S(0.05);
- $('mt').onclick=()=>{mute=!mute;api.masterVolume=mute?0:1;$('mt').textContent=mute?'🔇 소리':'🔊 소리'};
+ $('mt').onclick=()=>{mute=!mute;api.masterVolume=mute?0:1;BL('mt',mute?'mute':'spk','소리');$('mt').classList.toggle('on',mute)};
 
 
  // ── 합주 방: 같은 방 코드면 누가 ▶를 눌러도 모두 같은 순간에 같은 자리에서 시작(각자 자기 파트 악보). 10/25 «합주하듯이 활용 가능?»
@@ -222,7 +251,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    if(Math.abs(d)>600){if(++miss>=2){api.playbackSpeed=S1;api.timePosition=want();miss=0;lastPos=null;hold=performance.now()+3000}}
    else{miss=0;api.playbackSpeed=Math.abs(d)>60?S1*(d>0?0.94:1.06):S1}},500)}
  let lastPos=null;api.playerPositionChanged.on(e=>{lastPos={t:e.currentTime,at:performance.now()}});
- async function join(c){room=c;LSet('room',c);LSet('jr',c);$('rbox').hidden=true;if(typeof barName==='function')barName();else{$('rm').textContent='👥 '+c;$('rm').classList.add('on')}await clockSync();
+ async function join(c){room=c;LSet('room',c);LSet('jr',c);$('rbox').hidden=true;if(typeof barName==='function')barName();else{BL('rm','back','합주방 '+c);$('rm').classList.add('on')}await clockSync();
   if(es)es.close();es=new EventSource(RDB+c+'/at.json');es.addEventListener('put',e=>{const m=JSON.parse(e.data);if(m.path==='/')run=m.data;else if(run){run[m.path.slice(1)]=m.data}apply()})}
  function leave(){if(es)es.close();es=null;room=null;run=null;LSet('room',null);clearTimeout(startT);clearInterval(drift);if(typeof barName==='function')barName()}
  $('rm').onclick=()=>{if(room){leave();return}const b=$('rbox');b.hidden=!b.hidden;if(!b.hidden){$('rcode').value=LG('room')||'';$('rcode').focus()}};
@@ -241,7 +270,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  const J=(u,o)=>fetch(RDB+u+'.json',o).then(r=>r.json());
  function hello(){if(band)J(band.code+'/m/'+cid,{method:'PUT',body:JSON.stringify({name:band.me,part:band.part,t:{'.sv':'timestamp'}})}).catch(()=>{})}
  setInterval(hello,60000);
- function barName(){$('rm').textContent=band?'🎸 '+band.name:room?'👥 '+room:'🎸 밴드';$('rm').classList.toggle('on',!!(band||room));$('bx').hidden=!band;
+ function barName(){BL('rm','back',band?band.name:room?'합주방 '+room:'위밴드');$('bx').hidden=!band;
   // 개인 연습 ↔ 합주(10/26 «개인연습도 가능하게 하고 합주도 가능하게»): 합주일 때만 ▶가 멤버 모두에게 같이 걸린다
   const jr=band?band.code:LG('jr');$('md').hidden=!jr;const jam=!!room;$('mdS').classList.toggle('on',!jam);$('mdJ').classList.toggle('on',jam)}
  function setMode(m){LSet('mode',m);if(m==='jam'){const c=band?band.code:LG('jr');if(c&&room!==c)join(c)}else if(room){leave()}barName();
@@ -310,7 +339,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
   if(st===1){if(api.playerState!==1)api.play();if(want>=0&&Math.abs(api.timePosition-want)>90)api.timePosition=want}
   else{if(api.playerState===1)api.pause();if(want>=0&&Math.abs(api.timePosition-want)>30)api.timePosition=want}}
  $('ytb').onclick=()=>{const on=$('yt').classList.toggle('on');$('ytb').classList.toggle('on',on);
-  if(on&&!yp){mute=true;api.masterVolume=0;$('mt').textContent='🔇 소리';
+  if(on&&!yp){mute=true;api.masterVolume=0;BL('mt','mute','소리');$('mt').classList.add('on');
    const go=()=>{yp=new YT.Player('ytp',{videoId:YT_ID,playerVars:{playsinline:1,rel:0},events:{onReady:()=>{sync=setInterval(follow,200)}}})};
    if(window.YT&&YT.Player)go();else{window.onYouTubeIframeAPIReady=go;const sc=document.createElement('script');sc.src='https://www.youtube.com/iframe_api';document.head.appendChild(sc)}}
   if(!on&&yp){yp.pauseVideo()}info()};
@@ -362,13 +391,13 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
   rec.onstop=()=>{const t=rec.mimeType||ty||'video/mp4',d=new Date(),q=new URLSearchParams(location.search),sel=$('pt').selectedOptions[0];
    const nm=((q.get('s')||'합주')+'_'+(sel?sel.textContent.replace(/[^가-힣A-Za-z0-9]/g,''):'')).replace(/[\\/:*?"<>|\s]+/g,'_');
    file=new File(chunks,`${nm}_${d.getMonth()+1}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}.${/mp4/.test(t)?'mp4':'webm'}`,{type:t.split(';')[0]});
-   rec=null;$('rec').textContent='💾 저장';$('rec').classList.remove('on');$('rec').id='rec';$('rec').dataset.save='1';st('녹화 끝! 💾 저장을 누르면 사진 앱에 넣을 수 있어요')};
-  rec.start(1000);t0=Date.now();$('rec').textContent='⏹ 녹화 끝';$('rec').classList.add('on');$('recT').style.display='block';
+   rec=null;BL('rec','save','저장');$('rec').classList.remove('on');$('rec').id='rec';$('rec').dataset.save='1';st('녹화 끝! 💾 저장을 누르면 사진 앱에 넣을 수 있어요')};
+  rec.start(1000);t0=Date.now();BL('rec','stop','녹화 끝');$('rec').classList.add('on');$('recT').style.display='block';
   clearInterval(tm);tm=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);$('recT').textContent=`● ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`},500)}
  function stop(){if(rec&&rec.state!=='inactive')rec.stop();clearInterval(tm);$('recT').style.display='none'}
  async function save(){if(!file)return;try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:file.name});done();return}}catch(e){if(e.name==='AbortError')return}
   const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=file.name;document.body.appendChild(a);a.click();a.remove();done()}
- function done(){file=null;delete $('rec').dataset.save;$('rec').textContent='⏺ 녹화';st('')}
+ function done(){file=null;delete $('rec').dataset.save;BL('rec','rec','녹화');st('')}
  $('recT').style.display='none';
  $('rec').onclick=()=>{if($('rec').dataset.save)return save();rec?stop():start()};
  $('camX').onclick=()=>{if(rec){st('녹화 중엔 끌 수 없어요');return}camOff()};
