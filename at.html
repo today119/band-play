@@ -151,7 +151,9 @@ let unl=false;const unlock=()=>{if(unl)return;unl=true;try{// ★ 길이 0초 �
  S(0,'RIFF');w.setUint32(4,36+n,true);S(8,'WAVEfmt ');w.setUint32(16,16,true);w.setUint16(20,1,true);w.setUint16(22,1,true);w.setUint32(24,8000,true);w.setUint32(28,8000,true);w.setUint16(32,1,true);w.setUint16(34,8,true);S(36,'data');w.setUint32(40,n,true);for(let i=0;i<n;i++)w.setUint8(44+i,128);
  const au=new Audio(URL.createObjectURL(new Blob([w],{type:'audio/wav'})));au.loop=true;au.volume=0.01;au.play().catch(()=>{})}catch(e){}
  try{const c=api&&api.player&&api.player.output&&api.player.output.context;if(c&&c.resume)c.resume()}catch(e){}};
-['touchend','click'].forEach(t=>document.addEventListener(t,unlock,{capture:true}));
+const actx=()=>{try{return api&&api.player&&api.player.output&&api.player.output.context}catch(e){return null}};
+// 터치할 때마다 잠든 소리 장치를 깨움(파트 바꾸면 화면이 새로 열려 다시 잠듦 — 10/27 «악기 바꾸고 다시 했더니 까딱»)
+['touchend','click'].forEach(t=>document.addEventListener(t,()=>{unlock();const c=actx();if(c&&c.state!=='running'&&c.resume)c.resume().catch(()=>{})},{capture:true}));
 let api=null;
 const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play_lib/';
 // 같은 곡의 다른 파트(곡_파트 이름)를 골라 보기 — 원곡 기준점은 곡 단위로 공유
@@ -283,7 +285,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  let wantPlay=false;api.playerReady.on(()=>{ready=true;$('st').textContent=''});
  {const t=setInterval(()=>{if(!api.isReadyForPlayback)return;clearInterval(t);if(wantPlay){wantPlay=false;$('st').textContent='';api.play()}if(window.__reapply)window.__reapply()},150)}
  // 재생 중인데 시간이 안 흐르면(소리 장치가 잠든 채 시작 등) 한 번 깨워서 다시 시작
- {let lt=-1,still=0;setInterval(()=>{if(api.playerState!==1||!ready){still=0;lt=-1;return}const t=api.timePosition;if(t===lt){if(++still>=2){still=0;
+ {let lt=-1,still=0;setInterval(()=>{if(api.playerState!==1||!ready){still=0;lt=-1;return}const t=api.timePosition;if(t===lt){if(++still>=2){still=0;const c0=actx();if(c0&&c0.state!=='running'&&window.__auAsk&&window.__auAsk())return;
    try{const c=api.player&&api.player.output&&api.player.output.context;if(c&&c.resume)c.resume()}catch(e){}api.pause();setTimeout(()=>api.play(),60);window.__kick=(window.__kick||0)+1}}else still=0;lt=t},1000)}
  api.playerStateChanged.on(e=>{const on=e.state===1;$('p').innerHTML=on?IC.pause:IC.play;$('p').title=on?'멈춤':'재생';$('p').classList.toggle('on',on)});
  // 위치판(마디 · 시간) — 소프트웨어 재생기처럼 지금 어디인지 늘 보이게
@@ -325,8 +327,15 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
   //  소리를 처음부터 다시 준비함 = 버벅임). → 빠르기는 건드리지 않고, 0.15초 넘게 어긋난 게 3번 연속(1.5초) 확인될 때만 한 번 옮기고 6초 쉼
   let miss=0,hold=performance.now()+2500;drift=setInterval(()=>{
    if(!(run&&run.on&&sNow()>run.at+1500&&api.playerState===1&&lastPos)||performance.now()<hold){miss=0;return}
+   {const c=actx();if(c&&c.state!=='running'){miss=0;window.__auAsk();return}}
    const now=lastPos.t+(performance.now()-lastPos.at)*api.playbackSpeed,d=now-want();
    if(Math.abs(d)>150){if(++miss>=3){api.timePosition=want();miss=0;lastPos=null;hold=performance.now()+6000;window.__resync=(window.__resync||0)+1}}else miss=0},500)}
+ // 아이폰은 화면을 직접 누르기 전엔 소리 장치를 못 켬 → 다른 기기가 ▶ 누르면 이 기기 시계가 멈춰 재생바가 까딱까딱(10/27 5281 방 기록: ctx=suspended 동안만 발생)
+ //  → 크게 «눌러서 합주 따라가기»를 띄우고, 누르면 깨워서 지금 자리로 다시 맞춤
+ window.__auAsk=()=>{if($('auask'))return true;const b=document.createElement('button');b.id='auask';b.textContent='🔊 눌러서 합주 따라가기';
+  b.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:99;padding:18px 26px;border-radius:16px;border:0;background:#ff4757;color:#fff;font:700 20px -apple-system,system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.35)';
+  b.onclick=()=>{unlock();const c=actx();const go=()=>{b.remove();if(window.__reapply)window.__reapply()};if(c&&c.resume)c.resume().then(go,go);else go()};document.body.appendChild(b);return true};
+ setInterval(()=>{const c=actx();if(room&&run&&run.on&&sNow()>run.at&&c&&c.state!=='running')window.__auAsk();else if(c&&c.state==='running'&&$('auask'))$('auask').remove()},700);
  let lastPos=null,posN=0,seekN=0;api.playerPositionChanged.on(e=>{lastPos={t:e.currentTime,at:performance.now()};posN++;if(e.isSeek)seekN++});
  // 합주 진단 기록(10/27 «악기 바꾸고 다시 했더니 아이폰이 까딱»): 합주 중 1초마다 어긋남·되감김·소리 밀림을 모아 3초마다 방 dbg/{기기}에 남김
  {let L=[],t0=0;setInterval(()=>{if(!room||!run||!run.on||sNow()<run.at){return}
@@ -503,7 +512,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261027l';
+const ATVER='20261027m';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
