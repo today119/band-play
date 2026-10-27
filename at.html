@@ -503,8 +503,10 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261027i';
+const ATVER='20261027j';
+// 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
+{const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
-  if(m&&m[1]!==ATVER&&!(window.api&&api.playerState===1))location.reload()}).catch(()=>{})};
+  if(m&&m[1]!==ATVER&&!(window.api&&api.playerState===1)){const u=new URL(location.href);if(u.searchParams.get('_v')===m[1])return;u.searchParams.set('_v',m[1]);location.replace(u)}}).catch(()=>{})};
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)chk()});setInterval(chk,60000)}
 </script></body></html>
