@@ -504,13 +504,24 @@ function reqModal(){const mine=LG('reqs')||[];
  <label class="l">곡 이름</label><input id="rq1" maxlength="60" placeholder="예: 붉은 노을"><label class="l">가수</label><input id="rq2" maxlength="40" placeholder="예: 빅뱅">
  <label class="l">필요한 파트</label><div class="chk">${Object.entries(PN).map(([k,n])=>`<label><input type="checkbox" value="${k}" ${k===(me.part||'g1')?'checked':''}>${n}</label>`).join('')}</div>
  <label class="l">더 알려 줄 것 (원곡 영상 링크·키·버전 등)</label><textarea id="rq3" rows="3" maxlength="300"></textarea>
+ <label class="l">📎 가진 악보 사진·PDF (있으면 훨씬 정확해요 · 최대 6장)</label><input type="file" id="rqf" accept="image/*,application/pdf" multiple style="padding:10px"><div id="rqfl" style="font-size:13px;color:var(--mu)"></div>
+ <small style="display:block;color:var(--mu);font-size:12px;margin-top:4px">한 쪽씩 위에서 똑바로 찍어 주세요 · 올린 악보는 위밴드 팀만 보고, 우리 밴드 연습용으로만 옮겨요</small>
  <button class="btn" id="rqs">요청 보내기</button><button class="btn gh" onclick="closeM()">닫기</button>
- ${mine.length?`<h3 style="margin:14px 0 4px;font-size:14px;color:var(--mu)">내 요청</h3>`+mine.map(x=>`<div class="row"><span>${esc(x.song)}</span><small style="color:var(--mu)">${esc(x.d)}</small></div>`).join(''):''}`);
+ ${mine.length?`<h3 style="margin:14px 0 4px;font-size:14px;color:var(--mu)">내 요청</h3>`+mine.map(x=>`<div class="row"><span>${esc(x.song)}</span><small style="color:var(--mu)" id="rqs_${esc(x.id||'')}">${esc(x.d)} · 접수</small></div>`).join(''):''}`);
+ // 처리 상태(band_play_req_st/{id}={st:'work'|'done'|'no', msg}) — 관리자가 적음, 누구나 읽기
+ mine.forEach(x=>{if(x.id)fetch(RDB.replace('band_play/','band_play_req_st/')+x.id+'.json').then(r=>r.json()).then(o=>{const e=$('rqs_'+x.id);if(o&&e)e.textContent=x.d+' · '+({work:'🛠 옮기는 중',done:'✅ 완료 — 악보함 확인',no:'⚠️ '+(o.msg||'못 해요')}[o.st]||'접수')+(o.msg&&o.st!=='no'?' · '+o.msg:'')}).catch(()=>{})});
+ // 첨부: 사진은 긴 변 1800px JPEG로 줄여서, PDF는 1MB까지 그대로 → band_play_req_f/{id}/{0~5} (쓰기만, 읽기는 관리자)
+ let files=[];$('rqf').onchange=()=>{files=[...$('rqf').files].slice(0,6);$('rqfl').textContent=files.length?files.map(f=>f.name).join(', '):''};
+ const enc=f=>new Promise((ok,no)=>{if(f.type==='application/pdf'){if(f.size>1100000){no('PDF가 너무 커요(1MB까지) — 사진으로 찍어 주세요');return}const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(f);return}
+  const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{const k=Math.min(1,1800/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);let q=.82,d=c.toDataURL('image/jpeg',q);while(d.length>1400000&&q>.4){q-=.12;d=c.toDataURL('image/jpeg',q)}ok(d)};im.onerror=()=>no('사진을 못 읽었어요');im.src=u});
  $('rqs').onclick=async()=>{const song=$('rq1').value.trim();if(!song){toast('곡 이름을 넣어 주세요');return}
   const v={song,artist:$('rq2').value.trim(),parts:[...document.querySelectorAll('#mod .chk input:checked')].map(x=>x.value).join(','),note:$('rq3').value.trim(),name:me.name||'',band:(LG('band')||{}).code||'',cid,t:{'.sv':'timestamp'}};
   const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);$('rqs').disabled=true;
-  try{await fetch(RDB.replace('band_play/','band_play_req/')+id+'.json',{method:'PUT',body:JSON.stringify(v)}).then(r=>{if(!r.ok)throw 0})}catch(e){$('rqs').disabled=false;toast('⚠️ 못 보냈어요 — 인터넷 확인');return}
-  mine.unshift({song,d:today()});LSet('reqs',mine.slice(0,20));closeM();toast('✅ 요청 보냈어요')}}
+  try{for(let i=0;i<files.length;i++){$('rqs').textContent='📎 올리는 중 '+(i+1)+'/'+files.length;const d=await enc(files[i]);
+    await fetch(RDB.replace('band_play/','band_play_req_f/')+id+'/'+i+'.json',{method:'PUT',body:JSON.stringify(d)}).then(r=>{if(!r.ok)throw 0})}
+   v.nf=files.length;await fetch(RDB.replace('band_play/','band_play_req/')+id+'.json',{method:'PUT',body:JSON.stringify(v)}).then(r=>{if(!r.ok)throw 0})}
+  catch(e){$('rqs').disabled=false;$('rqs').textContent='요청 보내기';toast(typeof e==='string'?e:'⚠️ 못 보냈어요 — 인터넷 확인');return}
+  mine.unshift({id,song,d:today()});LSet('reqs',mine.slice(0,20));closeM();toast('✅ 요청 보냈어요')}}
 
 // 👥 멤버
 function vMem(mb){const now=Date.now(),PK=Object.keys(PN),ro=k=>{const r=roleOf(k),i=RK.indexOf(r);return i>=0?i:r?8:9};
