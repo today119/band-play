@@ -255,7 +255,7 @@ function vLogin(){$('tabs').innerHTML='';$('tabs').style.display='none';window._
 const RN={lead:'👑 밴드장',chief:'🎖️ 단장',vice:'⭐ 부밴드장',mgr:'🎧 매니저',sec:'📋 총무',acct:'💰 회계'},RK=Object.keys(RN);
 // 집행부 = 역할 있는 사람 전부(밴드장 포함). 목록에 없는 직책은 'c:이름'으로 직접 입력(10/27 «집행부는 총무·회계·밴드장·단장 등을 총칭»)
 const rName=r=>!r?'':RN[r]||'🏷️ '+String(r).replace(/^c:/,'');
-const PMN={note:'📢 공지 쓰기',cal:'📅 일정 만들기·지우기',mem:'👥 가입 승인·멤버 관리',fee:'💰 회비 관리'},PMD={note:'staff',cal:'all',mem:'staff',fee:'staff'};
+const PMN={note:'📢 공지 쓰기',cal:'📅 일정 만들기·지우기',arr:'🎼 진행표·밴드 키',mem:'👥 가입 승인·멤버 관리',fee:'💰 회비 관리'},PMD={note:'staff',cal:'all',arr:'staff',mem:'staff',fee:'staff'};
 const LVN={all:'모든 멤버',staff:'집행부',lead:'밴드장만'};
 const roleOf=k=>B&&B.ro&&B.ro[k]||'',hasLead=b=>Object.values((b||B||{}).ro||{}).includes('lead');
 const apprOn=b=>{b=b||B;return !!b&&(b.cfg||{}).appr!==false&&hasLead(b)};
