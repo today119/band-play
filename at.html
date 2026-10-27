@@ -128,7 +128,7 @@ const IC={play:'<svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>',pa
 window.IC=IC;const BL=window.BL=(id,ic,t)=>{const b=$(id);if(b)b.innerHTML=IC[ic]+(t?'<span>'+t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[c])+'</span>':'')};
 // 한 주소로 여러 곡(10/25): 악보함 키·마지막 곡/파트를 기억해서 ?k 없이 at.html 만 열어도 됨
 {const g=k=>{try{return localStorage.getItem('at_'+k)}catch(e){return null}},p=(k,v)=>{try{localStorage.setItem('at_'+k,v)}catch(e){}};
- if(!q.get('k')&&g('k'))q.set('k',g('k'));if(q.get('k'))p('k',q.get('k'));
+ if(!q.get('k'))q.set('k',g('k')||'cfinph2riiRuxxtqTv87VFIq'); // 처음 쓰는 기기(10/27 PC «악보를 못 찾았어요»)도 기본 악보함if(q.get('k'))p('k',q.get('k'));
  if(!q.get('s'))q.set('s',g('s')||'butterfly_g1');p('s',q.get('s'));
  const part=q.get('s').split('_')[1];if(part)p('part',part);
  if(location.search.slice(1)!==q.toString())history.replaceState(null,'','?'+q.toString())}
