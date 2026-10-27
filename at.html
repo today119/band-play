@@ -199,7 +199,7 @@ function unroll(tex){try{
 //  보컬은 기본 켬, 다른 파트도 버튼으로 켤 수 있음. 합주방(모두 각자 소리)에서는 겹치니까 안 씀
 const MRK='at_mr_'+PART,JAM=(()=>{try{return JSON.parse(localStorage.getItem('band_play_mode'))==='jam'}catch(e){return false}})();
 let MR=(()=>{try{const v=localStorage.getItem(MRK);return v==null?PART==='vocal':v==='1'}catch(e){return PART==='vocal'}})();
-const withBand=([tex,voc])=>{const nShow=voc?2:1;if(!tex||!MR||JAM)return [tex,voc,0];
+const withBand=([tex,voc])=>{const nShow=voc?2:1;if(!tex)return [tex,voc,0]; // 늘 붙여 두고 켜기·끄기는 소리만(10/27 «누르면 새로고침처럼 튕겨야 되나?»)
  const others=['vocal','g1','g2','bass','keys','drums'].filter(p=>p!==PART&&!(p==='vocal'&&voc));
  return Promise.all(others.map(p=>fetch(DB+q.get('k')+'/tex/'+SONG+'_'+p+'.json').then(r=>r.json()).catch(()=>null))).then(L=>{let add='';
   L.forEach(v=>{if(typeof v==='string'&&v.includes('\\track'))add+='\n'+v.slice(v.indexOf('\\track')).replace('\n.\n','\n')});
@@ -222,8 +222,8 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  const OI=i=>window.ORD?window.ORD[i]:i,NB=()=>window.ORD?window.NORIG:api.score.masterBars.length;window.OI=OI;
  BL('ex',UNROLL?'unroll':'rpt',UNROLL?'펼침':'도돌이');$('ex').title=UNROLL?'도돌이 구간을 펼쳐서 위→아래로 (누르면 원래 악보대로)':'원래 악보대로 도돌이 (누르면 펼친 악보)';
  $('ex').onclick=()=>{try{localStorage.setItem('at_ex',UNROLL?'0':'1')}catch(e){}location.reload()};
- BL('mr','mr',MR?'반주 켬':'반주');$('mr').classList.toggle('on',MR&&!JAM);$('mr').title=JAM?'합주방에서는 각자 소리라 반주를 안 깔아요':MR?'다른 세션 소리 같이 (누르면 내 파트만)':'내 파트만 (누르면 다른 세션 소리도 같이 — 노래방처럼)';
- $('mr').onclick=()=>{if(JAM){$('st').textContent='합주방에서는 각자 소리라 반주를 안 깔아요';return}try{localStorage.setItem(MRK,MR?'0':'1')}catch(e){}location.reload()};
+ BL('mr','mr',MR?'반주 켬':'반주');
+ $('mr').onclick=()=>{let jam=false;try{jam=!!room}catch(e){}if(jam){$('st').textContent='합주방에서는 각자 소리라 반주를 안 깔아요';return}MR=!MR;try{localStorage.setItem(MRK,MR?'1':'0')}catch(e){}if(window.__applyMR)window.__applyMR()};
  if(window.ORD){api.settings.notation.elements.set(alphaTab.NotationElement.BarNumber,false);api.updateSettings();
   const lay=document.createElement('div');lay.id='bnl';$('at').style.position='relative';$('at').appendChild(lay);
   // 펼친 악보의 마디 번호 = 종이 악보 번호, 두 번째 돌 때는 ②
@@ -309,7 +309,11 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
   api.settings.display.systemsLayoutMode=EVEN?1:0;api.updateSettings();if(api.score)rows(api.score);api.render()};
  api.playedBeatChanged.on(bt=>{try{$('lbar').textContent=OI(bt.voice.bar.masterBar.index)+1}catch(x){}});
  api.tex(tex,nMR?[...Array(nMR).keys()]:voc?[0,1]:undefined);
- if(nMR)api.scoreLoaded.on(sc=>{try{if(PART==='vocal')api.changeTrackVolume([sc.tracks[0]],0.6)}catch(e){}}); // 노래방: 내 멜로디는 작게(길잡이)
+ // 노래방: 반주 켜면 다른 세션 소리 + 보컬은 내 멜로디 작게(길잡이). 합주방에 있으면 반주 끔(각자 소리)
+ const applyMR=window.__applyMR=()=>{const sc=api.score;if(!sc||!nMR)return;let jam=JAM;try{jam=!!room}catch(e){}const on=MR&&!jam;
+  try{api.changeTrackMute(sc.tracks.slice(nMR),!on);if(PART==='vocal')api.changeTrackVolume([sc.tracks[0]],on?0.6:1)}catch(e){}
+  BL('mr','mr',on?'반주 켬':'반주');$('mr').classList.toggle('on',on);$('mr').title=jam?'합주방에서는 각자 소리라 반주를 안 깔아요':on?'다른 세션 소리 같이 (누르면 내 파트만)':'내 파트만 (누르면 다른 세션 소리도 같이 — 노래방처럼)'};
+ api.scoreLoaded.on(()=>setTimeout(applyMR,0));
  if(voc)api.scoreLoaded.on(sc=>{try{api.changeTrackMute([sc.tracks[0]],true)}catch(e){}});
  const soloPP=window.soloPP=()=>{if(!api.isReadyForPlayback&&api.playerState!==1){wantPlay=!wantPlay;$('st').textContent=wantPlay?'🎵 소리 준비 중 — 끝나면 바로 시작해요':'';$('p').classList.toggle('on',wantPlay);return}api.playPause()};$('p').onclick=soloPP;$('h').onclick=()=>api.stop();
  let S=d=>{sp=Math.max(0.5,Math.min(1.5,Math.round((sp+d)*20)/20));api.playbackSpeed=sp;$('sp').textContent=Math.round(sp*100)+'%'};
@@ -356,9 +360,9 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    if(L.length>90)L.shift();
    if(Date.now()-t0>3000){t0=Date.now();const v={ver:ATVER,ua:navigator.userAgent.slice(0,90),part:PART,ord:!!window.ORD,even:typeof EVEN!=='undefined'?EVEN:null,off2:Math.round(off2),run:{at:run.at,tp:run.tp,by:run.by},me:cid,k:'t,dLast,dPos,st,posEv,seek,resync,kick,back,jank,ctx',L};
     const bd=JSON.stringify(JSON.stringify(Object.assign(v,{room})).slice(0,5900));fetch(RDB+room+'/dbg/'+cid+'.json',{method:'PUT',body:bd}).catch(()=>{});if(room!=='0000')fetch(RDB+'0000/dbg/'+cid+'.json',{method:'PUT',body:bd}).catch(()=>{})}},1000)} // 0000 = 모아 보는 곳
- async function join(c){room=c;LSet('room',c);LSet('jr',c);$('rbox').hidden=true;if(typeof barName==='function')barName();else{BL('rm','back','합주방 '+c);$('rm').classList.add('on')}await clockSync();
+ async function join(c){room=c;if(window.__applyMR)window.__applyMR();LSet('room',c);LSet('jr',c);$('rbox').hidden=true;if(typeof barName==='function')barName();else{BL('rm','back','합주방 '+c);$('rm').classList.add('on')}await clockSync();
   if(es)es.close();es=new EventSource(RDB+c+'/at.json');es.addEventListener('put',e=>{const m=JSON.parse(e.data);if(m.path==='/')run=m.data;else if(run){run[m.path.slice(1)]=m.data}apply()})}
- function leave(){if(es)es.close();es=null;room=null;run=null;LSet('room',null);clearTimeout(startT);clearInterval(drift);if(typeof barName==='function')barName()}
+ function leave(){setTimeout(()=>window.__applyMR&&window.__applyMR(),0);if(es)es.close();es=null;room=null;run=null;LSet('room',null);clearTimeout(startT);clearInterval(drift);if(typeof barName==='function')barName()}
  $('rm').onclick=()=>{if(room){leave();return}const b=$('rbox');b.hidden=!b.hidden;if(!b.hidden){$('rcode').value=LG('room')||'';$('rcode').focus()}};
  $('rgo').onclick=()=>{const c=$('rcode').value.trim();if(!/^\d{4}$/.test(c)){$('st').textContent='코드 4자리를 넣어 주세요';return}join(c)};
  const go=(tp,sp2)=>put({on:true,at:Math.round(sNow()+1500),tp:Math.max(0,tp),sp:sp2,song:SONG,by:cid});
@@ -530,7 +534,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261027o';
+const ATVER='20261027p';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
