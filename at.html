@@ -22,6 +22,7 @@ body{margin:0;touch-action:manipulation;overflow-x:hidden;font-family:-apple-sys
 #grip{position:absolute;left:50%;top:0;transform:translateX(-50%);display:flex;justify-content:center;padding:8px 34px 10px;touch-action:none;cursor:grab}#grip span{width:44px;height:5px;border-radius:3px;background:#4a4a4e}
 @media(max-width:760px){.tb .br{display:block}#rm,#sg,#pt{order:1}.tb .fx:first-of-type{order:2}#md{order:3}.tb .br{order:4}#h,#p,.tempo,.lcd{order:5}.tb .fx2{order:6}#mt,#ytb,#rec,#rbox,.vsep,#hideb{order:7}}
 @media(max-width:560px){#bar .ib span,#md button span{display:none}.lcd,#bar #hideb,.vsep{display:none}#rm{max-width:40px}#sg{max-width:40vw}#pt{max-width:30vw}#bar .ib{padding:0 6px}.tb{gap:8px 4px}#md button{padding:0 9px}.tb:has(#md:not([hidden])) #sg{max-width:30vw}.tb:has(#md:not([hidden])) #pt{max-width:25vw}#sg,#pt{padding-right:24px;font-size:14px}} /* 폰: 넣기는 아래 손잡이 톡(또는 위로 밀기) */
+#bnl{position:absolute;left:0;top:0;pointer-events:none}#bnl b{position:absolute;transform:translateY(-100%);font:500 12px Georgia,serif;color:#c0392b;white-space:nowrap}#bnl i{font-style:normal;font-size:11px;margin-left:1px;color:#7c3aed}
 #more{display:none!important}#mp{display:none}
 /* 폰 가로(낮은 화면): 도구 막대 한 줄 — 빠르기·소리·일정·원곡·녹화는 ⋯ 메뉴로(10/27 «폰 메뉴 정리 필요») */
 @media(max-height:500px){#bar{padding-top:calc(4px + env(safe-area-inset-top))}.tb{flex-wrap:nowrap;gap:5px}.tb>*{order:0!important}.tb .br,.tb .vsep,#hideb{display:none!important}
@@ -119,7 +120,7 @@ body{margin:0;touch-action:manipulation;overflow-x:hidden;font-family:-apple-sys
   A(em,[{opacity:1},{opacity:.0}],{delay:200,duration:400});
 },2500);
  setTimeout(()=>end(),4200)})();
-</script><div id="bar"><div class="tb"><button id="rm" class="ib" title="밴드 홈"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>밴드</span></button><select id="sg"></select><select id="pt"></select><span class="fx"></span><span id="md" hidden><button id="mdS"><svg viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4.5" height="6" rx="1.5"/><rect x="16.5" y="14" width="4.5" height="6" rx="1.5"/></svg><span>개인</span></button><button id="mdJ"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.5 2.4 3.5 5.5"/></svg><span>합주</span></button></span><i class="br"></i><button id="h" class="ib" title="처음으로"><svg viewBox="0 0 24 24"><path d="M6 5v14"/><path d="M19 5.5v13L9 12z" fill="currentColor"/></svg></button><button id="p" title="재생"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></button><span class="lcd" title="지금 마디 · 시간"><b id="lbar">1</b><small id="lbn">/ –</small><i></i><b id="ltm">0:00</b><small id="ltt"></small></span><span class="tempo" title="빠르기"><button id="dn" class="ib">−</button><b id="sp">100%</b><button id="up" class="ib">+</button></span><span class="fx fx2"></span><button id="mt" class="ib" title="소리"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg><span>소리</span></button><button id="cm" class="ib" title="재생바 움직임"></button><button id="ytb" class="ib" title="원곡"><svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="3"/><path d="M10 9.3v5.4l4.8-2.7z" fill="currentColor"/></svg><span>원곡</span></button><button id="rec" class="ib" title="녹화"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2" fill="#FF3B47" stroke="none"/></svg><span>녹화</span></button><button id="bx" hidden>나가기</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><span class="vsep"></span><button id="more" class="ib" title="더 보기"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/></svg></button><button id="hideb" class="ib" title="메뉴 넣기"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button></div><div id="mp"></div><div id="foot"><span id="st">불러오는 중…</span><div id="grip"><span></span></div></div></div><div id="barsp"></div><button id="tab" aria-label="메뉴 꺼내기"><span></span></button>
+</script><div id="bar"><div class="tb"><button id="rm" class="ib" title="밴드 홈"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>밴드</span></button><select id="sg"></select><select id="pt"></select><span class="fx"></span><span id="md" hidden><button id="mdS"><svg viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4.5" height="6" rx="1.5"/><rect x="16.5" y="14" width="4.5" height="6" rx="1.5"/></svg><span>개인</span></button><button id="mdJ"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.5 2.4 3.5 5.5"/></svg><span>합주</span></button></span><i class="br"></i><button id="h" class="ib" title="처음으로"><svg viewBox="0 0 24 24"><path d="M6 5v14"/><path d="M19 5.5v13L9 12z" fill="currentColor"/></svg></button><button id="p" title="재생"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></button><span class="lcd" title="지금 마디 · 시간"><b id="lbar">1</b><small id="lbn">/ –</small><i></i><b id="ltm">0:00</b><small id="ltt"></small></span><span class="tempo" title="빠르기"><button id="dn" class="ib">−</button><b id="sp">100%</b><button id="up" class="ib">+</button></span><span class="fx fx2"></span><button id="mt" class="ib" title="소리"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg><span>소리</span></button><button id="cm" class="ib" title="재생바 움직임"></button><button id="ex" class="ib" title="도돌이 펼치기"></button><button id="ytb" class="ib" title="원곡"><svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="3"/><path d="M10 9.3v5.4l4.8-2.7z" fill="currentColor"/></svg><span>원곡</span></button><button id="rec" class="ib" title="녹화"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2" fill="#FF3B47" stroke="none"/></svg><span>녹화</span></button><button id="bx" hidden>나가기</button><span id="rbox" hidden><input id="rcode" inputmode="numeric" maxlength="4" placeholder="코드 4자리"><button id="rgo">들어가기</button></span><span class="vsep"></span><button id="more" class="ib" title="더 보기"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/></svg></button><button id="hideb" class="ib" title="메뉴 넣기"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button></div><div id="mp"></div><div id="foot"><span id="st">불러오는 중…</span><div id="grip"><span></span></div></div></div><div id="barsp"></div><button id="tab" aria-label="메뉴 꺼내기"><span></span></button>
 <div id="yt"><div id="ytbox"><div id="ytp"></div></div><div id="ytc">
  <button class="tap" id="tap">🎯 지금이 <b id="mk">16</b>마디 첫 박!</button>
  <div><button id="o1">◀ 0.05초</button> <button id="o2">0.05초 ▶</button></div><small id="yinfo">원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요</small></div></div>
@@ -133,6 +134,7 @@ const IC={play:'<svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>',pa
  spk:'<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg>',mute:'<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
  rec:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2" fill="#FF3B47" stroke="none"/></svg>',stop:'<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>',
  save:'<svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 15.5v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg>',back:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+ unroll:'<svg viewBox="0 0 24 24"><path d="M4 5h16M4 10h16M4 15h10"/><path d="M17 13v7M14 17l3 3 3-3"/></svg>',rpt:'<svg viewBox="0 0 24 24"><path d="M5 11V9a3 3 0 0 1 3-3h11"/><path d="M16 3l3 3-3 3"/><path d="M19 13v2a3 3 0 0 1-3 3H5"/><path d="M8 21l-3-3 3-3"/></svg>',
  even:'<svg viewBox="0 0 24 24"><path d="M3 12h15"/><path d="M15 8l4 4-4 4"/><path d="M3 7v10"/></svg>',note:'<svg viewBox="0 0 24 24"><path d="M3 17h4v-5h5V7h5V3"/><circle cx="18.5" cy="18" r="2.5"/><path d="M21 18V9"/></svg>'};
 window.IC=IC;const BL=window.BL=(id,ic,t)=>{const b=$(id);if(b)b.innerHTML=IC[ic]+(t?'<span>'+t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[c])+'</span>':'')};
 // 한 주소로 여러 곡(10/25): 악보함 키·마지막 곡/파트를 기억해서 ?k 없이 at.html 만 열어도 됨
@@ -172,7 +174,27 @@ const withVocal=tex=>PART==='vocal'||q.get('lyr')==='0'?Promise.resolve([tex,fal
   if(!v)return [tex,false];let part=tex.slice(tex.indexOf('\\track')).replace('\n.\n','\n');
   if(!/\\staff/.test(part.split('\n').slice(0,4).join('\n'))){const nl=part.indexOf('\n');part=part.slice(0,nl+1)+'\\staff {'+(STF[PART]||'score tabs')+'}\n'+part.slice(nl+1)}
   return [tex.slice(0,tex.indexOf('\\track'))+v.slice(v.indexOf('\\track'))+'\n'+part,true]}).catch(()=>[tex,false]);
+// 펼친 악보(10/27 «도돌이표에서 이전으로 휙 가니까 혼란 — 뒤에 그 악보가 자연스럽게 흘러나오게»):
+//  alphaTab으로 연주 순서(마디 번호 목록)를 구한 뒤, 줄(트랙·오선·성부)마다 마디를 그 순서대로 다시 늘어놓고 도돌이 표시는 지움.
+//  소리·시간은 똑같아서 합주방에서 펼친 기기·안 펼친 기기가 함께 맞음. ORD[펼친 번호] = 원래 마디 번호(0부터)
+let UNROLL=(()=>{try{return localStorage.getItem('at_ex')!=='0'}catch(e){return true}})();window.ORD=null;window.NORIG=0;
+function unroll(tex){try{
+ const im=new alphaTab.importer.AlphaTexImporter();im.initFromString(tex,new alphaTab.Settings());const sc=im.readScore(),N=sc.masterBars.length;
+ if(!sc.masterBars.some(m=>m.isRepeatStart||m.repeatCount>0||m.alternateEndings))return null;
+ const g=new alphaTab.midi.MidiFileGenerator(sc,new alphaTab.Settings(),new alphaTab.midi.AlphaSynthMidiFileHandler(new alphaTab.midi.MidiFile()));g.generate();
+ const ord=g.tickLookup.masterBars.map(m=>m.masterBar.index);if(!ord.length||ord.length===N&&ord.every((v,i)=>v===i))return null;
+ const HDR=/^\s*(\\title|\\track|\\tuning|\\instrument|\\staff|\\voice|\.\s*$)/,out=[];let body=[],bad=false;
+ const KEYS=[['ks',/\\ks\s+(\S+)/],['ts',/\\ts\s+(\d+\s+\d+)/],['clef',/\\clef\s+(\S+)/],['tempo',/\\tempo\s+(\d+)/]];
+ const flush=()=>{const txt=body.join('\n');body=[];if(!txt.trim())return;const B=txt.split('|'),tail=B.pop();
+  if(B.length!==N){bad=true;return}
+  const eff=[],cur={};B.forEach((b,i)=>{KEYS.forEach(([k,re])=>{const m=b.match(re);if(m)cur[k]=m[1]});eff[i]={...cur}});
+  const em={},R=[];ord.forEach(i=>{let t=B[i].replace(/\\ro\b/g,'').replace(/\\rc\s+\d+/g,'').replace(/\\ae\s+(\([^)]*\)|\d+)/g,'');let pre='';
+   KEYS.forEach(([k,re])=>{const v=eff[i][k];if(v!=null&&em[k]!==v&&!re.test(t))pre+='\\'+k+' '+v+' ';if(v!=null)em[k]=v});R.push(pre?pre+t.replace(/^\s+/,''):t)});
+  out.push(R.join('|')+'|'+tail)};
+ tex.split('\n').forEach(l=>{if(HDR.test(l)){flush();out.push(l)}else body.push(l)});flush();
+ if(bad)return null;return {tex:out.join('\n'),ord,n:N}}catch(e){console.warn('unroll',e);return null}}
 fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?withVocal(t):[null,false]).then(([tex,voc])=>{
+ window.__tex0=tex; if(tex&&UNROLL){const u=unroll(tex);if(u){tex=u.tex;window.ORD=u.ord;window.NORIG=u.n}}
  if(!tex){$('st').textContent='악보를 못 찾았어요';return}
  const narrow=innerWidth<700;
  // 재생바 움직임 두 가지(10/27 «선택하게 — 일정 속도로 가기 / 음표 길이에 맞춰 가기»)
@@ -186,6 +208,17 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
   notation:{rhythmMode:alphaTab.TabRhythmMode.ShowWithBars},
   player:{enablePlayer:true,enableCursor:true,enableAnimatedBeatCursor:true,soundFont:CDN+'soundfont/sonivox.sf2',scrollElement:document.scrollingElement,scrollOffsetY:-110,scrollMode:alphaTab.ScrollMode.Off}});
  window.api=api;let C0={};
+ const OI=i=>window.ORD?window.ORD[i]:i,NB=()=>window.ORD?window.NORIG:api.score.masterBars.length;window.OI=OI;
+ BL('ex',UNROLL?'unroll':'rpt',UNROLL?'펼침':'도돌이');$('ex').title=UNROLL?'도돌이 구간을 펼쳐서 위→아래로 (누르면 원래 악보대로)':'원래 악보대로 도돌이 (누르면 펼친 악보)';
+ $('ex').onclick=()=>{try{localStorage.setItem('at_ex',UNROLL?'0':'1')}catch(e){}location.reload()};
+ if(window.ORD){api.settings.notation.elements.set(alphaTab.NotationElement.BarNumber,false);api.updateSettings();
+  const lay=document.createElement('div');lay.id='bnl';$('at').style.position='relative';$('at').appendChild(lay);
+  // 펼친 악보의 마디 번호 = 종이 악보 번호, 두 번째 돌 때는 ②
+  api.postRenderFinished.on(()=>{const lb=api.renderer.boundsLookup,sf=$('at').querySelector('.at-surface');if(!lb||!sf)return;
+   const ar=$('at').getBoundingClientRect(),sr=sf.getBoundingClientRect(),ox=sr.left-ar.left,oy=sr.top-ar.top,seen={},C='①②③④⑤';let h='';
+   for(const sy of lb.staffSystems)for(const mb of sy.bars){const o=ORD[mb.index];seen[o]=(seen[o]||0)+1;const v=mb.visualBounds;
+    h+=`<b style="left:${Math.round(ox+v.x+2)}px;top:${Math.round(oy+v.y)}px">${o+1}${seen[o]>1?'<i>'+(C[seen[o]-1]||'×'+seen[o])+'</i>':''}</b>`}
+   lay.innerHTML=h})}
  // 재생바를 직접 그림(10/26 «아직도 재생바가 버벅일 때가 있어»): alphaTab은 «이 음표→다음 음표»까지만 움직이고 다음 소리 신호가 늦으면
  // 그 자리에 멈췄다 튐 → 마지막 신호 + 흐른 시간으로 매 프레임 위치를 계산(살짝씩만 끌어당겨 맞춤), 멈춤 중엔 alphaTab이 놓는 그대로
  {const C={c:null,ev:null,tk:-1,pf:0,hint:null};
@@ -255,12 +288,12 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  // 위치판(마디 · 시간) — 소프트웨어 재생기처럼 지금 어디인지 늘 보이게
  const mmss=ms=>{const t=Math.max(0,Math.floor(ms/1000));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};let lsec=-1;
  api.playerPositionChanged.on(e=>{const t=Math.floor(e.currentTime/1000);if(t!==lsec){lsec=t;$('ltm').textContent=mmss(e.currentTime);$('ltt').textContent=e.endTime>0?'/ '+mmss(e.endTime):''}});
- api.scoreLoaded.on(sc=>{$('lbn').textContent='/ '+sc.masterBars.length;rows(sc)});
+ api.scoreLoaded.on(sc=>{$('lbn').textContent='/ '+(window.ORD?window.NORIG:sc.masterBars.length);rows(sc)});
  {let rn=0,tm=0;addEventListener('resize',()=>{clearTimeout(tm);tm=setTimeout(()=>{if(!EVEN||!api.score)return;const n=perRow();if(n!==rn){rn=rows(api.score);api.render()}},250)})}
  const cmL=()=>{BL('cm',EVEN?'even':'note',EVEN?'일정':'음표');$('cm').title=EVEN?'재생바: 일정한 속도 (누르면 음표 따라 가기)':'재생바: 음표 따라 가기 (누르면 일정한 속도)'};cmL();
  $('cm').onclick=()=>{EVEN=!EVEN;try{localStorage.setItem('at_cur',EVEN?'even':'note')}catch(e){}cmL();C0.tk=-1;C0.sys=null;
   api.settings.display.systemsLayoutMode=EVEN?1:0;api.updateSettings();if(api.score)rows(api.score);api.render()};
- api.playedBeatChanged.on(bt=>{try{$('lbar').textContent=bt.voice.bar.masterBar.index+1}catch(x){}});
+ api.playedBeatChanged.on(bt=>{try{$('lbar').textContent=OI(bt.voice.bar.masterBar.index)+1}catch(x){}});
  api.tex(tex,voc?[0,1]:undefined);
  if(voc)api.scoreLoaded.on(sc=>{try{api.changeTrackMute([sc.tracks[0]],true)}catch(e){}});
  const soloPP=window.soloPP=()=>{if(!api.isReadyForPlayback&&api.playerState!==1){wantPlay=!wantPlay;$('st').textContent=wantPlay?'🎵 소리 준비 중 — 끝나면 바로 시작해요':'';$('p').classList.toggle('on',wantPlay);return}api.playPause()};$('p').onclick=soloPP;$('h').onclick=()=>api.stop();
@@ -365,7 +398,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
   setInterval(()=>{if(api.playerState!==1||document.hidden)return;const pr=LG('pr')||{},d=day();pr[d]=pr[d]||{};pr[d][SONG]=(pr[d][SONG]||0)+1;LSet('pr',pr);if(++n%20===0)push()},1000);
   api.playerStateChanged.on(e=>{if(e.state!==1)push()});
   // 연습 진도: ▶로 한 번이라도 지나간 마디 → band_play_cov{곡_파트:{n,h,b}} (악보함 막대)
-  const ck=SONG+'_'+PART;api.playedBeatChanged.on(bt=>{try{const i=bt.voice.bar.masterBar.index,nb=api.score.masterBars.length,cv=LG('cov')||{},c=cv[ck]||{b:''};let bs=(c.b||'').padEnd(nb,'0');if(bs[i]==='1')return;
+  const ck=SONG+'_'+PART;api.playedBeatChanged.on(bt=>{try{const i=(window.OI||(x=>x))(bt.voice.bar.masterBar.index),nb=window.ORD?window.NORIG:api.score.masterBars.length,cv=LG('cov')||{},c=cv[ck]||{b:''};let bs=(c.b||'').padEnd(nb,'0');if(bs[i]==='1')return;
    bs=bs.slice(0,i)+'1'+bs.slice(i+1);cv[ck]={n:nb,b:bs,h:(bs.match(/1/g)||[]).length};LSet('cov',cv)}catch(x){}})}
  const b0=q.get('b');
  if(b0&&/^\d{4}$/.test(b0)&&!(band&&band.code===b0)){q.delete('b');history.replaceState(null,'','?'+q.toString());home({code:b0})}
@@ -375,7 +408,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  // ── 원곡(유튜브) 맞춰 틀기: 악보 커서가 영상 시간을 따라감. 기준점(🎯)은 곡마다 이 기기에 저장(10/25 «대표 음원 하나 맞춰 틀어 놓고»)
  const YT_ID=q.get('yt')||({butterfly:'1cMKPc3Yors'})[SONG],MARK=+(q.get('mark')||({butterfly:16,redsunset:7})[SONG]||1),OK='at_off_'+SONG;
  $('mk').textContent=MARK;if(!YT_ID)$('ytb').style.display='none';let yp=null,off=null,sync=0;try{const v=localStorage.getItem(OK)??localStorage.getItem('at_off_'+q.get('s'));if(v!=null)off=+v}catch(e){}
- const barMs=n=>{let t=0;const mb=api.score.masterBars;for(let i=0;i<n-1;i++){const m=mb[i];t+=m.calculateDuration()*60000/960/(api.score.tempo)}return t}; // 앞 마디들 길이(반복 없는 첫 회)
+ const barMs=n=>{let t=0;const mb=api.score.masterBars,k=window.ORD?Math.max(0,window.ORD.indexOf(n-1)):n-1;for(let i=0;i<k;i++){const m=mb[i];t+=m.calculateDuration()*60000/960/(api.score.tempo)}return t}; // 앞 마디들 길이(반복 없는 첫 회)
  const info=()=>$('yinfo').textContent=off==null?'원곡을 틀고, 기타가 들어오는 순간 🎯를 누르면 악보가 원곡에 맞춰져요':`맞춤 완료 (영상 ${off.toFixed(2)}초 = 1마디). 영상을 움직이면 악보가 따라가요`;
  function follow(){if(!yp||off==null||!yp.getCurrentTime)return;const st=yp.getPlayerState(),want=(yp.getCurrentTime()-off)*1000;
   {const r=yp.getPlaybackRate();if(api.playbackSpeed!==r)api.playbackSpeed=r} // 같은 값을 다시 넣으면 alphaTab이 소리를 다시 준비함(버벅임)
@@ -448,7 +481,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
 })();
 // 폰 가로 도구 막대(10/27): 낮은 화면에선 빠르기·소리·일정·원곡·녹화를 ⋯ 메뉴 안으로 옮김(버튼은 그대로라 기능 같음), 화면이 바뀌면 제자리로
 {const mq=matchMedia('(max-height:500px)'),mp=document.getElementById('mp'),mb=document.getElementById('more');
- const items=['.tempo','#mt','#cm','#ytb','#rec'].map(q=>document.querySelector(q)).filter(Boolean),home=items.map(e=>{const m=document.createComment('');e.before(m);return m});
+ const items=['.tempo','#mt','#cm','#ex','#ytb','#rec'].map(q=>document.querySelector(q)).filter(Boolean),home=items.map(e=>{const m=document.createComment('');e.before(m);return m});
  const put=()=>{if(mq.matches)items.forEach(e=>mp.appendChild(e));else{items.forEach((e,i)=>home[i].after(e));mp.classList.remove('on')}};
  put();(mq.addEventListener?mq.addEventListener('change',put):mq.addListener(put));
  mb.onclick=e=>{e.stopPropagation();mp.classList.toggle('on');mb.classList.toggle('on',mp.classList.contains('on'))};
