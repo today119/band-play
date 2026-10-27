@@ -375,7 +375,7 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  const J=(u,o)=>fetch(RDB+u+'.json',o).then(r=>r.json());
  // 같은 이름 줄이 여럿이면 가장 앞 번호 하나로 모음(band.html adopt와 같은 규칙)
  let adopted='';const adopt=async()=>{if(!band||adopted===band.code)return;adopted=band.code;const m=await J(band.code+'/m').catch(()=>null)||{},nk=s=>String(s||'').replace(/\s+/g,'').toLowerCase();
-  const same=Object.keys(m).filter(k=>m[k]&&nk(m[k].name)===nk(band.me)).concat(cid).filter((k,i,a)=>a.indexOf(k)===i).sort();if(same.length<2)return;
+  const same=Object.keys(m).filter(k=>m[k]&&nk(m[k].name)===nk(band.me)).concat(cid).filter((k,i,a)=>a.indexOf(k)===i).sort((a,b)=>(b.length===12)-(a.length===12)||(a<b?-1:1));if(same.length<2)return;
   same.slice(1).forEach(k=>fetch(RDB+band.code+'/m/'+k+'.json',{method:'DELETE'}).catch(()=>{}));if(same[0]!==cid){cid=same[0];LSet('cid',cid)}hello()};
  function hello(){adopt();if(band)J(band.code+'/m/'+cid,{method:'PUT',body:JSON.stringify({name:band.me,part:band.part,t:{'.sv':'timestamp'}})}).catch(()=>{})}
  setInterval(hello,60000);

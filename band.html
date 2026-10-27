@@ -139,6 +139,7 @@ input,select,textarea{border-color:#dcdce0}input:focus,select:focus,textarea:foc
  setTimeout(()=>end(),4200)})();
 </script>
 <div id="app"></div><nav class="tabs" id="tabs"></nav>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 // ── 데이터: RTDB band_play/{코드} (at.html 합주 방과 같은 곳)
 //   band={name,made,k} · m/{기기}={name,part,t,pp(연습 공개)} · nt={txt,by,t}(공지)
@@ -166,7 +167,35 @@ const mins=sec=>{const m=Math.round(sec/60);return m<60?m+'분':Math.floor(m/60)
 // ── 내 정보·내 밴드 목록(이 기기)
 let me=LG('me')||{};{const b=LG('band');if(b&&!me.name){me={name:b.me,part:b.part};LSet('me',me)}}
 let bands=LG('bands')||[];{const b=LG('band');if(b&&!bands.some(x=>x.code===b.code)){bands.unshift(b);LSet('bands',bands)}}
-const saveBands=()=>LSet('bands',bands);
+const saveBands=()=>{LSet('bands',bands);cloudPush()};
+
+// ── 구글 로그인(10/27 «초대 링크로 들어오면 바로 등록돼야 — 구글 로그인 필요»): 아이폰은 사파리·홈 화면 앱 저장 공간이 따로라
+//  기기마다 «새 사람»이 됨 → 구글 계정 = 한 사람. 멤버 번호(cid)를 계정에서 만들고(12자), 내 밴드 목록·이름은 band_play_u/{uid}에 둠(본인만)
+const FBC={apiKey:'AIzaSyBWAAeuN_bwwrY2R1NupXLwT4ECPhyivo0',authDomain:'matchmaker-28187.firebaseapp.com',projectId:'matchmaker-28187',appId:'1:640935869730:web:893abadb93ae3e949df97b'};
+const UDB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play_u/';
+let GU=null,auth=null;const gcid=uid=>'g'+uid.toLowerCase().replace(/[^a-z0-9]/g,'').padEnd(11,'0').slice(0,11);
+try{firebase.initializeApp(FBC);auth=firebase.auth();auth.getRedirectResult().catch(e=>toast('로그인 못 했어요 — '+(e.code||'')))}catch(e){}
+function cloudPush(){if(!GU)return;GU.u.getIdToken().then(t=>fetch(UDB+GU.uid+'.json?auth='+t,{method:'PUT',body:JSON.stringify({j:JSON.stringify({me,bands}),t:{'.sv':'timestamp'}})})).catch(()=>{})}
+async function onLogin(u){GU={uid:u.uid,u,name:u.displayName||'',email:u.email||''};
+ let o=null;try{const t=await u.getIdToken();o=await fetch(UDB+u.uid+'.json?auth='+t).then(r=>r.json())}catch(e){}
+ let c={};try{c=o&&o.j?JSON.parse(o.j):{}}catch(e){}
+ // 합치기: 계정에 있던 밴드 + 이 기기 밴드
+ (c.bands||[]).forEach(b=>{if(!bands.some(x=>x.code===b.code))bands.push(b)});
+ if(c.me&&c.me.name)me={...me,...c.me};if(!me.name&&GU.name){me={...me,name:GU.name}}LSet('me',me);LSet('bands',bands);
+ // 멤버 번호를 계정 번호로: 이 기기 옛 줄은 지우고, 연습 기록은 옮김
+ const nc=gcid(u.uid),old=cid;if(old!==nc){cid=nc;LSet('cid',cid);
+  for(const b of bands){DEL(b.code+'/m/'+old).catch(()=>{});J(b.code+'/pr/'+old).then(p=>{if(p)J(b.code+'/pr/'+nc,{method:'PATCH',body:JSON.stringify(p)}).catch(()=>{})}).catch(()=>{})}}
+ cloudPush();B=null;
+ // 초대 화면에서 «구글로 로그인하고 가입»을 눌렀으면 바로 가입까지
+ const [jc,jp]=(sessionStorage.getItem('wb_join')||'').split('|');sessionStorage.removeItem('wb_join');
+ if(jc&&!myBand(jc)){const b=await J(jc+'/band').catch(()=>null);if(b&&b.name){bands=bands.filter(x=>x.code!==jc);bands.unshift({code:jc,name:b.name,me:me.name||GU.name||'멤버',part:jp||me.part||'g1'});saveBands();toast('🎸 «'+b.name+'» 가입했어요');go('#/b/'+jc+'/home');return}}
+ render()}
+if(auth)auth.onAuthStateChanged(u=>{if(u){if(!GU||GU.uid!==u.uid)onLogin(u)}else if(GU){GU=null;render()}});
+async function gLogin(){if(!auth){toast('로그인 준비가 안 됐어요 — 인터넷 확인');return}const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
+ try{await auth.signInWithPopup(p)}catch(e){if(/popup|not-supported|cancelled-popup/.test(e.code||'')&&!/closed-by-user/.test(e.code||''))auth.signInWithRedirect(p);else if(!/closed-by-user/.test(e.code||''))toast('로그인 못 했어요 — '+(e.code||e.message))}}
+function gOut(){if(!auth)return;if(!confirm('로그아웃할까요? (이 기기의 밴드 목록은 그대로 있어요)'))return;auth.signOut();cid=Math.random().toString(36).slice(2,10);LSet('cid',cid)}
+const gCard=()=>GU?`<div class="card"><div class="row"><span>✅ <b>${esc(GU.email)}</b><br><small style="color:var(--mu)">어느 기기에서 열어도 내 밴드가 그대로예요</small></span><button class="sm b2" onclick="gOut()">로그아웃</button></div></div>`
+ :`<div class="card"><h3>구글로 로그인</h3><div style="font-size:14px;color:var(--mu);margin-bottom:8px">폰·홈 화면 앱·아이패드·컴퓨터 어디서 열어도 같은 사람으로 — 다시 가입할 필요 없어요</div><button class="btn" onclick="gLogin()">G 구글로 로그인</button></div>`;
 const myBand=c=>bands.find(x=>x.code===c);
 
 // ── 화면 전환: #/ · #/find · #/me · #/b/1234/home|cal|score|mem|fee
@@ -207,10 +236,11 @@ async function render(){const h=location.hash||'#/',p=h.slice(2).split('/');
  appTabs('#/');vApp()}
 // 같은 이름 멤버가 이미 있으면 그 자리를 이어 씀(10/27 «매번 가입하기로 들어가니 멤버에 이름이 엄청 쌓여» — 아이폰은 사파리·홈 화면 앱 저장 공간이 따로라 새 기기로 보임)
 const nmK=s=>String(s||'').replace(/\s+/g,'').toLowerCase();
-async function sameMe(c,nm){const m=await J(c+'/m').catch(()=>null)||{};const hit=Object.entries(m).filter(([k,v])=>k!==cid&&v&&nmK(v.name)===nmK(nm)).sort((a,b)=>(b[1].t||0)-(a[1].t||0))[0];
+async function sameMe(c,nm){if(GU)return; // 구글 로그인이면 계정 번호가 주인(같은 이름 옛 줄은 adopt가 계정 쪽으로 모음)
+ const m=await J(c+'/m').catch(()=>null)||{};const hit=Object.entries(m).filter(([k,v])=>k!==cid&&v&&nmK(v.name)===nmK(nm)).sort((a,b)=>(b[1].t||0)-(a[1].t||0))[0];
  if(hit&&confirm(`이미 «${hit[1].name}»(${pn(hit[1].part)})이 있어요.\n이 사람이 나예요? (확인 = 이어서 쓰기, 취소 = 새 멤버)`)){cid=hit[0];LSet('cid',cid)}}
 // 이미 가입한 기기들도: 같은 이름 줄이 여럿이면 가장 앞 번호 하나로 모으고 나머지는 지움(기기마다 열 때 같은 줄로 모임)
-function adopt(c,nm,m){const same=Object.keys(m||{}).filter(k=>m[k]&&nmK(m[k].name)===nmK(nm)).concat(cid).filter((k,i,a)=>a.indexOf(k)===i).sort();if(same.length<2)return;
+function adopt(c,nm,m){const same=Object.keys(m||{}).filter(k=>m[k]&&nmK(m[k].name)===nmK(nm)).concat(cid).filter((k,i,a)=>a.indexOf(k)===i).sort((a,b)=>(b.length===12)-(a.length===12)||(a<b?-1:1));if(same.length<2)return;
  const keep=same[0];same.slice(1).forEach(k=>{DEL(c+'/m/'+k).catch(()=>{});if(B&&B.m)delete B.m[k]});if(keep!==cid){cid=keep;LSet('cid',cid)}}
 function hello(mb){PUT(mb.code+'/m/'+cid,{name:mb.me,part:mb.part,t:{'.sv':'timestamp'},...(mb.pp?{pp:true}:{})}).catch(()=>{})}
 
@@ -253,7 +283,7 @@ let bip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();bip=e
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 const instCard=()=>standalone||LG('ih')?'':`<div class="card" id="inst" style="border:2px solid #5EC4BE"><div class="row" style="padding:0"><b>📲 홈 화면에 앱으로 추가</b><a href="javascript:void 0" onclick="LSet('ih',1);$('inst').remove()" style="color:var(--mu);text-decoration:none;font-size:14px">닫기</a></div><div style="font-size:14px;color:var(--mu);margin-top:6px;line-height:1.55">${bip?'주소창 없이 진짜 앱처럼 열려요.':ios?'Safari 아래 <b>공유(□↑)</b> → <b>홈 화면에 추가</b>. 주소창 없이 앱처럼 열려요.<br>카톡에서 열었으면 먼저 ⋯ → <b>Safari로 열기</b>':'브라우저 메뉴(⋮) → <b>홈 화면에 추가</b> 또는 <b>앱 설치</b>'}</div>${bip?'<button class="btn" onclick="bip.prompt()">설치</button>':''}</div>`;
 async function vApp(){
- V(`<div class="top g"><small>${me.name?'안녕하세요, '+esc(me.name)+(me.part?' · '+esc(PN[me.part]||''):''):'함께 연주하는 밴드 앱'}</small><h1 style="font:900 25px Pretendard,-apple-system,sans-serif;letter-spacing:-.02em"><span style="color:#5EC4BE">We</span><span style="color:#FF3B47">Ba</span>nd</h1></div><main>${instCard()}
+ V(`<div class="top g"><small>${me.name?'안녕하세요, '+esc(me.name)+(me.part?' · '+esc(PN[me.part]||''):''):'함께 연주하는 밴드 앱'}</small><h1 style="font:900 25px Pretendard,-apple-system,sans-serif;letter-spacing:-.02em"><span style="color:#5EC4BE">We</span><span style="color:#FF3B47">Ba</span>nd</h1></div><main>${instCard()}${gCard()}
  <div class="card"><h3>내 밴드</h3><div id="bl">${bands.length?'':'<p class="empty">아직 밴드가 없어요.<br>만들거나, 받은 초대 코드로 가입하세요.</p>'}</div></div>
  <a class="btn" href="#/make">＋ 밴드 만들기</a><button class="btn b2" onclick="askCode()">🔗 초대 코드로 가입</button>
  <div class="card" style="margin-top:12px"><h3>🎧 혼자 연습</h3><div class="row"><span style="color:var(--mu);font-size:14px">밴드 없이 악보만 열어 연습하기</span><a class="go" href="at.html?solo=1">악보 열기</a></div></div>
@@ -285,8 +315,9 @@ async function vJoin(c){$('tabs').innerHTML='';V('<main><p class="empty">밴드 
  const o=await J(c+'/band').catch(()=>null);
  if(!o){V(`<main><div class="card">코드 <b>${esc(c)}</b> 밴드를 못 찾았어요.</div><a class="btn b2" href="#/">← 내 밴드</a></main>`);return}
  V(`<div class="top"><a href="#/"><small>← 내 밴드</small></a><h1>🎸 ${esc(o.name)}</h1></div><main><div class="card"><h3>가입하기</h3>
+ ${GU?'':`<label class="l">내 파트</label>${partSel('jp',me.part||'g1')}<button class="btn" onclick="sessionStorage.setItem('wb_join','${esc(c)}|'+$('jp').value);gLogin()">G 구글로 로그인하고 가입</button><div style="text-align:center;color:var(--mu);font-size:13px;margin:6px 0 10px">또는 이름만 넣고 가입</div>`}
  <label class="l">내 이름</label><input id="jm" maxlength="20" value="${esc(me.name||'')}" placeholder="밴드에서 부르는 이름">
- <label class="l">내 파트</label>${partSel('jp',me.part||'g1')}
+ ${GU?`<label class="l">내 파트</label>${partSel('jp',me.part||'g1')}`:''}
  <button class="btn" id="jk">가입하기</button></div></main>`);
  $('jk').onclick=async()=>{const nm=$('jm').value.trim();if(!nm){toast('이름을 넣어 주세요');return}
   await sameMe(c,nm);
@@ -294,14 +325,14 @@ async function vJoin(c){$('tabs').innerHTML='';V('<main><p class="empty">밴드 
   B=null;const back=sessionStorage.getItem('wb_after');sessionStorage.removeItem('wb_after');go(back||'#/b/'+c+'/home')}}
 function vFind(){V(`<div class="top g"><small>위밴드</small><h1>세션·밴드 찾기</h1></div><main>
  <div class="card"><h3>곧 열려요</h3><div style="font-size:15px;line-height:1.6">• 🥁 <b>세션 구해요</b> — 합주에 빠진 파트를 근처 연주자에게<br>• 🎹 <b>밴드 구해요</b> — 밴드 찾는 연주자 등록<br><span style="color:var(--mu);font-size:14px">여러 밴드가 쓰기 시작하면 열게요.</span></div></div></main>`)}
-function vMe(){V(`<div class="top g"><small>이 기기에 저장돼요</small><h1>내 정보</h1></div><main><div class="card">
+function vMe(){V(`<div class="top g"><small>${GU?'구글 계정에 저장돼요':'이 기기에 저장돼요'}</small><h1>내 정보</h1></div><main>${gCard()}<div class="card">
  <label class="l">이름</label><input id="mn" maxlength="20" value="${esc(me.name||'')}">
  <label class="l">주 파트</label>${partSel('mp',me.part||'g1')}
  <label class="l">지역 (나중에 찾기에서 써요)</label><input id="mr" maxlength="20" value="${esc(me.region||'')}" placeholder="예: 인천 중구">
  <button class="btn" id="ms">저장</button></div>
  <div class="card"><h3>🎨 화면 색</h3><div class="rs"><button id="thk">🎹 블랙&화이트</button><button id="thp">💜 보라</button></div></div>
  <div class="card"><h3>🎧 내 연습 (이 기기)</h3><div id="mpr"></div></div></main>`);
- $('ms').onclick=()=>{me={name:$('mn').value.trim(),part:$('mp').value,region:$('mr').value.trim()};LSet('me',me);toast('저장했어요')};
+ $('ms').onclick=()=>{me={name:$('mn').value.trim(),part:$('mp').value,region:$('mr').value.trim()};LSet('me',me);cloudPush();toast('저장했어요')};
  const th=()=>{const p=LG('theme')==='p';$('th-k').disabled=p;document.querySelector('meta[name=theme-color]').content=p?'#3B0A57':'#000000';$('thk').className=p?'':'sel';$('thp').className=p?'sel':''};
  $('thk').onclick=()=>{LSet('theme','k');th()};$('thp').onclick=()=>{LSet('theme','p');th()};th();
  const pr=myPr(),[m,by]=sumPr(pr,today().slice(0,8)+'01',today()),[w]=sumPr(pr,weekStart(today()),today());
