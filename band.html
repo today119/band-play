@@ -37,7 +37,7 @@ label.l{display:block;font-size:13px;color:var(--mu);margin-top:10px;font-weight
 .song{display:flex;gap:12px;align-items:center}.song .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:24px;background:#f4eefa;flex:none}.song>div{flex:1;min-width:0}.song small{color:var(--mu)}
 .prog{height:8px;background:var(--li);border-radius:4px;overflow:hidden;margin-top:6px}.prog i{display:block;height:100%;background:var(--p2)}
 .seg{display:flex;background:var(--li);border-radius:12px;padding:3px;margin-bottom:12px}.seg a{flex:1;text-align:center;padding:8px;border-radius:10px;font-weight:700;font-size:14px;color:var(--mu);text-decoration:none}.seg a.on{background:#fff;color:var(--p)}
-.tag{font-size:12px;color:var(--p2);font-weight:800}.tag.g{color:#db2777}
+.tag{font-size:12px;color:var(--p2);font-weight:800}.rt{font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--li);color:var(--p);margin-left:2px;white-space:nowrap}.rt-lead{background:#111;color:#FFD54A}.tag.g{color:#db2777}
 .mh{display:flex;justify-content:space-between;align-items:center;font-size:16px;color:var(--p);margin-bottom:6px}.mh a{padding:4px 12px;font-size:20px;color:var(--p);text-decoration:none}
 .wk,.gd{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}.wk span{font-size:11px;color:#9a88ad}
 .gd a{height:44px;font-size:14px;position:relative;display:flex;justify-content:center;padding-top:4px;border-radius:10px;color:var(--fg);text-decoration:none}
@@ -145,6 +145,7 @@ input,select,textarea{border-color:#dcdce0}input:focus,select:focus,textarea:foc
 // ── 데이터: RTDB band_play/{코드} (at.html 합주 방과 같은 곳)
 //   band={name,made,k} · m/{기기}={name,part,t,pp(연습 공개)} · nt={txt,by,t}(공지)
 //   ev/{id}={ty:'j'합주|'g'공연·행사, d:'2026-10-29', tm:'19:00', pl, so:'곡,곡', rep:1(매주), by, t}
+//   ro/{기기}='lead'밴드장|'vice'부밴드장|'sec'총무|'acct'회계(집행부) · rq/{기기}={name,part,t}(가입 신청) · cfg={appr:가입 승인제, pm:{note,cal,mem,fee:'all'|'staff'|'lead'}}
 //   rs/{id}/{날짜}/{기기}={s:1갑니다|0못가요, name, part} · pr/{기기}/{yyyymmdd}={곡:초} (at.html이 ▶ 중에 적음)
 const RDB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/',LIB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play_lib/';
 const DEFK='cfinph2riiRuxxtqTv87VFIq';
@@ -185,11 +186,13 @@ async function onLogin(u){GU={uid:u.uid,u,name:u.displayName||'',email:u.email||
  if(c.me&&c.me.name)me={...me,...c.me};if(!me.name&&GU.name){me={...me,name:GU.name}}LSet('me',me);LSet('bands',bands);
  // 멤버 번호를 계정 번호로: 이 기기 옛 줄은 지우고, 연습 기록은 옮김
  const nc=gcid(u.uid),old=cid;if(old!==nc){cid=nc;LSet('cid',cid);
-  for(const b of bands){DEL(b.code+'/m/'+old).catch(()=>{});J(b.code+'/pr/'+old).then(p=>{if(p)J(b.code+'/pr/'+nc,{method:'PATCH',body:JSON.stringify(p)}).catch(()=>{})}).catch(()=>{})}}
+  for(const b of bands){ // 멤버 줄·역할·가입 신청도 계정 번호로 옮김(승인제라 줄이 사라지면 «대기»가 돼 버림)
+   for(const s of ['m','ro','rq']){const v=await J(b.code+'/'+s+'/'+old).catch(()=>null);if(v!=null){await PUT(b.code+'/'+s+'/'+nc,v).catch(()=>{});DEL(b.code+'/'+s+'/'+old).catch(()=>{})}}
+   J(b.code+'/pr/'+old).then(p=>{if(p)J(b.code+'/pr/'+nc,{method:'PATCH',body:JSON.stringify(p)}).catch(()=>{})}).catch(()=>{})}}
  cloudPush();B=null;
  // 초대 화면에서 «구글로 로그인하고 가입»을 눌렀으면 바로 가입까지
  const [jc,jp]=(sessionStorage.getItem('wb_join')||'').split('|');sessionStorage.removeItem('wb_join');
- if(jc&&!myBand(jc)){const b=await J(jc+'/band').catch(()=>null);if(b&&b.name){bands=bands.filter(x=>x.code!==jc);bands.unshift({code:jc,name:b.name,me:me.name||GU.name||'멤버',part:jp||me.part||'g1'});saveBands();toast('🎸 «'+b.name+'» 가입했어요');go('#/b/'+jc+'/home');return}}
+ if(jc&&!myBand(jc)){const b=await J(jc+'/band').catch(()=>null);if(b&&b.name){const pd=await joinBand(jc,b.name,me.name||GU.name||'멤버',jp||me.part||'g1');toast(pd?'🙋 «'+b.name+'» 가입 신청했어요':'🎸 «'+b.name+'» 가입했어요');go('#/b/'+jc+'/home');return}}
  render()}
 if(auth)auth.onAuthStateChanged(u=>{const first=!authKnown;authKnown=true;if(u){if(!GU||GU.uid!==u.uid)onLogin(u)}else if(GU){GU=null;render()}else if(first)render()});
 // 스토어 앱(Capacitor) 안에서는 팝업 대신 기기 로그인(구글·애플) → 받은 토큰으로 파이어베이스 로그인(10/27 출시 앱)
@@ -212,7 +215,7 @@ const myBand=c=>bands.find(x=>x.code===c);
 
 // ── 화면 전환: #/ · #/find · #/me · #/b/1234/home|cal|score|mem|fee
 let B=null; // 지금 밴드 데이터 {code, band, m, ev, rs, nt, pr}
-async function load(code){const o=await J(code).catch(()=>null);if(!o||!o.band)return null;B={code,...o,m:o.m||{},ev:o.ev||{},rs:o.rs||{},pr:o.pr||{}};return B}
+async function load(code){const o=await J(code).catch(()=>null);if(!o||!o.band)return null;B={code,...o,m:o.m||{},ev:o.ev||{},rs:o.rs||{},pr:o.pr||{},ro:o.ro||{},rq:o.rq||{},cfg:o.cfg||{},at:Date.now()};return B}
 function go(h){if(location.hash===h)render();else location.hash=h}
 window.addEventListener('hashchange',render);
 // 선 아이콘(이모지 대신 — 고르면 속이 차요)
@@ -246,14 +249,46 @@ function vLogin(){$('tabs').innerHTML='';$('tabs').style.display='none';window._
  ${IOSN?`<button onclick="gLogin('apple')" style="display:flex;align-items:center;gap:12px;justify-content:center;width:min(320px,100%);padding:15px;margin-top:12px;border:1px solid #444;border-radius:14px;background:#000;color:#fff;font:700 17px Pretendard,-apple-system,sans-serif"><svg width="20" height="22" viewBox="0 0 17 20" fill="#fff"><path d="M14.1 10.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1zM11.6 3c.7-.9 1.2-2 1.1-3.1-1 0-2.3.7-3 1.6-.7.8-1.2 1.9-1.1 3 1.1.1 2.3-.6 3-1.5z"/></svg>Apple로 계속하기</button>`:''}
  <button onclick="LSet('guest',1);render()" style="margin-top:22px;background:none;border:0;color:#777;font-size:14px;text-decoration:underline">로그인 없이 둘러보기</button></div>`);
  if(jm)J(jm[1]+'/band').then(o=>{if(o&&o.name&&$('lgj'))$('lgj').innerHTML=`🎸 <b style="color:#fff">${esc(o.name)}</b> 밴드 초대를 받았어요<br>로그인하면 바로 가입해요`}).catch(()=>{})}
+// ── 역할·권한(10/27 «밴드장·총무·회계 역할 + 집행부 권한 → 회원 관리·신규 가입 승인»)
+//  밴드장은 늘 다 됨 · 각 일(공지/일정/멤버 관리/회비)을 «모든 멤버 / 집행부 / 밴드장만» 중에서 밴드장이 정함
+//  가입 승인제: 밴드장이 있는 밴드는 초대 링크로 와도 «신청»만 → 집행부가 승인해야 멤버(밴드장이 없으면 예전처럼 바로 가입)
+const RN={lead:'👑 밴드장',vice:'⭐ 부밴드장',sec:'📋 총무',acct:'💰 회계'},RK=Object.keys(RN);
+const PMN={note:'📢 공지 쓰기',cal:'📅 일정 만들기·지우기',mem:'👥 가입 승인·멤버 관리',fee:'💰 회비 관리'},PMD={note:'staff',cal:'all',mem:'staff',fee:'staff'};
+const LVN={all:'모든 멤버',staff:'집행부',lead:'밴드장만'};
+const roleOf=k=>B&&B.ro&&B.ro[k]||'',hasLead=b=>Object.values((b||B||{}).ro||{}).includes('lead');
+const apprOn=b=>{b=b||B;return !!b&&(b.cfg||{}).appr!==false&&hasLead(b)};
+function can(a){if(!B||!B.m[cid])return false;const r=roleOf(cid);if(r==='lead')return true;const l=((B.cfg||{}).pm||{})[a]||PMD[a];return l==='all'||(l==='staff'&&!!r)}
+const deny=a=>{toast(PMN[a].replace(/^\S+ /,'')+'은(는) '+LVN[((B.cfg||{}).pm||{})[a]||PMD[a]]+'만 할 수 있어요');return true};
+const rTag=k=>{const r=roleOf(k);return r?` <span class="rt rt-${r}">${RN[r].replace(/^\S+ /,'')}</span>`:''};
+// 가입: 승인제면 신청서(rq)를, 아니면 바로 내 밴드 목록에(멤버 줄은 밴드 열 때 hello가 씀)
+async function joinBand(c,name,nm,part){const [ro,cfg]=await Promise.all([J(c+'/ro').catch(()=>null),J(c+'/cfg').catch(()=>null)]);
+ const pend=apprOn({ro:ro||{},cfg:cfg||{}})&&!(await J(c+'/m/'+cid).catch(()=>null));
+ if(pend)await PUT(c+'/rq/'+cid,{name:nm,part,t:{'.sv':'timestamp'}}).catch(()=>{});
+ const mb={code:c,name,me:nm,part,...(pend?{pend:1}:{})};bands=bands.filter(x=>x.code!==c);bands.unshift(mb);saveBands();return pend}
+// 아직 멤버가 아니면(승인 대기·거절·내보내짐) 밴드 안 대신 이 화면
+let waitT=null;function vWait(mb){$('tabs').innerHTML='';appTabs('#/');const rq=B.rq[cid];
+ V(`<div class="top"><a href="#/"><small>← 내 밴드</small></a><h1>🎸 ${esc(B.band.name)}</h1></div><main><div class="card" style="text-align:center">
+ ${rq?`<div style="font-size:44px">⏳</div><h3>가입 승인을 기다리고 있어요</h3><div style="color:var(--mu);font-size:15px;line-height:1.6">${esc(rq.name)} · ${pn(rq.part)}<br>밴드장이나 집행부가 승인하면 바로 들어가져요</div>
+  <button class="btn gh" style="color:#dc2626" onclick="cancelRq()">신청 취소</button>`
+ :`<div style="font-size:44px">🚪</div><h3>${mb.pend?'가입이 승인되지 않았어요':'이 밴드 멤버가 아니에요'}</h3><div style="color:var(--mu);font-size:15px">다시 신청하거나 목록에서 지울 수 있어요</div>
+  <button class="btn" onclick="reRq()">가입 다시 신청</button><button class="btn gh" style="color:#dc2626" onclick="dropBand()">내 밴드 목록에서 지우기</button>`}</div></main>`);
+ clearInterval(waitT);const h=location.hash;waitT=setInterval(async()=>{if(location.hash!==h){clearInterval(waitT);return}
+  const v=await J(B.code+'/m/'+cid).catch(()=>null);if(v){clearInterval(waitT);delete mb.pend;saveBands();toast('🎉 가입 승인됐어요!');B=null;render()}},8000)}
+async function cancelRq(){if(!confirm('가입 신청을 취소할까요?'))return;await DEL(B.code+'/rq/'+cid).catch(()=>{});dropBand(1)}
+async function reRq(){const mb=myBand(B.code);await PUT(B.code+'/rq/'+cid,{name:mb.me,part:mb.part,t:{'.sv':'timestamp'}}).catch(()=>{});mb.pend=1;saveBands();toast('가입 신청했어요');B=null;render()}
+function dropBand(q){bands=bands.filter(x=>x.code!==B.code);saveBands();B=null;if(q!==1)toast('지웠어요');go('#/')}
 async function render(){const h=location.hash||'#/',p=h.slice(2).split('/');
  if(GU||LG('guest')){$('tabs').style.display='';if(window.__loginOn){window.__loginOn=0;document.documentElement.style.background=document.body.style.background=''}}
  if(!GU&&!LG('guest')){if(!authKnown){$('tabs').innerHTML='';V('<main><p class="empty">　</p></main>');return}vLogin();return}
  if(p[0]==='b'&&p[1]){const c=p[1],t=p[2]||'home';
   if(!myBand(c)){go('#/join/'+c);return}
   if(!B||B.code!==c){V('<main><p class="empty">불러오는 중…</p></main>');if(!await load(c)){V('<main><div class="card">밴드를 못 찾았어요. 인터넷 연결을 확인해 주세요.</div><a class="btn b2" href="#/">← 내 밴드</a></main>');return}}
-  const mb=myBand(c);LSet('band',mb);adopt(c,mb.me,B.m);hello(mb);B.m[cid]={...(B.m[cid]||{}),name:mb.me,part:mb.part,t:Date.now(),...(mb.pp?{pp:true}:{})};bandTabs(c,t);
-  ({home:vHome,cal:vCal,score:vScore,mem:vMem,fee:vFee})[t]?.(mb);return}
+  const mb=myBand(c);if(B.m[cid])adopt(c,mb.me,B.m);
+  if(!B.m[cid]&&(apprOn()||mb.pend)){vWait(mb);return}if(mb.pend){delete mb.pend;saveBands()}
+  LSet('band',mb);hello(mb);B.m[cid]={...(B.m[cid]||{}),name:mb.me,part:mb.part,t:Date.now(),...(mb.pp?{pp:true}:{})};bandTabs(c,t);
+  ({home:vHome,cal:vCal,score:vScore,mem:vMem,fee:vFee})[t]?.(mb);
+  // 다른 사람이 바꾼 역할·신청·일정이 보이게: 20초 넘은 데이터면 화면은 그대로 두고 뒤에서 새로 받아 다시 그림(모달 열려 있으면 다음 번에)
+  if(Date.now()-B.at>20000&&!$('mod')){const h0=location.hash;load(c).then(x=>{if(x&&location.hash===h0&&!$('mod')&&document.activeElement.tagName!=='INPUT')render()})}return}
  if(p[0]==='join'){vJoin(p[1]);return}
  if(p[0]==='make'){vMake();return}
  if(p[0]==='lib'){appTabs('#/lib');vLib();return}
@@ -267,7 +302,9 @@ async function sameMe(c,nm){if(GU)return; // 구글 로그인이면 계정 번�
  if(hit&&confirm(`이미 «${hit[1].name}»(${pn(hit[1].part)})이 있어요.\n이 사람이 나예요? (확인 = 이어서 쓰기, 취소 = 새 멤버)`)){cid=hit[0];LSet('cid',cid)}}
 // 이미 가입한 기기들도: 같은 이름 줄이 여럿이면 가장 앞 번호 하나로 모으고 나머지는 지움(기기마다 열 때 같은 줄로 모임)
 function adopt(c,nm,m){const same=Object.keys(m||{}).filter(k=>m[k]&&nmK(m[k].name)===nmK(nm)).concat(cid).filter((k,i,a)=>a.indexOf(k)===i).sort((a,b)=>(b.length===12)-(a.length===12)||(a<b?-1:1));if(same.length<2)return;
- const keep=same[0];same.slice(1).forEach(k=>{DEL(c+'/m/'+k).catch(()=>{});if(B&&B.m)delete B.m[k]});if(keep!==cid){cid=keep;LSet('cid',cid)}}
+ const keep=same[0],ro=(B&&B.ro)||{},r=same.map(k=>ro[k]).filter(Boolean).sort((a,b)=>RK.indexOf(a)-RK.indexOf(b))[0]; // 역할도 남는 줄로
+ if(r&&ro[keep]!==r){ro[keep]=r;PUT(c+'/ro/'+keep,r).catch(()=>{})}
+ same.slice(1).forEach(k=>{DEL(c+'/m/'+k).catch(()=>{});if(ro[k]){delete ro[k];DEL(c+'/ro/'+k).catch(()=>{})}if(B&&B.m)delete B.m[k]});if(keep!==cid){cid=keep;LSet('cid',cid)}}
 function hello(mb){PUT(mb.code+'/m/'+cid,{name:mb.me,part:mb.part,t:{'.sv':'timestamp'},...(mb.pp?{pp:true}:{})}).catch(()=>{})}
 
 // ── 일정 펼치기: 매주 반복은 시작일부터 1년
@@ -336,18 +373,19 @@ function vMake(){$('tabs').innerHTML='';
   if(!c){$('bk').disabled=false;$('bk').textContent='⚠️ 다시 눌러 주세요';return}
   let k=DEFK;try{k=localStorage.getItem('at_k')||DEFK}catch(e){}
   await PUT(c+'/band',{name:n,made:{'.sv':'timestamp'},k}).catch(()=>{});
+  await PUT(c+'/ro/'+cid,'lead').catch(()=>{}); // 만든 사람 = 밴드장
   const mb={code:c,name:n,me:nm,part:$('bp').value};bands.unshift(mb);saveBands();me={...me,name:nm,part:mb.part};LSet('me',me);B=null;go('#/b/'+c+'/mem')}}
 async function vJoin(c){$('tabs').innerHTML='';V('<main><p class="empty">밴드 찾는 중…</p></main>');
- const o=await J(c+'/band').catch(()=>null);
+ const o=await J(c+'/band').catch(()=>null),ap=o&&apprOn({ro:await J(c+'/ro').catch(()=>null)||{},cfg:await J(c+'/cfg').catch(()=>null)||{}});
  if(!o){V(`<main><div class="card">코드 <b>${esc(c)}</b> 밴드를 못 찾았어요.</div><a class="btn b2" href="#/">← 내 밴드</a></main>`);return}
- V(`<div class="top"><a href="#/"><small>← 내 밴드</small></a><h1>🎸 ${esc(o.name)}</h1></div><main><div class="card"><h3>가입하기</h3>
+ V(`<div class="top"><a href="#/"><small>← 내 밴드</small></a><h1>🎸 ${esc(o.name)}</h1></div><main><div class="card"><h3>${ap?'가입 신청':'가입하기'}</h3>${ap?'<div style="color:var(--mu);font-size:14px;margin-bottom:6px">이 밴드는 집행부가 승인하면 들어가져요</div>':''}
  ${GU?'':`<label class="l">내 파트</label>${partSel('jp',me.part||'g1')}<button class="btn" onclick="sessionStorage.setItem('wb_join','${esc(c)}|'+$('jp').value);gLogin()">G 구글로 로그인하고 가입</button><div style="text-align:center;color:var(--mu);font-size:13px;margin:6px 0 10px">또는 이름만 넣고 가입</div>`}
  <label class="l">내 이름</label><input id="jm" maxlength="20" value="${esc(me.name||(GU&&GU.name)||'')}" placeholder="밴드에서 부르는 이름">
  ${GU?`<label class="l">내 파트</label>${partSel('jp',me.part||'g1')}`:''}
- <button class="btn" id="jk">가입하기</button></div></main>`);
+ <button class="btn" id="jk">${ap?'가입 신청하기':'가입하기'}</button></div></main>`);
  $('jk').onclick=async()=>{const nm=$('jm').value.trim();if(!nm){toast('이름을 넣어 주세요');return}
-  await sameMe(c,nm);
-  const mb={code:c,name:o.name,me:nm,part:$('jp').value};bands=bands.filter(x=>x.code!==c);bands.unshift(mb);saveBands();if(!me.name){me={...me,name:nm,part:mb.part};LSet('me',me)}
+  if(!ap)await sameMe(c,nm); // 승인제면 «나예요»로 남의 줄을 가져가지 못하게 — 집행부가 승인할 때 합침
+  const pd=await joinBand(c,o.name,nm,$('jp').value);if(pd)toast('🙋 가입 신청했어요');if(!me.name){me={...me,name:nm,part:$('jp').value};LSet('me',me)}
   B=null;const back=sessionStorage.getItem('wb_after');sessionStorage.removeItem('wb_after');go(back||'#/b/'+c+'/home')}}
 function vFind(){V(`<div class="top g"><small>위밴드</small><h1>세션·밴드 찾기</h1></div><main>
  <div class="card"><h3>곧 열려요</h3><div style="font-size:15px;line-height:1.6">• 🥁 <b>세션 구해요</b> — 합주에 빠진 파트를 근처 연주자에게<br>• 🎹 <b>밴드 구해요</b> — 밴드 찾는 연주자 등록<br><span style="color:var(--mu);font-size:14px">여러 밴드가 쓰기 시작하면 열게요.</span></div></div></main>`)}
@@ -373,11 +411,12 @@ function vHome(mb){const n=nextOf('j'),g=nextOf('g'),nt=B.nt;
  <div class="card"><h3>다음 합주</h3>${n?`<div class="big">${dday(n.d)}</div><div style="font-size:15px;margin:2px 0 4px">${fmt(n.d)} ${esc(n.e.tm||'')}${n.e.pl?' · '+esc(n.e.pl):''}${n.e.so?'<br><small style="color:var(--mu)">🎵 '+esc(n.e.so)+'</small>':''}</div>${rsvpBox(n)}
    <button class="btn b2 sm" style="margin-top:10px" onclick="share('${n.id}','${n.d}')">📤 단톡방에 출첵 보내기</button>`:`<p class="empty">잡힌 합주가 없어요</p><a class="btn b2" href="#/b/${mb.code}/cal">＋ 합주 일정 만들기</a>`}</div>
  ${g?`<div class="card"><h3>🎤 공연·행사</h3><div class="row"><span>${esc(g.e.pl||'공연')} · ${fmt(g.d)} ${esc(g.e.tm||'')}</span><b style="color:var(--p2)">${dday(g.d)}</b></div></div>`:''}
- <div class="card" onclick="editNote()"><h3>📢 공지 <small style="font-weight:400">(눌러서 고치기)</small></h3><div class="note">${nt&&nt.txt?esc(nt.txt):'<span style="color:var(--mu)">공지가 없어요</span>'}</div>${nt&&nt.by?`<small style="color:var(--mu)">— ${esc(nt.by)}</small>`:''}</div>
+ ${can('mem')&&Object.keys(B.rq).length?`<a class="card" style="display:block;text-decoration:none;color:inherit;border:2px solid #FF3B47" href="#/b/${mb.code}/mem"><b>🙋 가입 신청 ${Object.keys(B.rq).length}명</b> <small style="color:var(--mu)">— 눌러서 승인하기 ›</small></a>`:''}
+ <div class="card" onclick="editNote()"><h3>📢 공지 ${can('note')?'<small style="font-weight:400">(눌러서 고치기)</small>':''}</h3><div class="note">${nt&&nt.txt?esc(nt.txt):'<span style="color:var(--mu)">공지가 없어요</span>'}</div>${nt&&nt.by?`<small style="color:var(--mu)">— ${esc(nt.by)}</small>`:''}</div>
  <div class="card"><h3>🎧 내 연습</h3><div class="row"><span>이번 주</span><b>${mins(w)} ${lw||w?`<small style="color:${w>=lw?'#16a34a':'#dc2626'}">${w>=lw?'▲':'▼'}${mins(Math.abs(w-lw))}</small>`:''}</b></div></div>
  <a class="btn" href="${atUrl(mb,n&&n.e.so?songKey(n.e.so.split(',')[0]):null)}">▶ 악보 열기 (연습·합주)</a></main>`)}
 const songKey=name=>{name=(name||'').trim();for(const [k,v] of Object.entries(SN))if(v.replace(/^\S+ /,'')===name||k===name)return k;return null};
-function editNote(){const nt=B.nt||{};modal(`<h2>📢 공지</h2><textarea id="ntx" rows="5" maxlength="500">${esc(nt.txt||'')}</textarea><button class="btn" id="nts">저장</button><button class="btn gh" onclick="closeM()">닫기</button>`);
+function editNote(){if(!can('note')&&deny('note'))return;const nt=B.nt||{};modal(`<h2>📢 공지</h2><textarea id="ntx" rows="5" maxlength="500">${esc(nt.txt||'')}</textarea><button class="btn" id="nts">저장</button><button class="btn gh" onclick="closeM()">닫기</button>`);
  $('nts').onclick=()=>{const v={txt:$('ntx').value.trim(),by:myBand(B.code).me,t:{'.sv':'timestamp'}};B.nt={txt:v.txt,by:v.by};closeM();render();PUT(B.code+'/nt',v).catch(()=>toast('⚠️ 저장 못 했어요'))}}
 
 // 📅 일정: 달력 / 목록 / 출석률
@@ -403,7 +442,7 @@ function vCal(mb){const p=location.hash.split('/');if(location.hash!==calH){calH
    <div style="font-size:12.5px;color:var(--mu);margin-top:3px">${Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([s,v])=>esc((SN[s]||s).replace(/^\S+ /,''))+' '+mins(v)).join(' · ')||'악보 화면에서 ▶ 누른 시간이 저절로 쌓여요'}${w||lw?` · 이번 주 ${mins(w)} (지난주보다 ${w>=lw?'▲':'▼'}${mins(Math.abs(w-lw))})`:''}</div></div>
   <h3 style="margin:16px 4px 8px;font-size:15px;color:var(--mu)">${fmt(calSel)}${daySec(pr,calSel)>=60?' · 연습 '+mins(daySec(pr,calSel)):''}</h3>
   ${sel.length?sel.map(evCard).join(''):'<p class="empty">이날 일정이 없어요</p>'}
-  <button class="btn b2" onclick="newEv('${calSel}')">＋ ${fmt(calSel)} 일정 만들기</button>`}
+  ${can('cal')?`<button class="btn b2" onclick="newEv('${calSel}')">＋ ${fmt(calSel)} 일정 만들기</button>`:''}`}
  else if(calSeg==='list'){const os=occ(today(),addD(today(),60));body=(os.length?os.map(evCard).join(''):'<p class="empty">앞으로 60일 동안 일정이 없어요</p>')+`<button class="btn b2" onclick="newEv('${today()}')">＋ 일정 만들기</button>`}
  else{const past=occ(addD(today(),-120),addD(today(),-1)).filter(o=>o.e.ty==='j'),mem=Object.entries(B.m).filter(([k,v])=>v&&v.name);
   body=`<div class="card"><h3>최근 120일 합주 ${past.length}번</h3>${mem.map(([k,v])=>{const n=past.filter(o=>rsOf(o.id,o.d)[k]&&rsOf(o.id,o.d)[k].s===1).length,pc=past.length?Math.round(n/past.length*100):0;
@@ -411,14 +450,14 @@ function vCal(mb){const p=location.hash.split('/');if(location.hash!==calH){calH
    <small style="color:var(--mu)">«갑니다»를 누른 날 = 출석으로 셉니다</small></div>`}
  V(head(mb,'📅 일정')+'<main>'+seg+body+'</main>')}
 function evCard(o){const e=o.e;return `<div class="card"><div class="row" style="padding-top:0"><div><span class="tag ${e.ty==='g'?'g':''}">${e.ty==='g'?'공연·행사':'합주'}${e.rep?' · 매주':''}</span><br><b>${fmt(o.d)} ${esc(e.tm||'')}</b>${e.pl?'<br><small style="color:var(--mu)">📍 '+esc(e.pl)+'</small>':''}${e.so?'<br><small style="color:var(--mu)">🎵 '+esc(e.so)+'</small>':''}</div>
- <span style="display:flex;gap:4px"><button class="sm b2" onclick="share('${o.id}','${o.d}')">📤</button><button class="sm b2" onclick="evMenu('${o.id}','${o.d}')">⋯</button></span></div>${rsvpBox(o)}</div>`}
-function evMenu(id,d){const e=B.ev[id];modal(`<h2>${e.ty==='g'?'공연·행사':'합주'} ${fmt(d)}</h2>
+ <span style="display:flex;gap:4px"><button class="sm b2" onclick="share('${o.id}','${o.d}')">📤</button>${can('cal')?`<button class="sm b2" onclick="evMenu('${o.id}','${o.d}')">⋯</button>`:''}</span></div>${rsvpBox(o)}</div>`}
+function evMenu(id,d){if(!can('cal')&&deny('cal'))return;const e=B.ev[id];modal(`<h2>${e.ty==='g'?'공연·행사':'합주'} ${fmt(d)}</h2>
  ${e.rep?`<button class="btn b2" onclick="skipEv('${id}','${d}')">이번 주(${fmt(d)})만 쉬기</button><button class="btn b2" onclick="endEv('${id}','${d}')">${fmt(d)}부터 반복 끝내기</button>`:''}
  <button class="btn" style="background:#dc2626" onclick="delEv('${id}')">${e.rep?'반복 일정 전부 지우기':'일정 지우기'}</button><button class="btn gh" onclick="closeM()">닫기</button>`)}
 async function skipEv(id,d){closeM();B.ev[id].sk={...(B.ev[id].sk||{}),[d]:1};render();PUT(B.code+'/ev/'+id+'/sk/'+d,1).catch(()=>toast('⚠️ 저장 못 했어요'))}
 async function endEv(id,d){closeM();const u=addD(d,-1);B.ev[id].un=u;render();PUT(B.code+'/ev/'+id+'/un',u).catch(()=>toast('⚠️ 저장 못 했어요'))}
 async function delEv(id){if(!confirm('지울까요?'))return;closeM();delete B.ev[id];render();DEL(B.code+'/ev/'+id).catch(()=>toast('⚠️ 못 지웠어요'));DEL(B.code+'/rs/'+id).catch(()=>{})}
-async function newEv(d){let songs=[];try{const o=await fetch(LIB+(B.band.k||DEFK)+'/tex.json?shallow=true').then(r=>r.json());songs=[...new Set(Object.keys(o||{}).map(k=>k.split('_')[0]))]}catch(e){}
+async function newEv(d){if(!can('cal')&&deny('cal'))return;let songs=[];try{const o=await fetch(LIB+(B.band.k||DEFK)+'/tex.json?shallow=true').then(r=>r.json());songs=[...new Set(Object.keys(o||{}).map(k=>k.split('_')[0]))]}catch(e){}
  const wd=WD[pd(d).getDay()];
  modal(`<h2>＋ 일정 만들기</h2><div class="seg" id="ety"><a href="javascript:void 0" class="on" data-t="j">🎸 합주</a><a href="javascript:void 0" data-t="g">🎤 공연·행사</a></div>
  <label class="l">날짜</label><input type="date" id="ed" value="${d}"><label class="l">시간</label><input type="time" id="et" value="19:00">
@@ -472,20 +511,58 @@ function reqModal(){const mine=LG('reqs')||[];
   mine.unshift({song,d:today()});LSet('reqs',mine.slice(0,20));closeM();toast('✅ 요청 보냈어요')}}
 
 // 👥 멤버
-function vMem(mb){const now=Date.now(),mem=Object.entries(B.m).filter(([k,v])=>v&&v.name).sort((a,b)=>Object.keys(PN).indexOf(a[1].part)-Object.keys(PN).indexOf(b[1].part));
- const ws=weekStart(today()),wk=k=>{const [t]=sumPr(B.pr[k]||{},ws,today());return t};
- V(head(mb,'👥 멤버')+`<main><div class="card"><h3>멤버 ${mem.length}명 <small style="font-weight:400">(● 최근 접속)</small></h3>
- ${mem.map(([k,v])=>`<div class="row"><span>${pe(v.part)} <b>${esc(v.name)}</b> <small style="color:var(--mu)">${pn(v.part)}</small>${now-(v.t||0)<180000?' <span style="color:#16a34a">●</span>':''}${k===cid?' <span class="tag">나</span>':''}</span><small style="color:var(--mu)">${v.pp?'이번 주 '+mins(wk(k)):''}</small></div>`).join('')}</div>
+function vMem(mb){const now=Date.now(),PK=Object.keys(PN),ro=k=>{const i=RK.indexOf(roleOf(k));return i<0?9:i};
+ const mem=Object.entries(B.m).filter(([k,v])=>v&&v.name).sort((a,b)=>ro(a[0])-ro(b[0])||PK.indexOf(a[1].part)-PK.indexOf(b[1].part));
+ const ws=weekStart(today()),wk=k=>{const [t]=sumPr(B.pr[k]||{},ws,today());return t},rq=Object.entries(B.rq).filter(([k,v])=>v&&v.name),mg=can('mem'),ld=roleOf(cid)==='lead';
+ V(head(mb,'👥 멤버')+`<main>
+ ${mg&&rq.length?`<div class="card" style="border:2px solid #FF3B47"><h3>🙋 가입 신청 ${rq.length}명</h3>${rq.map(([k,v])=>`<div class="row"><span>${pe(v.part)} <b>${esc(v.name)}</b> <small style="color:var(--mu)">${pn(v.part)}</small></span><span style="display:flex;gap:4px"><button class="sm" onclick="okRq('${k}')">승인</button><button class="sm b2" onclick="noRq('${k}')">거절</button></span></div>`).join('')}</div>`:''}
+ ${hasLead()?'':`<div class="card"><h3>👑 아직 밴드장이 없어요</h3><div style="color:var(--mu);font-size:14px">밴드장이 있어야 역할을 정하고 가입을 승인할 수 있어요</div><button class="btn" onclick="claimLead()">내가 밴드장 맡기</button></div>`}
+ <div class="card"><h3>멤버 ${mem.length}명 <small style="font-weight:400">(● 최근 접속${mg?' · 눌러서 관리':''})</small></h3>
+ ${mem.map(([k,v])=>`<div class="row"${mg&&k!==cid?` onclick="memMenu('${k}')" style="cursor:pointer"`:''}><span>${pe(v.part)} <b>${esc(v.name)}</b> <small style="color:var(--mu)">${pn(v.part)}</small>${rTag(k)}${now-(v.t||0)<180000?' <span style="color:#16a34a">●</span>':''}${k===cid?' <span class="tag">나</span>':''}</span><small style="color:var(--mu)">${v.pp?'이번 주 '+mins(wk(k)):''}${mg&&k!==cid?' ⋯':''}</small></div>`).join('')}</div>
+ ${ld?setCard():''}
  <div class="card"><h3>📨 멤버 초대</h3><div>초대 코드 <span class="code">${mb.code}</span></div><button class="btn" onclick="invite()">초대 링크 보내기</button></div>
  <div class="card"><h3>나</h3><label class="l">이름</label><input id="mn" maxlength="20" value="${esc(mb.me)}"><label class="l">파트</label>${partSel('mp',mb.part)}
  <label class="chk" style="margin-top:10px"><label><input type="checkbox" id="mpp" ${mb.pp?'checked':''}>내 연습 시간을 밴드에 보여 주기</label></label>
  <button class="btn" id="msv">저장</button><button class="btn gh" style="color:#dc2626" onclick="quit()">밴드 나가기</button></div></main>`);
  $('msv').onclick=()=>{mb.me=$('mn').value.trim()||mb.me;mb.part=$('mp').value;mb.pp=$('mpp').checked;saveBands();LSet('band',mb);try{localStorage.setItem('at_part',mb.part)}catch(e){}
   B.m[cid]={...(B.m[cid]||{}),name:mb.me,part:mb.part,pp:mb.pp,t:Date.now()};hello(mb);toast('저장했어요');render()}}
+// 집행부: 가입 승인·거절 · 멤버 메뉴(역할은 밴드장만, 내보내기는 멤버 관리 권한 — 집행부는 밴드장이, 밴드장은 아무도 못 내보냄)
+async function okRq(k){const v=B.rq[k];if(!v)return;
+ const twin=Object.entries(B.m).find(([j,w])=>w&&nmK(w.name)===nmK(v.name));
+ if(twin&&confirm(`이미 «${twin[1].name}»(${pn(twin[1].part)}) 줄이 있어요.\n같은 사람이면 합칠까요? (확인 = 합치기 · 연습 기록·역할 이어받음, 취소 = 따로 멤버)`)){
+  const [j]=twin;if(B.ro[j]){await PUT(B.code+'/ro/'+k,B.ro[j]).catch(()=>{});DEL(B.code+'/ro/'+j).catch(()=>{});B.ro[k]=B.ro[j];delete B.ro[j]}
+  J(B.code+'/pr/'+j).then(p=>{if(p)J(B.code+'/pr/'+k,{method:'PATCH',body:JSON.stringify(p)})}).catch(()=>{});DEL(B.code+'/m/'+j).catch(()=>{});delete B.m[j]}
+ const row={name:v.name,part:v.part,t:{'.sv':'timestamp'}};await PUT(B.code+'/m/'+k,row).catch(()=>{});DEL(B.code+'/rq/'+k).catch(()=>{});
+ B.m[k]={...row,t:Date.now()};delete B.rq[k];toast('✅ '+v.name+' 승인했어요');render()}
+async function noRq(k){const v=B.rq[k];if(!v||!confirm(`«${v.name}» 가입 신청을 거절할까요?`))return;DEL(B.code+'/rq/'+k).catch(()=>{});delete B.rq[k];render()}
+function memMenu(k){const v=B.m[k];if(!v)return;const ld=roleOf(cid)==='lead',r=roleOf(k),kick=can('mem')&&r!=='lead'&&(ld||!r);
+ modal(`<h2>${pe(v.part)} ${esc(v.name)}${rTag(k)}</h2><div style="color:var(--mu);margin-bottom:6px">${pn(v.part)}</div>
+ ${ld?`<label class="l">역할 (집행부)</label><div class="chk">${['',...RK.filter(x=>x!=='lead')].map(x=>`<label><input type="radio" name="rr" value="${x}" ${r===x?'checked':''}>${x?RN[x]:'일반 멤버'}</label>`).join('')}</div>
+  <button class="btn" id="rsv">역할 저장</button><button class="btn b2" onclick="giveLead('${k}')">👑 밴드장 넘기기</button>`:''}
+ ${kick?`<button class="btn gh" style="color:#dc2626" onclick="kick('${k}')">밴드에서 내보내기</button>`:''}<button class="btn gh" onclick="closeM()">닫기</button>`);
+ if(ld)$('rsv').onclick=()=>{const x=(document.querySelector('input[name=rr]:checked')||{}).value||'';closeM();if(x){B.ro[k]=x;PUT(B.code+'/ro/'+k,x).catch(()=>toast('⚠️ 저장 못 했어요'))}else{delete B.ro[k];DEL(B.code+'/ro/'+k).catch(()=>{})}toast('저장했어요');render()}}
+async function giveLead(k){const v=B.m[k];if(!confirm(`«${v.name}»에게 밴드장을 넘길까요?\n나는 부밴드장이 돼요.`))return;closeM();
+ B.ro[k]='lead';B.ro[cid]='vice';await PUT(B.code+'/ro/'+k,'lead').catch(()=>{});await PUT(B.code+'/ro/'+cid,'vice').catch(()=>{});toast('👑 밴드장을 넘겼어요');render()}
+async function kick(k){const v=B.m[k];if(!confirm(`«${v.name}»을(를) 밴드에서 내보낼까요?\n다시 들어오려면 가입 신청을 해야 해요.`))return;closeM();
+ DEL(B.code+'/m/'+k).catch(()=>{});DEL(B.code+'/ro/'+k).catch(()=>{});delete B.m[k];delete B.ro[k];toast('내보냈어요');render()}
+async function claimLead(){if(!confirm('이 밴드의 밴드장을 맡을까요?\n역할 지정·가입 승인·권한 설정을 하게 돼요.'))return;
+ const ro=await J(B.code+'/ro').catch(()=>null)||{};if(Object.values(ro).includes('lead')){B.ro=ro;toast('이미 밴드장이 생겼어요');render();return}
+ await PUT(B.code+'/ro/'+cid,'lead').catch(()=>{});B.ro[cid]='lead';toast('👑 밴드장이 됐어요 — 아래 «밴드 설정»에서 권한을 정하세요');render()}
+// ⚙️ 밴드 설정(밴드장만): 가입 승인제 · 일별 권한 · 밴드 이름
+function setCard(){const pm=(B.cfg||{}).pm||{};return `<div class="card"><h3>⚙️ 밴드 설정 <small style="font-weight:400">(밴드장만 보여요)</small></h3>
+ <label class="l">밴드 이름</label><input id="sbn" maxlength="30" value="${esc(B.band.name)}">
+ <label class="chk" style="margin-top:10px"><label><input type="checkbox" id="sap" ${(B.cfg||{}).appr!==false?'checked':''}>가입 승인제 — 초대 링크로 와도 집행부가 승인해야 들어와요</label></label>
+ <h3 style="margin-top:14px">집행부 권한</h3><small style="color:var(--mu)">집행부 = 부밴드장·총무·회계 · 밴드장은 늘 다 할 수 있어요</small>
+ ${Object.entries(PMN).map(([a,n])=>`<div class="row"><span>${n}</span><select id="pm_${a}" style="width:auto">${Object.entries(LVN).map(([l,t])=>`<option value="${l}"${(pm[a]||PMD[a])===l?' selected':''}>${t}</option>`).join('')}</select></div>`).join('')}
+ <button class="btn" onclick="saveSet()">설정 저장</button></div>`}
+async function saveSet(){const n=$('sbn').value.trim(),cfg={appr:$('sap').checked,pm:Object.fromEntries(Object.keys(PMN).map(a=>[a,$('pm_'+a).value]))};
+ B.cfg=cfg;await PUT(B.code+'/cfg',cfg).catch(()=>toast('⚠️ 저장 못 했어요'));
+ if(n&&n!==B.band.name){B.band.name=n;PUT(B.code+'/band/name',n).catch(()=>{});bands.forEach(x=>{if(x.code===B.code)x.name=n});saveBands()}
+ toast('설정 저장했어요');render()}
 async function invite(){const u=location.origin+location.pathname+'#/join/'+B.code,t=`🎸 «${B.band.name}» 위밴드 초대\n누르고 이름·파트만 넣으면 끝! (초대 코드 ${B.code})\n${u}`;
  try{if(navigator.share){await navigator.share({title:'위밴드 초대',text:t});return}}catch(e){if(e.name==='AbortError')return}
  try{await navigator.clipboard.writeText(t);toast('✅ 복사됨 — 단톡방에 붙여넣기')}catch(e){prompt('복사해서 보내세요',t)}}
-function quit(){if(!confirm(`«${B.band.name}»에서 나갈까요?`))return;DEL(B.code+'/m/'+cid).catch(()=>{});bands=bands.filter(x=>x.code!==B.code);saveBands();
+function quit(){if(roleOf(cid)==='lead'&&Object.keys(B.m).filter(k=>k!==cid).length){toast('밴드장은 먼저 다른 멤버에게 밴드장을 넘겨 주세요');return}if(!confirm(`«${B.band.name}»에서 나갈까요?`))return;DEL(B.code+'/m/'+cid).catch(()=>{});bands=bands.filter(x=>x.code!==B.code);saveBands();
  const cur=LG('band');if(cur&&cur.code===B.code){LSet('band',null);LSet('jr',null);LSet('mode','solo')}B=null;go('#/')}
 function vFee(mb){V(head(mb,'💰 회비')+`<main><div class="card"><h3>2단계에서 열려요</h3><div style="font-size:15px;line-height:1.6">모스처럼 <b>월별 체크판</b>으로 — 누가 몇 월분을 냈는지 한눈에, 총무 혼자서도 관리.</div></div></main>`)}
 
