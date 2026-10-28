@@ -66,6 +66,7 @@ html,body{overscroll-behavior-y:none}body{-webkit-user-select:none;user-select:n
 @keyframes inR{from{transform:translateX(28px);opacity:0}}@keyframes inL{from{transform:translateX(-28px);opacity:0}}@keyframes inF{from{opacity:0;transform:translateY(6px)}}
 #app.inR main{animation:inR .22s ease-out}#app.inL main{animation:inL .22s ease-out}#app.inF{animation:inF .2s ease-out}
 @media (prefers-reduced-motion:reduce){#app main,#app{animation:none!important}}
+.pgl{display:flex;align-items:center;gap:8px;margin-top:6px}.pgl .prog{flex:1;margin:0}.pgl b{font-size:12px;color:var(--mu);white-space:nowrap}.song small{word-break:keep-all}
 </style>
 <style id="th-k">
 /* 블랙&화이트(10/26 «올블랙은 좀 그렇고 블랙엔 화이트지, 건반처럼») — 머리·밴드 메뉴·주 버튼은 검정, 내용은 흰 바탕·검정 글씨, 색은 갑니다 초록·못 가요/오늘 빨강·인트로 We 민트만 */
@@ -485,8 +486,8 @@ async function vScore(mb){V(head(mb,'🎼 악보함','내 파트: '+(PN[mb.part]
  const up=occ(today(),addD(today(),60)).map(x=>x.e.so||'').join(',');
  songs.sort((a,b)=>(up.includes((SN[b]||b).replace(/^\S+ /,''))?1:0)-(up.includes((SN[a]||a).replace(/^\S+ /,''))?1:0));
  $('sl').innerHTML=songs.map(s=>{const parts=Object.keys(o).filter(x=>x.split('_')[0]===s).map(x=>x.split('_')[1]),c=cov[s+'_'+mb.part],pc=c&&c.n?Math.round(c.h/c.n*100):0,has=parts.includes(mb.part);
-  return `<div class="card"><div class="song"><span class="ic">${(SN[s]||'🎵').split(' ')[0]}</span><div><b>${esc((SN[s]||s).replace(/^\S+ /,''))}</b>${up.includes((SN[s]||s).replace(/^\S+ /,''))?' <span class="tag">다음 합주</span>':''}<br><small>${parts.map(pe).join('')} ${parts.length}파트${by[s]?' · 내 연습 '+mins(by[s]):''}</small><div class="prog"><i style="width:${pc}%"></i></div></div>
-  <a class="go" href="at.html?k=${k}&s=${s}_${has?mb.part:parts[0]}">열기</a></div></div>`}).join('')+addCard()+'<p style="font-size:12px;color:#9a88ad">막대 = 내 파트에서 ▶로 한 번이라도 지나간 마디 비율</p>'}
+  return `<div class="card"><div class="song"><span class="ic">${(SN[s]||'🎵').split(' ')[0]}</span><div><b>${esc((SN[s]||s).replace(/^\S+ /,''))}</b>${up.includes((SN[s]||s).replace(/^\S+ /,''))?' <span class="tag">다음 합주</span>':''}<br><small>${parts.map(pe).join('')} ${parts.length}파트${by[s]?' · 내 연습 '+mins(by[s]):''}</small><div class="pgl" title="연습 진도 — 내 파트 마디 중 ▶로 한 번이라도 지나간 비율"><div class="prog"><i style="width:${pc}%"></i></div><b>진도 ${pc}%</b></div></div>
+  <a class="go" href="at.html?k=${k}&s=${s}_${has?mb.part:parts[0]}">열기</a></div></div>`}).join('')+addCard()+'<p style="font-size:12px;color:#9a88ad">진도 = 내 파트 마디 중 ▶ 재생으로 한 번이라도 지나간 비율 (이 기기 기준)</p>'}
 
 // 🎼 내 악보(1층, 10/26 «혼자 연습하려면 1층 메뉴에도 악보가 있어야 하나? 악보를 넣는 메뉴가 없네»)
 //   위밴드 악보함 곡 전부를 파트 골라 혼자 연습 + 악보 넣기(내 PDF는 이 기기 index.html / 새로 그려 달라는 요청은 band_play_req)
@@ -496,7 +497,7 @@ async function vLib(){let k=DEFK;try{k=localStorage.getItem('at_k')||DEFK}catch(
  let o={};try{[o]=await Promise.all([fetch(LIB+k+'/tex.json?shallow=true').then(r=>r.json()),nmLoad(k)]);o=o||{}}catch(e){}
  const songs=[...new Set(Object.keys(o).map(x=>x.split('_')[0]))],cov=LG('cov')||{},[,by]=sumPr(myPr(),'2000-01-01','2999-12-31'),pdf=LG('pdfs')||0;
  $('ll').innerHTML=songs.map(s=>{const parts=Object.keys(o).filter(x=>x.split('_')[0]===s).map(x=>x.split('_')[1]),has=parts.includes(part),c=cov[s+'_'+part],pc=c&&c.n?Math.round(c.h/c.n*100):0;
-  return `<div class="card"><div class="song"><span class="ic">${(SN[s]||'🎵').split(' ')[0]}</span><div><b>${esc((SN[s]||s).replace(/^\S+ /,''))}</b><br><small>${has?pe(part)+' '+pn(part):'⚠️ '+pn(part)+' 파트 없음'} · ${parts.length}파트${by[s]?' · 연습 '+mins(by[s]):''}</small><div class="prog"><i style="width:${pc}%"></i></div></div>
+  return `<div class="card"><div class="song"><span class="ic">${(SN[s]||'🎵').split(' ')[0]}</span><div><b>${esc((SN[s]||s).replace(/^\S+ /,''))}</b><br><small>${has?pe(part)+' '+pn(part):'⚠️ '+pn(part)+' 파트 없음'} · ${parts.length}파트${by[s]?' · 연습 '+mins(by[s]):''}</small><div class="pgl" title="연습 진도 — 내 파트 마디 중 ▶로 한 번이라도 지나간 비율"><div class="prog"><i style="width:${pc}%"></i></div><b>진도 ${pc}%</b></div></div>
   <a class="go" href="at.html?solo=1&k=${k}&s=${s}_${has?part:parts[0]}">연습</a></div></div>`}).join('')+addCard()}
 function addCard(){return `<div class="card" style="border:2px dashed #5EC4BE66"><b>＋ 악보 넣기</b>
  <a class="btn b2" href="pdf.html" style="margin-top:10px">📄 내 PDF 악보 넣기 <small style="display:block;font-weight:400;font-size:12px;opacity:.75">지금 바로 · 이 기기에만 저장 · 재생바로 연습</small></a>
