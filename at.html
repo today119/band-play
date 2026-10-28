@@ -168,7 +168,8 @@ const DB='https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase
 // 같은 곡의 다른 파트(곡_파트 이름)를 골라 보기 — 원곡 기준점은 곡 단위로 공유
 const SONG=(q.get('s')||'').split('_')[0],PN={vocal:'🎤 보컬',g1:'🎸 기타1',g2:'🎸 기타2',bass:'🎸 베이스',keys:'🎹 키보드',drums:'🥁 드럼'};
 const SN={butterfly:'🦋 버터플라이',redsunset:'🌅 붉은노을',smileboy:'😊 Smile Boy'};
-fetch(DB+q.get('k')+'/tex.json?shallow=true').then(r=>r.json()).then(o=>{const all=Object.keys(o||{}),order=Object.keys(PN);
+// 새로 그려 올린 곡 이름 = 악보함 nm/{곡}
+Promise.all([fetch(DB+q.get('k')+'/tex.json?shallow=true').then(r=>r.json()),fetch(DB+q.get('k')+'/nm.json').then(r=>r.json()).catch(()=>null)]).then(([o,nm])=>{Object.entries(nm||{}).forEach(([a,b])=>{if(!SN[a])SN[a]='🎵 '+b});const all=Object.keys(o||{}),order=Object.keys(PN);
  const songs=[...new Set(all.map(k=>k.split('_')[0]))].sort((a,b)=>(Object.keys(SN).indexOf(a)+99)%99-(Object.keys(SN).indexOf(b)+99)%99);
  $('sg').innerHTML=songs.map(x=>`<option value="${x}"${x===SONG?' selected':''}>${SN[x]||x}</option>`).join('');
  $('sg').onchange=()=>{const x=$('sg').value,want=localStorage.getItem('at_part')||'g1',ks=all.filter(k=>k.split('_')[0]===x);
@@ -680,7 +681,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261028k';
+const ATVER='20261028l';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
