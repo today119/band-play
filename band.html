@@ -546,8 +546,8 @@ function fixModal(song,k){const d=DR[song]||{},nm=(SN[song]||song).replace(/^\S+
 // 📥 내 요청 진행바(10/29 «앱에서 얼마나 기다려야 하는지 궁금하겠다»)
 //   처리 상태 band_play_req_st/{id} — 관리자(감시기·publish_score)가 적고 누구나 읽음
 //   got=접수(차례 대기) → work=그리는 중(t=시작) → work+«초안 확인 중»=사람 확인 → done{song,k,p}=열기 / no{msg}
-//   예상 시간 = 3분 + 파트×장×3분 (5~45분, 10/28 시험: 2파트 1장 4분)
-function rqProg(o,x){const est=Math.min(45,Math.max(5,3+3*(x.np||1)*(x.nf||1)))*60000;
+//   예상 시간 = 5분 + 파트 수 + (첨부-1) 분, 최대 20분 (실측: 2파트 1장 4분 · 1파트 1장 5분 · 4파트 PDF4개 6분)
+function rqProg(o,x){const est=Math.min(20,5+(x.np||1)+Math.max(0,(x.nf||1)-1))*60000;
  if(!o)return{p:4,t:'📤 보냈어요 · 2분 안에 접수돼요'};
  if(o.st==='got')return x.fix?{p:30,t:'📥 접수됨 · 고쳐서 다시 올려 드릴게요 (보통 하루 안)'}:{p:10,t:'📥 접수됨 · 곧 그리기 시작해요'};
  if(o.st==='work'&&o.msg==='초안 확인 중')return{p:90,t:'👀 초안 완성 · 사람이 마지막으로 확인 중이에요'};
