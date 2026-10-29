@@ -18,7 +18,11 @@ main{padding:16px clamp(16px,3vw,40px) 48px}
 .sec{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mu2);margin:18px 2px 8px}
 .grid{display:grid;grid-template-columns:1fr;gap:8px}@media(min-width:560px){.grid{grid-template-columns:repeat(2,1fr)}}@media(min-width:900px){.grid{grid-template-columns:repeat(3,1fr)}}
 .box{display:block;width:100%;text-align:left;font:inherit;color:inherit;background:var(--card);box-shadow:0 1px 2px rgba(0,0,0,.25);border:1px solid var(--li);border-radius:8px;padding:12px;cursor:pointer;transition:border-color .12s,background .12s}
-.box:hover{border-color:var(--li2);background:var(--card2)}.box.on{border-color:var(--ac);background:#222a38;box-shadow:0 0 0 1px var(--ac) inset,0 6px 18px rgba(59,130,246,.15)}
+/* 10/30 사용자 «구분선이 안 보여 — 앱 아이콘을 박스에 흐릿하게» : 카드마다 자기 아이콘을 크게 흐리게 깔고, 테두리·위 띠는 앱 색 */
+.box{position:relative;overflow:hidden;isolation:isolate;border:1px solid color-mix(in srgb,var(--tc,#3c4351) 45%,#3c4351);background:linear-gradient(160deg,color-mix(in srgb,var(--tc,#1e222a) 16%,#1e222a) 0,#1e222a 70%);box-shadow:inset 0 3px 0 var(--tc,#3c4351),0 2px 6px rgba(0,0,0,.35)}
+.box::before{content:"";position:absolute;right:-22%;bottom:-28%;width:78%;aspect-ratio:1;background:var(--ic) center/cover no-repeat;filter:blur(14px) saturate(1.2);opacity:.28;border-radius:28%;z-index:-1;pointer-events:none}
+.box .bf{border-top-color:rgba(255,255,255,.12)}
+.box:hover{border-color:var(--li2);background:var(--card2)}.box.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac) inset,0 6px 18px rgba(59,130,246,.15)}
 .bh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.bh img{width:28px;height:28px;border-radius:7px;flex:none}.bh .bn{font-weight:600;font-size:15px;margin-right:2px}
 .bk{display:flex;gap:18px;margin:12px 0 10px}.bk b{display:block;font-family:var(--mono);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}.bk small{font-size:11px;color:var(--mu)}
 .bf{display:flex;gap:12px;flex-wrap:wrap;border-top:1px solid var(--li);padding-top:8px;font-size:12px;color:var(--mu)}.bf b{font-family:var(--mono);font-weight:600;margin-left:3px}
@@ -58,6 +62,7 @@ details.tg summary::-webkit-details-marker{display:none}details.tg summary:after
 <main id="app"><p class="empty">불러오는 중…</p></main>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
+const TC={club:'#3b6ff5',wereplay:'#e0245e',weband:'#e5484d',mmpro:'#2f6bff',baseball:'#22a352',volleyball:'#5b6cf0'};
 // 앱 통합 현황판(10/29 사용자 «매번 ASC·플레이 콘솔 안 들어가도 다운로드·요청·버그·이용 현황을 다각도로»)
 //   ~/tools/app-ops/collect.py 가 매일 아침(launchd) ops_stats/latest·hist 에 씀 → 관리자(band_play_admin)만 읽기
 //   10/30 디자인: 소프트웨어 콘솔 느낌(어두운 바탕) · 실제 스토어 로고 · 앱 박스 = 정보+선택(별점·리뷰·할 일 표시)
@@ -99,7 +104,7 @@ function todo(k,a,s){const o=[],r=a.req,b=SB(s,k);
 function box(k,a,s){const hd=HEAD[k]||[],b=SB(s,k),t=todo(k,a,s),hi=t.filter(x=>x[0]!=='lo').length,store=/^(live|review|test)$/.test(a.st);
  const ft=[];if(store)ft.push(b&&b.rating?`<span class="s">★<b>${(+b.rating).toFixed(1)}</b></span><span>리뷰<b>${b.count||0}</b></span>`:'<span>★ —</span>');
  if(b&&b.fresh)ft.push(`<span class="r">새 리뷰<b>${b.fresh}</b></span>`);ft.push(hi?`<span class="t">할 일<b>${hi}</b></span>`:`<span>할 일<b>0</b></span>`);
- return `<button class="box ${k===TAB?'on':''}" data-k="${k}"><div class="bh"><img src="ops-ic/${k}.png" alt=""><span class="bn">${esc(a.name)}</span><span class="bgs">${stb('ios',a.ios)}${stb('android',a.android)}</span></div>
+ return `<button class="box ${k===TAB?'on':''}" data-k="${k}" style="--ic:url(ops-ic/${k}.png);--tc:${TC[k]||'#3c4351'}"><div class="bh"><img src="ops-ic/${k}.png" alt=""><span class="bn">${esc(a.name)}</span><span class="bgs">${stb('ios',a.ios)}${stb('android',a.android)}</span></div>
  <div class="bk">${hd.map(n=>`<span><b>${kv(a,n)}</b><small>${esc(n)}</small></span>`).join('')}</div><div class="bf">${ft.join('')}</div></button>`}
 function detail(k,a,s){const lk=LINK[k],t=todo(k,a,s);
  let h=`<div class="pane" id="dt"><button class="back" id="bk">‹ 앱 목록</button><div class="ph"><img src="ops-ic/${k}.png" alt=""><h2>${esc(a.full||a.name)}</h2>${stb('ios',a.ios)}${stb('android',a.android)}<span class="sp"></span>${lk?`<a href="${lk[0]}">${lk[1]} ↗</a>`:''}</div>`;
