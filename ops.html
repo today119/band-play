@@ -22,6 +22,11 @@ table.ov{width:100%;border-collapse:collapse;font-size:13px}table.ov td{padding:
 table.ov td.n{font-weight:700;white-space:nowrap}table.ov td.h{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}table.ov td.h b{font-size:15px}table.ov td.h .hv{display:inline-block;min-width:58px;margin-left:8px;text-align:right}table.ov td.h small{color:var(--mu);display:block;font-size:11px}
 .os{font-size:11px;font-weight:700;border-radius:8px;padding:2px 6px;white-space:nowrap;display:inline-block;margin:1px 0}
 .al{font-size:13px;margin-top:10px;padding:8px 10px;background:#fff6f6;border-radius:10px;line-height:1.7}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}@media(min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
+.box{position:relative;text-align:left;font:inherit;color:inherit;background:#f7f7f8;border:2px solid transparent;border-radius:12px;padding:10px 12px;cursor:pointer}
+.box.on{background:#fff;border-color:#111;box-shadow:0 2px 10px rgba(0,0,0,.08)}.box .bn{font-weight:800;font-size:15px}.box .bo{margin:6px 0 8px;display:flex;gap:4px;flex-wrap:wrap}
+.box .bk{display:flex;gap:12px}.box .bk b{display:block;font-size:20px;font-variant-numeric:tabular-nums}.box .bk small{font-size:11px;color:var(--mu)}
+.box .dot{position:absolute;top:8px;right:8px;background:#e11d48;color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 6px}
 .tabs{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;gap:6px;overflow-x:auto;padding:8px 0;margin:4px 0 6px;-webkit-overflow-scrolling:touch}
 .tabs button{flex:none;border:1px solid #ccc;background:#fff;border-radius:18px;padding:8px 14px;font-size:14px;font-weight:700}.tabs button.on{background:#111;color:#fff;border-color:#111}
 .st{font-size:13px;line-height:1.9;margin-bottom:10px}
@@ -54,8 +59,9 @@ function alerts(A,s){const o=[],w=A.weband&&A.weband.req;
  if(w&&w.open)o.push(`🎸 악보 요청 진행 중 <b>${w.open}</b>건`);if(w&&w.fixOpen)o.push(`🛠 고쳐 주세요 대기 <b>${w.fixOpen}</b>건`);if(w&&w.no)o.push(`⚠️ 악보 자동 실패 ${w.no}건`);
  (s.alerts||[]).forEach(x=>o.push('⭐ '+esc(x)));if(s.need&&s.need.length)o.push(`🔑 스토어 숫자(다운로드·리뷰·크래시)는 ${esc(s.need.join('·'))} 열쇠 연결 후`);return o}
 function overview(A,ks,s){const c={};ks.forEach(k=>{const t=A[k].st||'web';c[t]=(c[t]||0)+1});
- let h=`<div class="app"><h2>🧭 전체 앱 한눈에</h2><div class="sum">${['live','review','test','plan','web'].filter(t=>c[t]).map(t=>`<span class="s-${t}">${SL[t]} ${c[t]}</span>`).join('')}<span class="s-web">총 ${ks.length}개</span></div><table class="ov">`;
- h+=ks.map(k=>{const a=A[k],hd=HEAD[k]||[];return `<tr data-k="${k}"><td class="n">${a.icon||''} ${esc(a.name)}</td><td>${os('🍎',a.ios)}<br>${os('🤖',a.android)}</td><td class="h">${hd.map(n=>`<span class="hv"><b>${kv(a,n)}</b><small>${esc(n)}</small></span>`).join('')}</td></tr>`}).join('')+'</table>';
+ const w=A.weband&&A.weband.req,dot={weband:w?(w.open||0)+(w.fixOpen||0):0};
+ let h=`<div class="app"><h2>🧭 전체 앱 한눈에</h2><div class="sum">${['live','review','test','plan','web'].filter(t=>c[t]).map(t=>`<span class="s-${t}">${SL[t]} ${c[t]}</span>`).join('')}<span class="s-web">총 ${ks.length}개</span></div><div class="grid">`;
+ h+=ks.map(k=>{const a=A[k],hd=HEAD[k]||[];return `<button class="box ${k===TAB?'on':''}" data-k="${k}">${dot[k]?`<span class="dot">${dot[k]}</span>`:''}<div class="bn">${a.icon||''} ${esc(a.name)}</div><div class="bo">${os('🍎',a.ios)}${os('🤖',a.android)}</div><div class="bk">${hd.map(n=>`<span><b>${kv(a,n)}</b><small>${esc(n)}</small></span>`).join('')}</div></button>`}).join('')+'</div>';
  const al=alerts(A,s);if(al.length)h+=`<div class="al">${al.join('<br>')}</div>`;return h+'</div>'}
 function detail(k,a,s){const lk=LINK[k];let h=`<div class="app"><h2><span>${a.icon||''} ${esc(a.full||a.name)}</span>${lk?`<a href="${lk[0]}">${lk[1]}</a>`:''}</h2>`;
  h+=`<div class="st">${a.ios?`🍎 앱스토어 — <span class="os s-${a.ios[0]}">${esc(a.ios[1])}</span><br>`:''}${a.android?`🤖 구글 플레이 — <span class="os s-${a.android[0]}">${esc(a.android[1])}</span><br>`:''}${a.web?`🌐 ${esc(a.web)}`:''}</div>`;
@@ -70,11 +76,10 @@ function detail(k,a,s){const lk=LINK[k];let h=`<div class="app"><h2><span>${a.ic
  return h+'</div>'}
 function draw(){if(!L){$('app').innerHTML='<p class="empty">아직 모은 자료가 없어요</p>';return}
  const A=L.apps||{},s=L.store||{},ks=Object.keys(A).sort((x,y)=>(A[x].order||99)-(A[y].order||99));if(!A[TAB])TAB=ks[0];
- let h=`<p class="when">${dt(L.t)} 기준 (${ago(L.t)}) · 매일 아침 8시 갱신</p>`+overview(A,ks,s);
- h+=`<div class="tabs">${ks.map(k=>`<button data-t="${k}" class="${k===TAB?'on':''}">${A[k].icon||''} ${esc(A[k].name)}</button>`).join('')}</div>`+detail(TAB,A[TAB],s);
+ let h=`<p class="when">${dt(L.t)} 기준 (${ago(L.t)}) · 매일 아침 8시 갱신</p>`+overview(A,ks,s)+`<div id="dt"></div>`+detail(TAB,A[TAB],s);
  $('app').innerHTML=h;
- const go=k=>{TAB=k;try{localStorage.setItem('ops_tab',k)}catch(e){}draw();const t=document.querySelector('.tabs');if(t)t.scrollIntoView({behavior:'smooth'})};
- document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>go(b.dataset.t));document.querySelectorAll('table.ov tr').forEach(r=>r.onclick=()=>go(r.dataset.k))}
+ const go=k=>{TAB=k;try{localStorage.setItem('ops_tab',k)}catch(e){}draw();const t=$('dt');if(t)t.scrollIntoView({behavior:'smooth'})};
+ document.querySelectorAll('.box').forEach(b=>b.onclick=()=>go(b.dataset.k))}
 if(/[?&]mock=1/.test(location.search)){const n=Date.now();
  L={t:n-3600e3,store:{need:['앱스토어','구글 플레이']},apps:{club:{order:1,name:'모스',full:'모스: 모두의 스포츠클럽',icon:'🎾',st:'live',ios:['live','출시 · 1.1.2 심사 중'],android:['live','출시'],kpi:[['가입',46],['7일 새 가입',30],['7일 접속',36],['클럽',7]],list:[{n:'테니홀릭',m:30,a:n-9e8}]},
  wereplay:{order:2,name:'위리',icon:'📹',st:'live',ios:['live','출시 · 1.0'],android:['test','내부 테스트'],kpi:[['경기 기록',50],['오늘',6],['7일',22],['30일',48],['라이브 방',28]],kinds:{tennis:30,volleyball:10}},
