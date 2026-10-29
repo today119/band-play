@@ -1,108 +1,132 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>앱 통합 현황</title>
-<link rel="manifest" href="ops.webmanifest"><link rel="apple-touch-icon" href="ops-ic/ops-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="앱 현황"><meta name="theme-color" content="#111111">
+<link rel="manifest" href="ops.webmanifest"><link rel="apple-touch-icon" href="ops-ic/ops-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="앱 현황"><meta name="theme-color" content="#0b0d10">
 <style>
-:root{--bg:#f4f4f6;--card:#fff;--tx:#111;--mu:#6b6b76;--li:#e9e9ec;--up:#1a7d45;--warn:#c22}
-*{box-sizing:border-box;min-width:0}html,body{overflow-x:hidden}body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;-webkit-text-size-adjust:100%}
-.top{background:#111;color:#fff;padding:18px 16px 16px;padding-top:max(18px,env(safe-area-inset-top))}.top h1{margin:2px 0 0;font-size:22px}.top small{color:#aaa}
-.top .who{float:right;font-size:12px;color:#aaa;text-align:right}.top .who button{background:none;border:1px solid #555;color:#ddd;border-radius:6px;padding:3px 8px;margin-top:4px}
-main{padding:12px 16px 40px;max-width:1000px;margin:0 auto}
-.app{background:var(--card);border:1px solid var(--li);border-radius:14px;padding:14px;margin-bottom:12px}
-.app h2{margin:0 0 10px;font-size:17px;display:flex;justify-content:space-between;align-items:center;gap:8px}.app h2 a{font-size:12px;font-weight:700;color:#fff;background:#111;border-radius:8px;padding:5px 10px;text-decoration:none;white-space:nowrap}
-.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}@media(min-width:720px){.kpi{grid-template-columns:repeat(6,1fr)}}
-.kpi>div{background:#f7f7f8;border-radius:10px;padding:8px 10px}.kpi b{display:block;font-size:24px;font-variant-numeric:tabular-nums}.kpi span{font-size:12px;color:var(--mu)}
-.kpi i{font-style:normal;font-size:11px;font-weight:700;margin-left:4px}.kpi i.u{color:var(--up)}.kpi i.d{color:var(--warn)}
-.sub{font-size:13px;color:var(--mu);margin-top:10px;line-height:1.6}.sub b{color:var(--tx)}
-.rows{margin-top:10px;font-size:13px}.rows div{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--li)}.rows div span:last-child{color:var(--mu);white-space:nowrap}
-.bd{font-size:12px;font-weight:700;border-radius:10px;padding:3px 8px;white-space:nowrap;background:#eee}.bd.r{background:#fde4e4;color:#c22}.bd.y{background:#fff3d6;color:#8a5a00}.bd.g{background:#e3f6ea;color:#1a7d45}
-.key{background:#fffbea;border:1px dashed #e0c060;border-radius:12px;padding:12px;font-size:13px;line-height:1.7}
-.sum{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.sum span{font-size:13px;font-weight:700;border-radius:10px;padding:5px 10px}
-.s-live{background:#e3f6ea;color:#1a7d45}.s-review{background:#e3f0ff;color:#1a5fb4}.s-test{background:#fff3d6;color:#8a5a00}.s-plan{background:#f0e6ff;color:#6a2fb4}.s-web{background:#eee;color:#555}
-table.ov{width:100%;border-collapse:collapse;font-size:13px}table.ov td{padding:8px 4px;border-top:1px solid var(--li);vertical-align:middle}table.ov tr{cursor:pointer}table.ov tr:hover{background:#fafafa}
-table.ov td.n{font-weight:700;white-space:nowrap}table.ov td.h{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}table.ov td.h b{font-size:15px}table.ov td.h .hv{display:inline-block;min-width:58px;margin-left:8px;text-align:right}table.ov td.h small{color:var(--mu);display:block;font-size:11px}
-.os{font-size:11px;font-weight:700;border-radius:8px;padding:2px 6px;white-space:nowrap;display:inline-block;margin:1px 0}
-.al{font-size:13px;margin-top:10px;padding:8px 10px;background:#fff6f6;border-radius:10px;line-height:1.7}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}@media(min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}}
-.box{position:relative;text-align:left;font:inherit;color:inherit;background:#f7f7f8;border:2px solid transparent;border-radius:12px;padding:10px 12px;cursor:pointer}
-.box.on{background:#fff;border-color:#111;box-shadow:0 2px 10px rgba(0,0,0,.08)}.box .bn{font-weight:800;font-size:15px}.box .bo{margin:6px 0 8px;display:flex;gap:4px;flex-wrap:wrap}
-.box .bk{display:flex;gap:12px}.box .bk b{display:block;font-size:20px;font-variant-numeric:tabular-nums}.box .bk small{font-size:11px;color:var(--mu)}
-.box .dot{position:absolute;top:8px;right:8px;background:#e11d48;color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 6px}
-.ic{width:22px;height:22px;border-radius:6px;vertical-align:-5px;margin-right:4px}.app h2 .ic{width:30px;height:30px;border-radius:8px;vertical-align:-8px;margin-right:6px}
-details.tg{margin-top:10px;border:1px solid var(--li);border-radius:12px;background:#fafafa}details.tg summary{cursor:pointer;padding:12px;font-weight:700;font-size:14px;list-style:none;display:flex;justify-content:space-between}details.tg summary::-webkit-details-marker{display:none}
-details.tg summary:after{content:'▾';color:var(--mu)}details.tg[open] summary:after{content:'▴'}details.tg .in{padding:0 12px 12px;font-size:13px}
-.up{display:flex;gap:8px;padding:7px 0;border-top:1px solid var(--li);align-items:flex-start}.up b{white-space:nowrap}.up .d{color:var(--mu);white-space:nowrap;margin-left:auto}
-.tabs{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;gap:6px;overflow-x:auto;padding:8px 0;margin:4px 0 6px;-webkit-overflow-scrolling:touch}
-.tabs button{flex:none;border:1px solid #ccc;background:#fff;border-radius:18px;padding:8px 14px;font-size:14px;font-weight:700}.tabs button.on{background:#111;color:#fff;border-color:#111}
-.st{font-size:13px;line-height:1.9;margin-bottom:10px}
-.login{text-align:center;padding:60px 20px}.login button{background:#111;color:#fff;border:0;border-radius:10px;padding:14px 22px;font-size:16px;font-weight:700}
-.empty{color:var(--mu);text-align:center;padding:30px}.when{font-size:12px;color:var(--mu);margin:0 2px 10px}
+:root{--bg:#0b0d10;--card:#12151a;--card2:#171b21;--li:#242932;--li2:#2e3440;--tx:#e6e8eb;--mu:#8b93a1;--mu2:#5f6774;--ac:#3b82f6;--ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;--vio:#a78bfa;
+ --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box;min-width:0}html,body{overflow-x:hidden}body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Apple SD Gothic Neo","Noto Sans KR",sans-serif;-webkit-text-size-adjust:100%;font-size:14px}
+.top{border-bottom:1px solid var(--li);padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--bg)}
+.top h1{margin:0;font-size:16px;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}.top h1 img{width:22px;height:22px;border-radius:5px}
+.who{font-size:12px;color:var(--mu);text-align:right}.who button{background:none;border:1px solid var(--li2);color:var(--mu);border-radius:6px;padding:3px 8px;margin-left:6px;font-size:12px}
+main{padding:14px 16px 48px;max-width:1080px;margin:0 auto}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.when{font-family:var(--mono);font-size:11px;color:var(--mu2)}.sum{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11px;border:1px solid var(--li2);border-radius:4px;padding:3px 7px;color:var(--mu)}.chip b{color:var(--tx);font-weight:600;margin-left:5px;font-family:var(--mono)}
+.sec{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mu2);margin:18px 2px 8px}
+.grid{display:grid;grid-template-columns:1fr;gap:8px}@media(min-width:560px){.grid{grid-template-columns:repeat(2,1fr)}}@media(min-width:900px){.grid{grid-template-columns:repeat(3,1fr)}}
+.box{display:block;width:100%;text-align:left;font:inherit;color:inherit;background:var(--card);border:1px solid var(--li);border-radius:8px;padding:12px;cursor:pointer;transition:border-color .12s,background .12s}
+.box:hover{border-color:var(--li2);background:var(--card2)}.box.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac) inset}
+.bh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.bh img{width:28px;height:28px;border-radius:7px;flex:none}.bh .bn{font-weight:600;font-size:15px;margin-right:2px}
+.bk{display:flex;gap:18px;margin:12px 0 10px}.bk b{display:block;font-family:var(--mono);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}.bk small{font-size:11px;color:var(--mu)}
+.bf{display:flex;gap:12px;flex-wrap:wrap;border-top:1px solid var(--li);padding-top:8px;font-size:12px;color:var(--mu)}.bf b{font-family:var(--mono);font-weight:600;margin-left:3px}
+.bf .t{color:var(--warn)}.bf .r{color:var(--bad)}.bf .s{color:#fbbf24}
+.st{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;border:1px solid var(--li2);border-radius:4px;padding:2px 6px;white-space:nowrap;color:var(--mu)}
+.st svg{width:11px;height:11px;flex:none}.st.live{color:var(--ok);border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.08)}.st.review{color:var(--ac);border-color:rgba(59,130,246,.4);background:rgba(59,130,246,.08)}
+.st.test{color:var(--warn);border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.08)}.st.plan{color:var(--vio);border-color:rgba(167,139,250,.35);background:rgba(167,139,250,.08)}.st.web{color:var(--mu)}
+.st svg:not(.gp) path{fill:currentColor}
+.pane{background:var(--card);border:1px solid var(--li);border-radius:8px;padding:14px;margin-top:8px}
+.ph{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.ph img{width:40px;height:40px;border-radius:10px}.ph h2{margin:0;font-size:17px;font-weight:600}.ph .sp{flex:1}
+.ph a{font-size:12px;font-weight:600;color:var(--tx);border:1px solid var(--li2);border-radius:6px;padding:5px 10px;text-decoration:none}
+.kpi{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}@media(min-width:560px){.kpi{grid-template-columns:repeat(3,1fr)}}@media(min-width:900px){.kpi{grid-template-columns:repeat(6,1fr)}}
+.kpi>div{background:var(--card2);border:1px solid var(--li);border-radius:6px;padding:10px 12px}.kpi b{display:block;font-family:var(--mono);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}.kpi span{font-size:11px;color:var(--mu)}
+.kpi i{font-style:normal;font-size:11px;font-weight:600;margin-left:6px}.kpi i.u{color:var(--ok)}.kpi i.d{color:var(--bad)}
+.todo{margin-top:12px;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.06);border-radius:6px;padding:8px 12px}.todo div{padding:4px 0;font-size:13px;display:flex;gap:8px}.todo .lv{font-family:var(--mono);font-size:11px;font-weight:700;width:34px;flex:none;padding-top:2px}
+.lv.hi{color:var(--bad)}.lv.md{color:var(--warn)}.lv.lo{color:var(--mu)}
+.sub{font-size:13px;color:var(--mu);margin-top:12px;line-height:1.7}.sub b{color:var(--tx);font-family:var(--mono)}
+.rows{margin-top:12px;font-size:13px;border-top:1px solid var(--li)}.rows div{display:flex;justify-content:space-between;gap:8px;padding:8px 2px;border-bottom:1px solid var(--li)}.rows div span:last-child{color:var(--mu);white-space:nowrap;font-size:12px}
+details.tg{margin-top:10px;border:1px solid var(--li);border-radius:6px;background:var(--card2)}details.tg summary{cursor:pointer;padding:11px 12px;font-weight:600;font-size:13px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.tg summary::-webkit-details-marker{display:none}details.tg summary:after{content:'+';font-family:var(--mono);color:var(--mu)}details.tg[open] summary:after{content:'−'}details.tg .in{padding:0 12px 12px;font-size:13px}
+.sl{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}.sl div{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--mu)}
+.up{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--li);align-items:flex-start}.up b{white-space:nowrap;font-family:var(--mono)}.up .d{color:var(--mu2);white-space:nowrap;margin-left:auto;font-family:var(--mono);font-size:12px}
+.key{border:1px dashed var(--li2);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--mu);line-height:1.6}
+.bd{font-family:var(--mono);font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px}.bd.r{background:rgba(239,68,68,.15);color:var(--bad)}.bd.y{background:rgba(245,158,11,.15);color:var(--warn)}
+.login{text-align:center;padding:70px 20px;color:var(--mu)}.login button{margin-top:14px;background:var(--tx);color:var(--bg);border:0;border-radius:8px;padding:12px 20px;font-size:15px;font-weight:600}
+.empty{color:var(--mu);text-align:center;padding:30px}code{font-family:var(--mono);font-size:12px;color:var(--tx)}
 </style></head><body>
-<div class="top"><div class="who" id="who"></div><small>김샘 앱들</small><h1>📊 앱 통합 현황</h1></div>
+<div class="top"><h1><img src="ops-ic/ops-180.png" alt="">앱 통합 현황</h1><div class="who" id="who"></div></div>
 <main id="app"><p class="empty">불러오는 중…</p></main>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 // 앱 통합 현황판(10/29 사용자 «매번 ASC·플레이 콘솔 안 들어가도 다운로드·요청·버그·이용 현황을 다각도로»)
 //   ~/tools/app-ops/collect.py 가 매일 아침(launchd) ops_stats/latest·hist 에 씀 → 관리자(band_play_admin)만 읽기
+//   10/30 디자인: 소프트웨어 콘솔 느낌(어두운 바탕) · 실제 스토어 로고 · 앱 박스 = 정보+선택(별점·리뷰·할 일 표시)
 //   ?mock=1 → 가짜 자료로 화면만
 const FBC={apiKey:'AIzaSyBWAAeuN_bwwrY2R1NupXLwT4ECPhyivo0',authDomain:'matchmaker-28187.firebaseapp.com',projectId:'matchmaker-28187',appId:'1:640935869730:web:893abadb93ae3e949df97b',databaseURL:'https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app'};
 const $=id=>document.getElementById(id),esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0'),dt=t=>{if(!t)return'-';const d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate()+' '+pad(d.getHours())+':'+pad(d.getMinutes())};
 const ago=t=>{if(!t)return'-';const m=(Date.now()-t)/60000;return m<60?Math.round(m)+'분 전':m<1440?Math.round(m/60)+'시간 전':Math.round(m/1440)+'일 전'};
 const SP={tennis:'테니스',volleyball:'배구',badminton:'배드민턴',basketball:'농구',soccer:'축구',futsal:'풋살',baseball:'야구',tabletennis:'탁구',pickleball:'피클볼',handball:'핸드볼'};
-const LINK={weband:['admin.html','악보 요청 ↗']};
-let L=null,HI={};
+const LINK={weband:['admin.html','악보 요청 열기']};
+const SL={live:'출시',review:'심사 중',test:'테스트',plan:'등록 예정',web:'웹 전용'};
+const HEAD={club:['가입','7일 접속'],wereplay:['경기 기록','7일'],weband:['밴드','7일 활동 밴드'],mmpro:['대회','세션'],baseball:['경기','7일 경기'],volleyball:['경기','7일 경기']};
+// 스토어 로고(애플 = 사과, 구글 플레이 = 4색 삼각형), 웹 = 지구
+const LOGO={ios:'<svg viewBox="0 0 24 24"><path d="M16.37 1.43c0 1.14-.49 2.27-1.18 3.08-.74.9-1.99 1.57-2.99 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.57-2.27 1.21-2.98.8-.94 2.14-1.64 3.25-1.68.03.13.05.28.05.43zm4.56 15.71c-.03.07-.46 1.58-1.52 3.12-.94 1.34-1.94 2.71-3.43 2.71-1.52 0-1.9-.88-3.63-.88-1.7 0-2.3.91-3.67.91-1.38 0-2.33-1.26-3.43-2.8C4 18.38 2.96 15.57 2.96 12.92c0-4.28 2.8-6.55 5.55-6.55 1.45 0 2.68.95 3.6.95.87 0 2.22-1.01 3.9-1.01.61 0 2.89.06 4.37 2.19-.13.09-2.38 1.37-2.38 4.19 0 3.26 2.85 4.42 2.96 4.45z"/></svg>',
+ android:'<svg class="gp" viewBox="0 0 24 24"><path fill="#00d7fe" d="M3.6 2.2 13.4 12l-9.8 9.8c-.4-.2-.6-.6-.6-1.1V3.3c0-.5.2-.9.6-1.1z"/><path fill="#ffce00" d="m16.7 15.3-3.3-3.3 3.3-3.3 3.7 2.1c1 .6 1 1.8 0 2.4z"/><path fill="#ff3a44" d="M13.4 12l-9.8 9.8c.4.2.9.2 1.4-.1l11.7-6.4z"/><path fill="#00f076" d="M13.4 12l3.3-3.3L5 2.3c-.5-.3-1-.3-1.4-.1z"/></svg>',
+ web:'<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm6.9 6h-2.9a15.7 15.7 0 0 0-1.4-3.6A8 8 0 0 1 18.9 8zM12 4c.8 1.2 1.5 2.5 1.9 4h-3.8c.4-1.5 1.1-2.8 1.9-4zM4.3 14a8.2 8.2 0 0 1 0-4h3.4a16.5 16.5 0 0 0 0 4H4.3zm.8 2h2.9c.3 1.3.8 2.5 1.4 3.6A8 8 0 0 1 5.1 16zM8 8H5.1a8 8 0 0 1 4.3-3.6C8.8 5.5 8.3 6.7 8 8zm4 12c-.8-1.2-1.5-2.5-1.9-4h3.8c-.4 1.5-1.1 2.8-1.9 4zm2.3-6H9.7a14.7 14.7 0 0 1 0-4h4.6a14.7 14.7 0 0 1 0 4zm.3 5.6c.6-1.1 1.1-2.3 1.4-3.6h2.9a8 8 0 0 1-4.3 3.6zm1.7-5.6a16.5 16.5 0 0 0 0-4h3.4a8.2 8.2 0 0 1 0 4h-3.4z"/></svg>'};
+let L=null,HI={};const OPEN=new Set();
+let TAB=(()=>{try{return localStorage.getItem('ops_tab')}catch(e){return null}})();
 // 7일 전 기록과 비교한 증감(쌓인 기록이 있을 때만)
 function diff(app,name,v){const ds=Object.keys(HI).sort(),old=ds.find(d=>d>=new Date(Date.now()-7*864e5).toISOString().slice(0,10));
  const o=old&&HI[old][app]&&HI[old][app][name];if(o==null||o===v||ds.indexOf(old)===ds.length-1)return'';const x=v-o;return `<i class="${x>0?'u':'d'}">${x>0?'+':''}${x}</i>`}
-const SL={live:'출시',review:'심사 중',test:'테스트',plan:'등록 예정',web:'미등록(웹)'};
-const HEAD={club:['가입','7일 접속'],wereplay:['경기 기록','7일'],weband:['밴드','7일 활동 밴드'],mmpro:['대회','세션'],baseball:['경기','7일 경기'],volleyball:['경기','7일 경기']};
-const OPEN=new Set();
-let TAB=(()=>{try{return localStorage.getItem('ops_tab')}catch(e){return null}})();
 const kv=(a,n)=>{const x=(a.kpi||[]).find(k=>k[0]===n);return x?x[1]:'-'};
-const os=(lb,x)=>x?`<span class="os s-${x[0]}">${lb} ${esc(SL[x[0]]||x[0])}</span>`:'';
-function alerts(A,s){const o=[],w=A.weband&&A.weband.req;
- if(w&&w.open)o.push(`🎸 악보 요청 진행 중 <b>${w.open}</b>건`);if(w&&w.fixOpen)o.push(`🛠 고쳐 주세요 대기 <b>${w.fixOpen}</b>건`);if(w&&w.no)o.push(`⚠️ 악보 자동 실패 ${w.no}건`);
- (s.alerts||[]).forEach(x=>o.push('⭐ '+esc(x)));if(s.need&&s.need.length)o.push(`🔑 스토어 숫자(다운로드·리뷰·크래시)는 ${esc(s.need.join('·'))} 열쇠 연결 후`);return o}
-function overview(A,ks,s){const c={};ks.forEach(k=>{const t=A[k].st||'web';c[t]=(c[t]||0)+1});
- const w=A.weband&&A.weband.req,dot={weband:w?(w.open||0)+(w.fixOpen||0):0};
- let h=`<div class="app"><h2>🧭 전체 앱 한눈에</h2><div class="sum">${['live','review','test','plan','web'].filter(t=>c[t]).map(t=>`<span class="s-${t}">${SL[t]} ${c[t]}</span>`).join('')}<span class="s-web">총 ${ks.length}개</span></div><div class="grid">`;
- h+=ks.map(k=>{const a=A[k],hd=HEAD[k]||[];return `<button class="box ${k===TAB?'on':''}" data-k="${k}">${dot[k]?`<span class="dot">${dot[k]}</span>`:''}<div class="bn"><img class="ic" src="ops-ic/${k}.png" alt="">${esc(a.name)}</div><div class="bo">${os('🍎',a.ios)}${os('🤖',a.android)}</div><div class="bk">${hd.map(n=>`<span><b>${kv(a,n)}</b><small>${esc(n)}</small></span>`).join('')}</div></button>`}).join('')+'</div>';
- const al=alerts(A,s);if(al.length)h+=`<div class="al">${al.join('<br>')}</div>`;return h+'</div>'}
-function detail(k,a,s){const lk=LINK[k];let h=`<div class="app"><h2><span><img class="ic" src="ops-ic/${k}.png" alt="">${esc(a.full||a.name)}</span>${lk?`<a href="${lk[0]}">${lk[1]}</a>`:''}</h2>`;
+function stb(kind,x){if(!x)return'';const st=x[0];return `<span class="st ${st}" title="${esc(x[1])}">${LOGO[st==='web'?'web':kind]}${esc(SL[st]||st)}</span>`}
+// 스토어 별점·리뷰(열쇠 연결 후 store.byApp[k] = {rating, count, fresh, low})
+const SB=(s,k)=>(s.byApp||{})[k]||null;
+// 앱별 할 일: hi 빨강 · md 주황 · lo 회색
+function todo(k,a,s){const o=[],r=a.req,b=SB(s,k);
+ if(r){if(r.fixOpen)o.push(['hi',`🛠 고쳐 주세요 ${r.fixOpen}건 대기`]);if(r.no)o.push(['hi',`악보 자동 실패 ${r.no}건 — 직접 확인`]);if(r.open)o.push(['md',`악보 요청 진행 중 ${r.open}건`])}
+ if(b&&b.low)o.push(['hi',`별 3개 이하 새 리뷰 ${b.low}건`]);if(b&&b.fresh)o.push(['md',`새 리뷰 ${b.fresh}건 — 답변하기`]);
+ for(const [kind,nm] of [['ios','앱스토어'],['android','구글 플레이']]){const x=a[kind];if(x&&x[0]==='review')o.push(['lo',`${nm} 심사 결과 기다리는 중 — ${x[1]}`])}
+ (a.updates||[]).filter(u=>u[2]==='review'&&!o.some(t=>t[1].includes(u[0]))).forEach(u=>o.push(['lo',`${u[0]} 심사 중 (${u[1]} 제출)`]));
+ return o}
+function box(k,a,s){const hd=HEAD[k]||[],b=SB(s,k),t=todo(k,a,s),hi=t.filter(x=>x[0]!=='lo').length,store=/^(live|review|test)$/.test(a.st);
+ const ft=[];if(store)ft.push(b&&b.rating?`<span class="s">★<b>${(+b.rating).toFixed(1)}</b></span><span>리뷰<b>${b.count||0}</b></span>`:'<span>★ —</span>');
+ if(b&&b.fresh)ft.push(`<span class="r">새 리뷰<b>${b.fresh}</b></span>`);ft.push(hi?`<span class="t">할 일<b>${hi}</b></span>`:`<span>할 일<b>0</b></span>`);
+ return `<button class="box ${k===TAB?'on':''}" data-k="${k}"><div class="bh"><img src="ops-ic/${k}.png" alt=""><span class="bn">${esc(a.name)}</span>${stb('ios',a.ios)}${stb('android',a.android)}</div>
+ <div class="bk">${hd.map(n=>`<span><b>${kv(a,n)}</b><small>${esc(n)}</small></span>`).join('')}</div><div class="bf">${ft.join('')}</div></button>`}
+function detail(k,a,s){const lk=LINK[k],t=todo(k,a,s);
+ let h=`<div class="pane" id="dt"><div class="ph"><img src="ops-ic/${k}.png" alt=""><h2>${esc(a.full||a.name)}</h2>${stb('ios',a.ios)}${stb('android',a.android)}<span class="sp"></span>${lk?`<a href="${lk[0]}">${lk[1]} ↗</a>`:''}</div>`;
  h+=`<div class="kpi">${(a.kpi||[]).map(([n,v])=>`<div><b>${v}${diff(k,n,v)}</b><span>${esc(n)}</span></div>`).join('')}</div>`;
- if(a.req){const r=a.req;h+=`<div class="sub">🎼 악보 요청 — 전체 <b>${r.total}</b> · 이번 주 <b>${r.week}</b> · 진행 중 ${r.open?`<span class="bd y">${r.open}</span>`:'<b>0</b>'} · 🤖 자동 올림 <b>${r.auto}</b> · 실패 ${r.no?`<span class="bd r">${r.no}</span>`:'<b>0</b>'} · 🛠 고쳐 주세요 ${r.fixOpen?`<span class="bd r">${r.fixOpen} 대기</span>`:'<b>'+r.fix+'</b>'}</div>`}
+ if(t.length)h+=`<div class="todo">${t.map(([lv,x])=>`<div><span class="lv ${lv}">${{hi:'TODO',md:'WAIT',lo:'INFO'}[lv]}</span><span>${esc(x)}</span></div>`).join('')}</div>`;
+ if(a.req){const r=a.req;h+=`<div class="sub">악보 요청 — 전체 <b>${r.total}</b> · 이번 주 <b>${r.week}</b> · 진행 중 <b>${r.open}</b> · 자동 올림 <b>${r.auto}</b> · 실패 <b>${r.no}</b> · 고쳐 주세요 <b>${r.fix}</b></div>`}
  if(a.kinds)h+=`<div class="sub">종목 — ${Object.entries(a.kinds).sort((x,y)=>y[1]-x[1]).map(([n,v])=>esc(SP[n]||n)+' <b>'+v+'</b>').join(' · ')}</div>`;
- if(a.last)h+=`<div class="sub">마지막 저장 ${dt(a.last)} (${ago(a.last)})</div>`;
- if(a.list&&a.list.length)h+=`<div class="rows">${a.list.map(x=>`<div><span>${esc(x.n)}${x.c?' <small style="color:#aaa">'+esc(x.c)+'</small>':''}</span><span>${a.unit||'멤버'} ${x.m}${x.a?' · '+(k==='club'?'만듦 ':'최근 ')+ago(x.a):''}</span></div>`).join('')}</div>`;
- // 🔄 업데이트 현황(스토어 상태 + 버전 기록 + 웹 배포)
- const ups=(a.updates||[]).map(([v,d,st,n])=>`<div class="up"><b>${esc(v)}</b><span class="os s-${st}">${esc(SL[st]||st)}</span><span>${esc(n)}</span><span class="d">${esc(d)}</span></div>`).join('');
- const cms=(a.commits||[]).map(([t,m])=>`<div class="up"><span>${esc(m)}</span><span class="d">${dt(t)}</span></div>`).join('');
- h+=`<details class="tg" data-o="up" ${OPEN.has('up')?'open':''}><summary>🔄 업데이트 현황</summary><div class="in"><div class="st">${a.ios?`🍎 앱스토어 — <span class="os s-${a.ios[0]}">${esc(a.ios[1])}</span><br>`:''}${a.android?`🤖 구글 플레이 — <span class="os s-${a.android[0]}">${esc(a.android[1])}</span><br>`:''}${a.web?`🌐 ${esc(a.web)}`:''}</div>${ups}${cms?`<div style="margin-top:8px;font-weight:700">🌐 최근 웹 배포</div>${cms}`:''}${!ups&&!cms?'<div class="sub">기록 없음</div>':''}</div></details>`;
- // ⭐ 리뷰·별점
- const sa=(s.apps||[]).filter(x=>x.k===k),rv=(s.reviews||[]).filter(r=>r.k===k);
- let ri=sa.map(x=>`<div class="sub"><b>${esc(x.n)}</b> — ${x.kpi.map(([n,v])=>esc(n)+' <b>'+esc(v)+'</b>').join(' · ')}</div>`).join('')+rv.map(r=>`<div class="up"><span>${'⭐'.repeat(r.r||0)} ${esc(r.t)}<br><small style="color:var(--mu)">${esc(r.b)}</small></span><span class="d">${dt(r.at)}</span></div>`).join('');
- if(!ri)ri=/^(live|review|test)$/.test(a.st)?`<div class="key">🔑 별점·리뷰·다운로드·크래시는 스토어 열쇠(${esc((s.need||[]).join('·')||'-')}) 연결 후 여기 떠요.</div>`:'<div class="sub">아직 스토어에 없는 앱이라 리뷰가 없어요.</div>';
- h+=`<details class="tg" data-o="rv" ${OPEN.has('rv')?'open':''}><summary>⭐ 리뷰·별점${rv.length?' · '+rv.length:''}</summary><div class="in">${ri}</div></details>`;
+ if(a.last)h+=`<div class="sub">마지막 저장 <b>${dt(a.last)}</b> (${ago(a.last)})</div>`;
+ if(a.list&&a.list.length)h+=`<div class="rows">${a.list.map(x=>`<div><span>${esc(x.n)}${x.c?' <small style="color:var(--mu2)">'+esc(x.c)+'</small>':''}</span><span>${a.unit||'멤버'} ${x.m}${x.a?' · '+(k==='club'?'만듦 ':'최근 ')+ago(x.a):''}</span></div>`).join('')}</div>`;
+ // 업데이트 현황(스토어 상태 + 버전 기록 + 웹 배포)
+ const ups=(a.updates||[]).map(([v,d,st,n])=>`<div class="up"><b>${esc(v)}</b><span class="st ${st}">${esc(SL[st]||st)}</span><span>${esc(n)}</span><span class="d">${esc(d)}</span></div>`).join('');
+ const cms=(a.commits||[]).map(([tt,m])=>`<div class="up"><span>${esc(m)}</span><span class="d">${dt(tt)}</span></div>`).join('');
+ const sl=[a.ios?`<div>${stb('ios',a.ios)} App Store · ${esc(a.ios[1])}</div>`:'',a.android?`<div>${stb('android',a.android)} Google Play · ${esc(a.android[1])}</div>`:'',a.web?`<div><span class="st web">${LOGO.web}웹</span> ${esc(a.web)}</div>`:''].join('');
+ h+=`<details class="tg" data-o="up" ${OPEN.has('up')?'open':''}><summary>업데이트 현황</summary><div class="in"><div class="sl">${sl}</div>${ups}${cms?`<div class="sub" style="margin-top:10px">최근 웹 배포</div>${cms}`:''}${!ups&&!cms?'<div class="sub">기록 없음</div>':''}</div></details>`;
+ // 리뷰·별점
+ const b=SB(s,k),rv=(s.reviews||[]).filter(r=>r.k===k);
+ let ri=(b?`<div class="sub">별점 <b>${b.rating?(+b.rating).toFixed(1):'-'}</b> · 리뷰 <b>${b.count||0}</b>${b.dl7!=null?` · 7일 다운로드 <b>${b.dl7}</b>`:''}${b.crash!=null?` · 크래시율 <b>${b.crash}%</b>`:''}</div>`:'')
+  +rv.map(r=>`<div class="up"><span>${'★'.repeat(r.r||0)}${'☆'.repeat(5-(r.r||0))} ${esc(r.t)}<br><small style="color:var(--mu)">${esc(r.b)}</small></span><span class="d">${dt(r.at)}</span></div>`).join('');
+ if(!ri)ri=/^(live|review|test)$/.test(a.st)?`<div class="key">별점·리뷰·다운로드·크래시는 스토어 API 열쇠(${esc((s.need||[]).join(' · ')||'-')}) 연결 후 자동 표시.</div>`:'<div class="sub">스토어 미등록 — 리뷰 없음</div>';
+ h+=`<details class="tg" data-o="rv" ${OPEN.has('rv')?'open':''}><summary>리뷰 · 별점${rv.length?' ('+rv.length+')':''}</summary><div class="in">${ri}</div></details>`;
  return h+'</div>'}
 function draw(){if(!L){$('app').innerHTML='<p class="empty">아직 모은 자료가 없어요</p>';return}
  const A=L.apps||{},s=L.store||{},ks=Object.keys(A).sort((x,y)=>(A[x].order||99)-(A[y].order||99));if(!A[TAB])TAB=ks[0];
- let h=`<p class="when">${dt(L.t)} 기준 (${ago(L.t)}) · 매일 아침 8시 갱신</p>`+overview(A,ks,s)+`<div id="dt"></div>`+detail(TAB,A[TAB],s);
+ const c={};ks.forEach(k=>{const t=A[k].st||'web';c[t]=(c[t]||0)+1});
+ let h=`<div class="bar"><div class="sum">${['live','review','test','plan','web'].filter(t=>c[t]).map(t=>`<span class="chip">${SL[t]}<b>${c[t]}</b></span>`).join('')}<span class="chip">전체<b>${ks.length}</b></span></div><span class="when">${dt(L.t)} 갱신 · ${ago(L.t)}</span></div>`;
+ h+=`<div class="sec">Apps</div><div class="grid">${ks.map(k=>box(k,A[k],s)).join('')}</div>`;
+ h+=`<div class="sec">Detail</div>`+detail(TAB,A[TAB],s);
+ if(s.need&&s.need.length)h+=`<p class="when" style="margin-top:14px">스토어 API 미연결: ${esc(s.need.join(', '))}</p>`;
  $('app').innerHTML=h;
- const go=k=>{TAB=k;try{localStorage.setItem('ops_tab',k)}catch(e){}draw();const t=$('dt');if(t)t.scrollIntoView({behavior:'smooth'})};
+ const go=k=>{TAB=k;try{localStorage.setItem('ops_tab',k)}catch(e){}draw();const t=$('dt');if(t)t.scrollIntoView({behavior:'smooth',block:'start'})};
  document.querySelectorAll('.box').forEach(b=>b.onclick=()=>go(b.dataset.k));document.querySelectorAll('details.tg').forEach(d=>d.ontoggle=()=>{d.open?OPEN.add(d.dataset.o):OPEN.delete(d.dataset.o)})}
 if(/[?&]mock=1/.test(location.search)){const n=Date.now();
- L={t:n-3600e3,store:{need:['앱스토어','구글 플레이']},apps:{club:{order:1,name:'모스',full:'모스: 모두의 스포츠클럽',icon:'🎾',st:'live',ios:['live','출시 · 1.1.2 심사 중'],android:['live','출시'],kpi:[['가입',46],['7일 새 가입',30],['7일 접속',36],['클럽',7]],list:[{n:'테니홀릭',m:30,a:n-9e8}]},
+ L={t:n-3600e3,store:{need:['앱스토어','구글 플레이'],byApp:{club:{rating:4.8,count:12,fresh:1},wereplay:{rating:5,count:2}},reviews:[{k:'club',r:5,t:'편해요',b:'출석 체크가 쉬워졌어요',at:n-8e7}]},apps:{club:{order:1,name:'모스',full:'모스: 모두의 스포츠클럽',icon:'🎾',st:'live',ios:['live','출시 · 1.1.2 심사 중'],android:['live','출시'],kpi:[['가입',46],['7일 새 가입',30],['7일 접속',36],['클럽',7]],list:[{n:'테니홀릭',m:30,a:n-9e8}]},
  wereplay:{order:2,name:'위리',icon:'📹',st:'live',ios:['live','출시 · 1.0'],android:['test','내부 테스트'],kpi:[['경기 기록',50],['오늘',6],['7일',22],['30일',48],['라이브 방',28]],kinds:{tennis:30,volleyball:10}},
  weband:{order:3,name:'위밴드',icon:'🎸',st:'plan',ios:['plan','등록 예정'],android:['plan','등록 예정'],kpi:[['밴드',10],['멤버',30],['7일 활동 밴드',6]],req:{total:5,week:5,open:1,auto:2,done:3,no:1,fix:1,fixOpen:1},list:[{n:'WePlay',c:'9932',m:6,a:n-5e6}]},
  mmpro:{order:4,name:'매치메이커',icon:'🏆',st:'plan',ios:['plan','등록 예정'],android:['plan','등록 예정'],kpi:[['대회',20],['세션',8]]},
  baseball:{order:5,name:'야구앱',icon:'⚾',st:'web',ios:['web','미등록'],android:['web','미등록'],kpi:[['반',10],['학생',295],['경기',17],['7일 경기',16]],unit:'경기',list:[{n:'1반',m:2,a:n-3e8}]},
  volleyball:{order:6,name:'배구앱',icon:'🏐',st:'web',ios:['web','미등록'],android:['web','미등록'],kpi:[['팀',4],['경기',39],['7일 경기',1]],last:n-2e8}}};
- $('who').textContent='(미리보기)';draw()}
+ $('who').textContent='preview';draw()}
 else{firebase.initializeApp(FBC);const auth=firebase.auth();auth.getRedirectResult().catch(()=>{});
- auth.onAuthStateChanged(u=>{if(!u){$('who').textContent='';$('app').innerHTML='<div class="login"><p>관리자 구글 계정으로 들어와 주세요</p><button id="lg">Google로 로그인</button></div>';
+ auth.onAuthStateChanged(u=>{if(!u){$('who').textContent='';$('app').innerHTML='<div class="login"><p>관리자 계정으로 로그인</p><button id="lg">Google로 계속</button></div>';
    $('lg').onclick=()=>{const p=new firebase.auth.GoogleAuthProvider();auth.signInWithPopup(p).catch(()=>auth.signInWithRedirect(p))};return}
-  $('who').innerHTML=esc(u.displayName||u.email||'')+'<br><button id="lo">로그아웃</button>';$('lo').onclick=()=>auth.signOut();
+  $('who').innerHTML=esc(u.email||u.displayName||'')+'<button id="lo">로그아웃</button>';$('lo').onclick=()=>auth.signOut();
   const db=firebase.database();
   db.ref('ops_stats/latest').on('value',s=>{L=s.val();draw()},e=>{$('app').innerHTML='<p class="empty">⚠️ 관리자 계정이 아니에요<br><small>'+esc(e.code||e.message)+'</small></p>'});
   db.ref('ops_stats/hist').limitToLast(31).on('value',s=>{HI=s.val()||{};draw()})})}
