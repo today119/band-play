@@ -487,7 +487,7 @@ async function vScore(mb){V(head(mb,'🎼 악보함','내 파트: '+(PN[mb.part]
  songs.sort((a,b)=>(up.includes((SN[b]||b).replace(/^\S+ /,''))?1:0)-(up.includes((SN[a]||a).replace(/^\S+ /,''))?1:0));
  $('sl').innerHTML=songs.map(s=>{const parts=Object.keys(o).filter(x=>x.split('_')[0]===s).map(x=>x.split('_')[1]),c=cov[s+'_'+mb.part],pc=c&&c.n?Math.round(c.h/c.n*100):0,has=parts.includes(mb.part);
   return `<div class="card"><div class="song"><span class="ic">${(SN[s]||'🎵').split(' ')[0]}</span><div><b>${esc((SN[s]||s).replace(/^\S+ /,''))}</b>${up.includes((SN[s]||s).replace(/^\S+ /,''))?' <span class="tag">다음 합주</span>':''}<br><small>${parts.map(pe).join('')} ${parts.length}파트${by[s]?' · 내 연습 '+mins(by[s]):''}</small><div class="pgl" title="연습 진도 — 내 파트 마디 중 ▶로 한 번이라도 지나간 비율"><div class="prog"><i style="width:${pc}%"></i></div><b>진도 ${pc}%</b></div></div>
-  <a class="go" href="at.html?k=${k}&s=${s}_${has?mb.part:parts[0]}">열기</a></div></div>`}).join('')+addCard()+'<p style="font-size:12px;color:#9a88ad">진도 = 내 파트 마디 중 ▶ 재생으로 한 번이라도 지나간 비율 (이 기기 기준)</p>'}
+  <a class="go" href="at.html?k=${k}&s=${s}_${has?mb.part:parts[0]}">열기</a></div></div>`}).join('')+rqBox()+addCard()+'<p style="font-size:12px;color:#9a88ad">진도 = 내 파트 마디 중 ▶ 재생으로 한 번이라도 지나간 비율 (이 기기 기준)</p>';rqPoll()}
 
 // 🎼 내 악보(1층, 10/26 «혼자 연습하려면 1층 메뉴에도 악보가 있어야 하나? 악보를 넣는 메뉴가 없네»)
 //   위밴드 악보함 곡 전부를 파트 골라 혼자 연습 + 악보 넣기(내 PDF는 이 기기 index.html / 새로 그려 달라는 요청은 band_play_req)
@@ -498,7 +498,7 @@ async function vLib(){let k=DEFK;try{k=localStorage.getItem('at_k')||DEFK}catch(
  const songs=[...new Set(Object.keys(o).map(x=>x.split('_')[0]))],cov=LG('cov')||{},[,by]=sumPr(myPr(),'2000-01-01','2999-12-31'),pdf=LG('pdfs')||0;
  $('ll').innerHTML=songs.map(s=>{const parts=Object.keys(o).filter(x=>x.split('_')[0]===s).map(x=>x.split('_')[1]),has=parts.includes(part),c=cov[s+'_'+part],pc=c&&c.n?Math.round(c.h/c.n*100):0;
   return `<div class="card"><div class="song"><span class="ic">${(SN[s]||'🎵').split(' ')[0]}</span><div><b>${esc((SN[s]||s).replace(/^\S+ /,''))}</b><br><small>${has?pe(part)+' '+pn(part):'⚠️ '+pn(part)+' 파트 없음'} · ${parts.length}파트${by[s]?' · 연습 '+mins(by[s]):''}</small><div class="pgl" title="연습 진도 — 내 파트 마디 중 ▶로 한 번이라도 지나간 비율"><div class="prog"><i style="width:${pc}%"></i></div><b>진도 ${pc}%</b></div></div>
-  <a class="go" href="at.html?solo=1&k=${k}&s=${s}_${has?part:parts[0]}">연습</a></div></div>`}).join('')+addCard()}
+  <a class="go" href="at.html?solo=1&k=${k}&s=${s}_${has?part:parts[0]}">연습</a></div></div>`}).join('')+rqBox()+addCard();rqPoll()}
 function addCard(){return `<div class="card" style="border:2px dashed #5EC4BE66"><b>＋ 악보 넣기</b>
  <a class="btn b2" href="pdf.html" style="margin-top:10px">📄 내 PDF 악보 넣기 <small style="display:block;font-weight:400;font-size:12px;opacity:.75">지금 바로 · 이 기기에만 저장 · 재생바로 연습</small></a>
  <button class="btn b2" onclick="reqModal()">🤖 새로 그려 주세요 <small style="display:block;font-weight:400;font-size:12px;opacity:.75">박자 맞는 악보로 다시 그려 위밴드에 올려 드려요</small></button></div>`}
@@ -510,12 +510,8 @@ function reqModal(){const mine=LG('reqs')||[];
  <label class="l">📎 가진 악보 사진·PDF (있으면 훨씬 정확해요 · 최대 6장)</label><input type="file" id="rqf" accept="image/*,application/pdf" multiple style="padding:10px"><div id="rqfl" style="font-size:13px;color:var(--mu)"></div>
  <small style="display:block;color:var(--mu);font-size:12px;margin-top:4px">한 쪽씩 위에서 똑바로 찍어 주세요 · 올린 악보는 위밴드 팀만 보고, 우리 밴드 연습용으로만 옮겨요</small>
  <button class="btn" id="rqs">요청 보내기</button><button class="btn gh" onclick="closeM()">닫기</button>
- ${mine.length?`<h3 style="margin:14px 0 4px;font-size:14px;color:var(--mu)">내 요청</h3>`+mine.map(x=>`<div class="row"><span>${esc(x.song)}</span><small style="color:var(--mu)" id="rqs_${esc(x.id||'')}">${esc(x.d)} · 접수</small></div>`).join(''):''}`);
- // 처리 상태(band_play_req_st/{id}={st:'work'|'done'|'no', msg}) — 관리자가 적음, 누구나 읽기
- //   got=접수(감시기가 자동) · work · done{song,k,p}=바로 열기 링크(내 파트 있으면 내 파트)
- mine.forEach(x=>{if(x.id)fetch(RDB.replace('band_play/','band_play_req_st/')+x.id+'.json').then(r=>r.json()).then(o=>{const e=$('rqs_'+x.id);if(!o||!e)return;
-  if(o.st==='done'&&o.k&&o.song){e.innerHTML=esc(x.d)+' · <a style="color:#1a9d55;font-weight:700" href="at.html?k='+encodeURIComponent(o.k)+'&s='+encodeURIComponent(o.song+'_'+(o.p||'g1'))+'">✅ 완료 — 열기</a>';return}
-  e.textContent=x.d+' · '+({got:'📥 접수됨',work:'🛠 옮기는 중',done:'✅ 완료 — 악보함 확인',no:'⚠️ '+(o.msg||'못 해요')}[o.st]||'접수')+(o.msg&&o.st!=='no'?' · '+o.msg:'')}).catch(()=>{})});
+ ${mine.length?`<h3 style="margin:14px 0 4px;font-size:14px;color:var(--mu)">내 요청</h3><div id="rqm"></div>`:''}`);
+ rqPoll();
  // 첨부: 사진은 긴 변 1800px JPEG로 줄여서, PDF는 1MB까지 그대로 → band_play_req_f/{id}/{0~5} (쓰기만, 읽기는 관리자)
  let files=[];$('rqf').onchange=()=>{files=[...$('rqf').files].slice(0,6);$('rqfl').textContent=files.length?files.map(f=>f.name).join(', '):''};
  const enc=f=>new Promise((ok,no)=>{if(f.type==='application/pdf'){if(f.size>1100000){no('PDF가 너무 커요(1MB까지) — 사진으로 찍어 주세요');return}const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(f);return}
@@ -527,7 +523,35 @@ function reqModal(){const mine=LG('reqs')||[];
     await fetch(RDB.replace('band_play/','band_play_req_f/')+id+'/'+i+'.json',{method:'PUT',body:JSON.stringify(d)}).then(r=>{if(!r.ok)throw 0})}
    v.nf=files.length;await fetch(RDB.replace('band_play/','band_play_req/')+id+'.json',{method:'PUT',body:JSON.stringify(v)}).then(r=>{if(!r.ok)throw 0})}
   catch(e){$('rqs').disabled=false;$('rqs').textContent='요청 보내기';toast(typeof e==='string'?e:'⚠️ 못 보냈어요 — 인터넷 확인');return}
-  mine.unshift({id,song,d:today()});LSet('reqs',mine.slice(0,20));closeM();toast('✅ 요청 보냈어요')}}
+  mine.unshift({id,song,d:today(),np:v.parts.split(',').filter(Boolean).length||1,nf:files.length,at:Date.now()});LSet('reqs',mine.slice(0,20));closeM();toast('✅ 요청 보냈어요 — 악보함에서 진행 상황을 볼 수 있어요');if($('rqbox'))rqPoll();else if(/#\/(lib|b\/[^/]+\/score)/.test(location.hash))render()}}
+
+// 📥 내 요청 진행바(10/29 «앱에서 얼마나 기다려야 하는지 궁금하겠다»)
+//   처리 상태 band_play_req_st/{id} — 관리자(감시기·publish_score)가 적고 누구나 읽음
+//   got=접수(차례 대기) → work=그리는 중(t=시작) → work+«초안 확인 중»=사람 확인 → done{song,k,p}=열기 / no{msg}
+//   예상 시간 = 3분 + 파트×장×3분 (5~45분, 10/28 시험: 2파트 1장 4분)
+function rqProg(o,x){const est=Math.min(45,Math.max(5,3+3*(x.np||1)*(x.nf||1)))*60000;
+ if(!o)return{p:4,t:'📤 보냈어요 · 2분 안에 접수돼요'};
+ if(o.st==='got')return{p:10,t:'📥 접수됨 · 곧 그리기 시작해요'};
+ if(o.st==='work'&&o.msg==='초안 확인 중')return{p:90,t:'👀 초안 완성 · 사람이 마지막으로 확인 중이에요'};
+ if(o.st==='work'){const el=Date.now()-(o.t||Date.now()),left=Math.ceil((est-el)/60000);
+  return{p:Math.round(12+73*Math.min(1,el/est)),t:'🤖 악보 그리는 중 · '+(left>0?'약 '+left+'분 남음':el<est*2?'거의 다 됐어요':'마무리하는 중')}}
+ if(o.st==='done')return{p:100,t:'✅ 완료',done:1};
+ if(o.st==='no')return{p:100,t:'⚠️ '+(o.msg||'이 곡은 못 그려요'),no:1};
+ return{p:5,t:'접수'}}
+function rqRow(x,o){const g=rqProg(o,x),c=g.no?'#d33':g.done?'#1a9d55':'#111';
+ const open=g.done&&o.k&&o.song?` <a style="color:#1a9d55;font-weight:700" href="at.html?k=${encodeURIComponent(o.k)}&s=${encodeURIComponent(o.song+'_'+(o.p||'g1'))}">열기</a>`:'';
+ return `<div style="margin:8px 0"><div style="display:flex;justify-content:space-between;gap:8px"><b style="font-size:14px">${esc(x.song)}</b><small style="color:var(--mu)">${esc(x.d)}</small></div>
+ <div class="pgl"><div class="prog"><i style="width:${g.p}%;background:${c};transition:width .6s"></i></div><b>${g.p}%</b></div><small style="color:${g.no?'#d33':'var(--mu)'}">${g.t}${open}</small></div>`}
+// 악보함 「내 요청」 카드 — 끝나지 않은 것 + 끝난 지 3일 안 된 것만
+function rqBox(){return (LG('reqs')||[]).some(x=>x.id)?'<div id="rqbox"></div>':''}
+let _rqT=0;
+async function rqPoll(){clearTimeout(_rqT);const mine=(LG('reqs')||[]).filter(x=>x.id).slice(0,8),bx=$('rqbox'),md=$('rqm');if(!mine.length||(!bx&&!md))return;
+ const st=await Promise.all(mine.map(x=>fetch(RDB.replace('band_play/','band_play_req_st/')+x.id+'.json').then(r=>r.json()).catch(()=>null)));
+ const recent=(x,o)=>!o||!/^(done|no)$/.test(o.st)||Date.now()-(o.t||0)<3*864e5;
+ if($('rqm'))$('rqm').innerHTML=mine.map((x,i)=>rqRow(x,st[i])).join('');
+ const sh=mine.map((x,i)=>[x,st[i]]).filter(([x,o])=>recent(x,o));
+ if($('rqbox'))$('rqbox').innerHTML=sh.length?`<div class="card"><b>📥 내 악보 요청</b>${sh.map(([x,o])=>rqRow(x,o)).join('')}</div>`:'';
+ if(st.some(o=>!o||!/^(done|no)$/.test(o.st)))_rqT=setTimeout(rqPoll,20000)}
 
 // 👥 멤버
 function vMem(mb){const now=Date.now(),PK=Object.keys(PN),ro=k=>{const r=roleOf(k),i=RK.indexOf(r);return i>=0?i:r?8:9};
