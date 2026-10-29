@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>위밴드 요청 현황</title>
+<style>
+:root{--bg:#f4f4f6;--card:#fff;--tx:#111;--mu:#6b6b76;--li:#e9e9ec}
+*{box-sizing:border-box;min-width:0}html,body{overflow-x:hidden}body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;-webkit-text-size-adjust:100%}
+.top{background:#111;color:#fff;padding:18px 16px 16px;padding-top:max(18px,env(safe-area-inset-top))}.top h1{margin:2px 0 0;font-size:22px}.top small{color:#aaa}
+.top .who{float:right;font-size:12px;color:#aaa;text-align:right}.top .who button{background:none;border:1px solid #555;color:#ddd;border-radius:6px;padding:3px 8px;margin-top:4px}
+main{padding:12px 16px 40px;max-width:1000px;margin:0 auto}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}@media(min-width:720px){.kpi{grid-template-columns:repeat(6,1fr)}}
+.kpi>div{background:var(--card);border-radius:12px;padding:10px 12px;border:1px solid var(--li)}.kpi b{display:block;font-size:26px;font-variant-numeric:tabular-nums}.kpi span{font-size:12px;color:var(--mu)}
+.flt{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 8px}.flt button{border:1px solid #ccc;background:#fff;border-radius:16px;padding:6px 12px;font-size:13px}.flt button.on{background:#111;color:#fff;border-color:#111}
+.rq{background:var(--card);border-radius:12px;border:1px solid var(--li);padding:12px;margin-bottom:8px}
+.rq .h{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.rq .t{font-weight:700;font-size:16px}.rq .t small{font-weight:400;color:var(--mu)}
+.rq .m{overflow-wrap:anywhere;font-size:13px;color:var(--mu);margin-top:4px;line-height:1.5}.rq .n{font-size:13px;margin-top:6px;background:#f7f7f8;border-radius:8px;padding:6px 8px;white-space:pre-wrap;word-break:break-all}
+.bd{font-size:12px;font-weight:700;border-radius:10px;padding:3px 8px;white-space:nowrap}
+.b-got{background:#eef;color:#335}.b-work{background:#fff3d6;color:#8a5a00}.b-chk{background:#ffe9f0;color:#a0305a}.b-done{background:#e3f6ea;color:#1a7d45}.b-auto{background:#e3f0ff;color:#1a5fb4}.b-no{background:#fde4e4;color:#c22}.b-fix{background:#f0e6ff;color:#6a2fb4}.b-new{background:#eee;color:#555}
+a.go{display:inline-block;margin-top:8px;background:#111;color:#fff;text-decoration:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700}
+.login{text-align:center;padding:60px 20px}.login button{background:#111;color:#fff;border:0;border-radius:10px;padding:14px 22px;font-size:16px;font-weight:700}
+.empty{color:var(--mu);text-align:center;padding:30px}
+</style></head><body>
+<div class="top"><div class="who" id="who"></div><small>위밴드 관리자</small><h1>🎼 악보 요청 현황</h1></div>
+<main id="app"><p class="empty">불러오는 중…</p></main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+// 위밴드 «새로 그려 주세요» 요청 대시보드(10/29 사용자 «요청이 몇 건 들어왔고 어떻게 처리되고 완료는 어떻게 됐는지»)
+//   band_play_req = 관리자만 읽기(band_play_admin/{uid}=true, 콘솔/CLI로만 추가) · band_play_req_st = 누구나 읽기
+//   ?mock=1 → 가짜 자료로 화면만(로그인 없이)
+const FBC={apiKey:'AIzaSyBWAAeuN_bwwrY2R1NupXLwT4ECPhyivo0',authDomain:'matchmaker-28187.firebaseapp.com',projectId:'matchmaker-28187',appId:'1:640935869730:web:893abadb93ae3e949df97b',databaseURL:'https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app'};
+const PN={vocal:'보컬',g1:'기타1',g2:'기타2',bass:'베이스',keys:'키보드',drums:'드럼'};
+const $=id=>document.getElementById(id),esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let REQ={},ST={},BN={},F='all';
+const pad=n=>String(n).padStart(2,'0'),dt=t=>{if(!t)return'-';const d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate()+' '+pad(d.getHours())+':'+pad(d.getMinutes())};
+const dur=ms=>{if(!(ms>0))return'';const m=Math.round(ms/60000);return m<60?m+'분':m<1440?Math.floor(m/60)+'시간 '+(m%60)+'분':Math.floor(m/1440)+'일 '+Math.floor(m%1440/60)+'시간'};
+// 상태 하나로: 새로(감시기 전) · 접수 · 그리는 중 · 사람 확인 · 자동 올림 · 완료 · 실패 — 고쳐 주세요는 따로 표시
+function cat(r,s){if(!s)return'new';if(s.st==='no')return'no';if(s.st==='done')return s.auto?'auto':'done';if(s.st==='work')return s.msg==='초안 확인 중'?'chk':'work';return'got'}
+const CL={new:['b-new','📤 감시기 대기'],got:['b-got','📥 접수'],work:['b-work','🤖 그리는 중'],chk:['b-chk','👀 사람 확인'],auto:['b-auto','🤖 자동 올림'],done:['b-done','✅ 완료'],no:['b-no','⚠️ 못 함']};
+const FL=[['all','전체'],['run','진행 중'],['auto','자동 올림'],['done','완료'],['fix','고쳐 주세요'],['no','실패']];
+const inF=(c,r)=>F==='all'||(F==='run'&&/^(new|got|work|chk)$/.test(c))||(F==='fix'&&r.fix)||(F==='done'&&(c==='done'||c==='auto'))||F===c;
+function bandName(code){if(!code||code in BN)return;BN[code]='';fetch(FCFG.db+'/band_play/'+code+'/band/name.json').then(r=>r.json()).then(n=>{BN[code]=n||'';draw()}).catch(()=>{})}
+const FCFG={db:FBC.databaseURL};
+function draw(){const ids=Object.keys(REQ).sort((a,b)=>(REQ[b].t||0)-(REQ[a].t||0)),now=Date.now(),wk=now-7*864e5;
+ const cs=ids.map(id=>cat(REQ[id],ST[id]));
+ const k=[['총 요청',ids.length],['이번 주',ids.filter(id=>(REQ[id].t||0)>wk).length],['진행 중',cs.filter(c=>/^(new|got|work|chk)$/.test(c)).length],['자동 올림',cs.filter(c=>c==='auto').length],['고쳐 주세요',ids.filter(id=>REQ[id].fix).length],['실패',cs.filter(c=>c==='no').length]];
+ const done=ids.filter((id,i)=>/^(done|auto)$/.test(cs[i])&&!REQ[id].fix).map(id=>(ST[id].t||0)-(REQ[id].t||0)).filter(x=>x>0),avg=done.length?done.reduce((a,b)=>a+b,0)/done.length:0;
+ const rows=ids.map((id,i)=>[id,cs[i]]).filter(([id,c])=>inF(c,REQ[id]));
+ $('app').innerHTML=`<div class="kpi">${k.map(([n,v])=>`<div><b>${v}</b><span>${n}</span></div>`).join('')}</div>
+ <p style="font-size:12px;color:var(--mu);margin:8px 2px 0">완료까지 평균 ${dur(avg)||'-'} (새 요청 ${done.length}건 기준) · 자동 갱신</p>
+ <div class="flt">${FL.map(([v,n])=>`<button class="${F===v?'on':''}" data-f="${v}">${n}</button>`).join('')}</div>
+ ${rows.length?rows.map(([id,c])=>card(id,REQ[id],ST[id],c)).join(''):'<p class="empty">해당하는 요청이 없어요</p>'}`;
+ document.querySelectorAll('.flt button').forEach(b=>b.onclick=()=>{F=b.dataset.f;draw()});
+ ids.forEach(id=>bandName(REQ[id].band))}
+function card(id,r,s,c){const [bc,bl]=CL[c],parts=String(r.parts||'').split(',').filter(Boolean).map(p=>PN[p]||p).join('·');
+ const took=s&&/^(done|no)$/.test(s.st)?dur((s.t||0)-(r.t||0)):s&&s.st==='work'?'진행 '+dur(Date.now()-(s.t||Date.now())):'';
+ const open=s&&s.st==='done'&&s.k&&s.song?`<a class="go" target="_blank" href="at.html?k=${encodeURIComponent(s.k)}&s=${encodeURIComponent(s.song+'_'+(s.p||'g1'))}">열기 ↗</a>`:'';
+ return `<div class="rq"><div class="h"><div class="t">${esc(r.song)}${r.artist?' <small>· '+esc(r.artist)+'</small>':''}</div><span class="bd ${bc}">${bl}</span></div>
+ <div class="m">${dt(r.t)} · 밴드 ${esc(r.band||'-')}${BN[r.band]?' '+esc(BN[r.band]):''} · ${esc(parts||'-')} · 첨부 ${r.nf||0}${r.fix?' · <span class="bd b-fix">🛠 고쳐 주세요</span>':''}<br>
+ 요청 ${esc(r.name||'이름 없음')}${took?' · ⏱ '+took:''} · <span style="color:#aaa">${esc(id)}</span>${s&&s.msg&&s.st!=='work'?'<br>'+esc(s.msg):''}</div>
+ ${r.note?`<div class="n">${esc(r.note)}</div>`:''}${open}</div>`}
+function listen(db){db.ref('band_play_req').on('value',s=>{REQ=s.val()||{};draw()},e=>{$('app').innerHTML='<p class="empty">⚠️ 관리자 계정이 아니에요<br><small>'+esc(e.code||e.message)+'</small></p>'});
+ db.ref('band_play_req_st').on('value',s=>{ST=s.val()||{};draw()})}
+if(/[?&]mock=1/.test(location.search)){const n=Date.now(),m=60000;
+ REQ={a:{song:'나는 나비',artist:'윤도현',parts:'g1',name:'김샘',band:'9932',nf:1,t:n-70*m},b:{song:'시작',artist:'가호',parts:'g1,bass,keys,drums',name:'김샘',band:'9932',nf:4,t:n-30*m},c:{song:'나는 나비',parts:'g1',name:'김샘',band:'9932',nf:0,fix:'nabi',note:'[고쳐 주세요] 마디 50, 65 · 리듬이 달라요',t:n-5*m},d:{song:'붉은 노을',parts:'drums',name:'빙키',band:'5281',nf:2,t:n-3*m},e:{song:'흐린 사진',parts:'g1',name:'선화',band:'5281',nf:1,t:n-26*60*m}};
+ ST={a:{st:'done',auto:1,song:'nabi',k:'x',p:'g1',t:n-64*m},b:{st:'done',auto:1,song:'start',k:'x',p:'g1',t:n-24*m},c:{st:'got',t:n-4*m},d:{st:'work',t:n-2*m},e:{st:'no',msg:'사진이 흐려요',t:n-25*60*m}};BN={'9932':'WePlay','5281':'Music In my Class'};
+ $('who').textContent='(미리보기)';draw()}
+else{firebase.initializeApp(FBC);const auth=firebase.auth();auth.getRedirectResult().catch(()=>{});
+ auth.onAuthStateChanged(u=>{if(!u){$('who').textContent='';$('app').innerHTML='<div class="login"><p>관리자 구글 계정으로 들어와 주세요</p><button id="lg">Google로 로그인</button></div>';
+   $('lg').onclick=()=>{const p=new firebase.auth.GoogleAuthProvider();auth.signInWithPopup(p).catch(()=>auth.signInWithRedirect(p))};return}
+  $('who').innerHTML=esc(u.displayName||u.email||'')+'<br><button id="lo">로그아웃</button>';$('lo').onclick=()=>auth.signOut();listen(firebase.database())})}
+</script></body></html>

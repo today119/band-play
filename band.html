@@ -216,7 +216,9 @@ async function gDel(){if(!GU||!confirm('위밴드 계정을 삭제할까요?\n�
  try{for(const b of bands)await DEL(b.code+'/m/'+cid).catch(()=>{});const t=await GU.u.getIdToken();await fetch(UDB+GU.uid+'.json?auth='+t,{method:'DELETE'});
   await GU.u.delete()}catch(e){if(e&&e.code==='auth/requires-recent-login'){toast('보안을 위해 다시 로그인한 뒤 한 번 더 눌러 주세요');auth.signOut();return}toast('삭제 못 했어요 — '+(e.code||e.message||e))}
  bands=[];me={};LSet('bands',[]);LSet('me',{});LSet('band',null);try{['band_play_gu','band_play_guest'].forEach(k=>localStorage.removeItem(k))}catch(e){}cid=Math.random().toString(36).slice(2,10);LSet('cid',cid);GU=null;toast('계정을 삭제했어요');go('#/')}
-const gCard=()=>GU?`<div class="card"><div class="row"><span>✅ <b>${esc(GU.email)}</b><br><small style="color:var(--mu)">어느 기기에서 열어도 내 밴드가 그대로예요</small></span><button class="sm b2" onclick="gOut()">로그아웃</button></div>${location.hash.startsWith('#/me')?'<button class="sm" style="margin-top:10px;background:none;border:0;color:#b91c1c;text-decoration:underline" onclick="gDel()">계정 삭제</button>':''}</div>`
+// 관리자(band_play_admin/{uid}=true)만 «📊 악보 요청 현황»(admin.html) 링크 — 10/29
+function admLink(){if(!GU||!GU.u||!$('admLk'))return;GU.u.getIdToken().then(t=>fetch(RDB.replace('band_play/','band_play_admin/')+GU.uid+'.json?auth='+t)).then(r=>r.json()).then(v=>{if(v===true&&$('admLk'))$('admLk').innerHTML='<a class="btn b2" href="admin.html" style="margin-top:10px">📊 악보 요청 현황 (관리자)</a>'}).catch(()=>{})}
+const gCard=()=>GU?`<div class="card"><div class="row"><span>✅ <b>${esc(GU.email)}</b><br><small style="color:var(--mu)">어느 기기에서 열어도 내 밴드가 그대로예요</small></span><button class="sm b2" onclick="gOut()">로그아웃</button></div>${location.hash.startsWith('#/me')?'<button class="sm" style="margin-top:10px;background:none;border:0;color:#b91c1c;text-decoration:underline" onclick="gDel()">계정 삭제</button><div id="admLk"></div>'+(setTimeout(admLink,0),''):''}</div>`
  :`<div class="card"><h3>구글로 로그인</h3><div style="font-size:14px;color:var(--mu);margin-bottom:8px">폰·홈 화면 앱·아이패드·컴퓨터 어디서 열어도 같은 사람으로 — 다시 가입할 필요 없어요</div><button class="btn" onclick="gLogin()">G 구글로 로그인</button></div>`;
 const myBand=c=>bands.find(x=>x.code===c);
 
