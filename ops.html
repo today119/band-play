@@ -44,7 +44,15 @@ details.tg summary::-webkit-details-marker{display:none}details.tg summary:after
 .key{border:1px dashed var(--li2);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--mu);line-height:1.6}
 .bd{font-family:var(--mono);font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px}.bd.r{background:rgba(239,68,68,.15);color:var(--bad)}.bd.y{background:rgba(245,158,11,.15);color:var(--warn)}
 .login{text-align:center;padding:70px 20px;color:var(--mu)}.login button{margin-top:14px;background:var(--tx);color:var(--bg);border:0;border-radius:8px;padding:12px 20px;font-size:15px;font-weight:600}
-.empty{color:var(--mu);text-align:center;padding:30px}code{font-family:var(--mono);font-size:12px;color:var(--tx)}
+.empty{color:var(--mu);text-align:center;padding:30px}
+.back{display:none;background:none;border:1px solid var(--li2);color:var(--tx);border-radius:6px;padding:6px 12px;font-size:13px;font-weight:600;margin-bottom:10px}
+.bgs{display:inline-flex;gap:6px;flex-wrap:wrap}
+/* 폰·태블릿(10/30 사용자 «폰에서는 박스 2×3, 누르면 상세로 들어가게») */
+@media(max-width:1199px){.grid{grid-template-columns:repeat(2,1fr)!important}body:not(.dv) .ra{display:none}body.dv .la,body.dv .bar,body.dv .foot{display:none}.back{display:inline-block}body.dv .ra .sec{display:none}.pane{margin-top:0}}
+@media(max-width:599px){.grid{gap:8px}.box{padding:10px}.bh{gap:6px}.bh img{width:24px;height:24px;border-radius:6px}.bh .bn{font-size:14px;flex:1}.bgs{width:100%;gap:4px}
+ .st{font-size:10px;padding:1px 4px;gap:3px}.st svg{width:10px;height:10px}.bk{gap:12px;margin:10px 0 8px}.bk b{font-size:18px}.bk small{font-size:10px}.bf{gap:8px;font-size:11px;padding-top:6px}
+ .box .stl{display:none}.box .sts{display:inline}.who .em{display:none}}
+.sts{display:none}code{font-family:var(--mono);font-size:12px;color:var(--tx)}
 </style></head><body>
 <div class="top"><h1><img src="ops-ic/ops-180.png" alt="">앱 통합 현황</h1><div class="who" id="who"></div></div>
 <main id="app"><p class="empty">불러오는 중…</p></main>
@@ -67,12 +75,18 @@ const LOGO={ios:'<svg viewBox="0 0 24 24"><path d="M16.37 1.43c0 1.14-.49 2.27-1
  android:'<svg class="gp" viewBox="0 0 24 24"><path fill="#00d7fe" d="M3.6 2.2 13.4 12l-9.8 9.8c-.4-.2-.6-.6-.6-1.1V3.3c0-.5.2-.9.6-1.1z"/><path fill="#ffce00" d="m16.7 15.3-3.3-3.3 3.3-3.3 3.7 2.1c1 .6 1 1.8 0 2.4z"/><path fill="#ff3a44" d="M13.4 12l-9.8 9.8c.4.2.9.2 1.4-.1l11.7-6.4z"/><path fill="#00f076" d="M13.4 12l3.3-3.3L5 2.3c-.5-.3-1-.3-1.4-.1z"/></svg>',
  web:'<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm6.9 6h-2.9a15.7 15.7 0 0 0-1.4-3.6A8 8 0 0 1 18.9 8zM12 4c.8 1.2 1.5 2.5 1.9 4h-3.8c.4-1.5 1.1-2.8 1.9-4zM4.3 14a8.2 8.2 0 0 1 0-4h3.4a16.5 16.5 0 0 0 0 4H4.3zm.8 2h2.9c.3 1.3.8 2.5 1.4 3.6A8 8 0 0 1 5.1 16zM8 8H5.1a8 8 0 0 1 4.3-3.6C8.8 5.5 8.3 6.7 8 8zm4 12c-.8-1.2-1.5-2.5-1.9-4h3.8c-.4 1.5-1.1 2.8-1.9 4zm2.3-6H9.7a14.7 14.7 0 0 1 0-4h4.6a14.7 14.7 0 0 1 0 4zm.3 5.6c.6-1.1 1.1-2.3 1.4-3.6h2.9a8 8 0 0 1-4.3 3.6zm1.7-5.6a16.5 16.5 0 0 0 0-4h3.4a8.2 8.2 0 0 1 0 4h-3.4z"/></svg>'};
 let L=null,HI={};const OPEN=new Set();
+// 폰: #앱키 = 상세 화면(뒤로 가기로 목록), 큰 화면은 나란히라 무시
+let LY=0;function route(){const k=decodeURIComponent(location.hash.slice(1));const on=!!k&&innerWidth<1200;if(on&&!document.body.classList.contains('dv'))LY=scrollY;
+ if(k)TAB=k;document.body.classList.toggle('dv',on);draw();scrollTo(0,on?0:LY)}
+addEventListener('hashchange',route);
 let TAB=(()=>{try{return localStorage.getItem('ops_tab')}catch(e){return null}})();
+if(location.hash.length>1){TAB=decodeURIComponent(location.hash.slice(1));if(innerWidth<1200)document.body.classList.add('dv')}
 // 7일 전 기록과 비교한 증감(쌓인 기록이 있을 때만)
 function diff(app,name,v){const ds=Object.keys(HI).sort(),old=ds.find(d=>d>=new Date(Date.now()-7*864e5).toISOString().slice(0,10));
  const o=old&&HI[old][app]&&HI[old][app][name];if(o==null||o===v||ds.indexOf(old)===ds.length-1)return'';const x=v-o;return `<i class="${x>0?'u':'d'}">${x>0?'+':''}${x}</i>`}
 const kv=(a,n)=>{const x=(a.kpi||[]).find(k=>k[0]===n);return x?x[1]:'-'};
-function stb(kind,x){if(!x)return'';const st=x[0];return `<span class="st ${st}" title="${esc(x[1])}">${LOGO[st==='web'?'web':kind]}${esc(SL[st]||st)}</span>`}
+const SS={live:'출시',review:'심사',test:'테스트',plan:'예정',web:'웹'};
+function stb(kind,x){if(!x)return'';const st=x[0];return `<span class="st ${st}" title="${esc(x[1])}">${LOGO[st==='web'?'web':kind]}<span class="stl">${esc(SL[st]||st)}</span><span class="sts">${esc(SS[st]||st)}</span></span>`}
 // 스토어 별점·리뷰(열쇠 연결 후 store.byApp[k] = {rating, count, fresh, low})
 const SB=(s,k)=>(s.byApp||{})[k]||null;
 // 앱별 할 일: hi 빨강 · md 주황 · lo 회색
@@ -85,10 +99,10 @@ function todo(k,a,s){const o=[],r=a.req,b=SB(s,k);
 function box(k,a,s){const hd=HEAD[k]||[],b=SB(s,k),t=todo(k,a,s),hi=t.filter(x=>x[0]!=='lo').length,store=/^(live|review|test)$/.test(a.st);
  const ft=[];if(store)ft.push(b&&b.rating?`<span class="s">★<b>${(+b.rating).toFixed(1)}</b></span><span>리뷰<b>${b.count||0}</b></span>`:'<span>★ —</span>');
  if(b&&b.fresh)ft.push(`<span class="r">새 리뷰<b>${b.fresh}</b></span>`);ft.push(hi?`<span class="t">할 일<b>${hi}</b></span>`:`<span>할 일<b>0</b></span>`);
- return `<button class="box ${k===TAB?'on':''}" data-k="${k}"><div class="bh"><img src="ops-ic/${k}.png" alt=""><span class="bn">${esc(a.name)}</span>${stb('ios',a.ios)}${stb('android',a.android)}</div>
+ return `<button class="box ${k===TAB?'on':''}" data-k="${k}"><div class="bh"><img src="ops-ic/${k}.png" alt=""><span class="bn">${esc(a.name)}</span><span class="bgs">${stb('ios',a.ios)}${stb('android',a.android)}</span></div>
  <div class="bk">${hd.map(n=>`<span><b>${kv(a,n)}</b><small>${esc(n)}</small></span>`).join('')}</div><div class="bf">${ft.join('')}</div></button>`}
 function detail(k,a,s){const lk=LINK[k],t=todo(k,a,s);
- let h=`<div class="pane" id="dt"><div class="ph"><img src="ops-ic/${k}.png" alt=""><h2>${esc(a.full||a.name)}</h2>${stb('ios',a.ios)}${stb('android',a.android)}<span class="sp"></span>${lk?`<a href="${lk[0]}">${lk[1]} ↗</a>`:''}</div>`;
+ let h=`<div class="pane" id="dt"><button class="back" id="bk">‹ 앱 목록</button><div class="ph"><img src="ops-ic/${k}.png" alt=""><h2>${esc(a.full||a.name)}</h2>${stb('ios',a.ios)}${stb('android',a.android)}<span class="sp"></span>${lk?`<a href="${lk[0]}">${lk[1]} ↗</a>`:''}</div>`;
  h+=`<div class="kpi">${(a.kpi||[]).map(([n,v])=>`<div><b>${v}${diff(k,n,v)}</b><span>${esc(n)}</span></div>`).join('')}</div>`;
  if(t.length)h+=`<div class="todo">${t.map(([lv,x])=>`<div><span class="lv ${lv}">${{hi:'TODO',md:'WAIT',lo:'INFO'}[lv]}</span><span>${esc(x)}</span></div>`).join('')}</div>`;
  if(a.req){const r=a.req;h+=`<div class="sub">악보 요청 — 전체 <b>${r.total}</b> · 이번 주 <b>${r.week}</b> · 진행 중 <b>${r.open}</b> · 자동 올림 <b>${r.auto}</b> · 실패 <b>${r.no}</b> · 고쳐 주세요 <b>${r.fix}</b></div>`}
@@ -113,9 +127,10 @@ function draw(){if(!L){$('app').innerHTML='<p class="empty">아직 모은 자료
  let h=`<div class="bar"><div class="sum">${['live','review','test','plan','web'].filter(t=>c[t]).map(t=>`<span class="chip">${SL[t]}<b>${c[t]}</b></span>`).join('')}<span class="chip">전체<b>${ks.length}</b></span></div><span class="when">${dt(L.t)} 갱신 · ${ago(L.t)}</span></div>`;
  h+=`<div class="lay"><section class="la"><div class="sec">Apps</div><div class="grid">${ks.map(k=>box(k,A[k],s)).join('')}</div></section>`;
  h+=`<section class="ra"><div class="sec">Detail</div>`+detail(TAB,A[TAB],s)+'</section></div>';
- if(s.need&&s.need.length)h+=`<p class="when" style="margin-top:14px">스토어 API 미연결: ${esc(s.need.join(', '))}</p>`;
+ if(s.need&&s.need.length)h+=`<p class="when foot" style="margin-top:14px">스토어 API 미연결: ${esc(s.need.join(', '))}</p>`;
  $('app').innerHTML=h;
- const go=k=>{TAB=k;try{localStorage.setItem('ops_tab',k)}catch(e){}draw();const t=$('dt');if(t&&innerWidth<1200)t.scrollIntoView({behavior:'smooth',block:'start'})};
+ const go=k=>{TAB=k;try{localStorage.setItem('ops_tab',k)}catch(e){}if(innerWidth<1200)location.hash=k;else draw()};
+ const bk=$('bk');if(bk)bk.onclick=()=>{if(location.hash)history.back();else{document.body.classList.remove('dv');scrollTo(0,0)}};
  document.querySelectorAll('.box').forEach(b=>b.onclick=()=>go(b.dataset.k));document.querySelectorAll('details.tg').forEach(d=>d.ontoggle=()=>{d.open?OPEN.add(d.dataset.o):OPEN.delete(d.dataset.o)})}
 if(/[?&]mock=1/.test(location.search)){const n=Date.now();
  L={t:n-3600e3,store:{need:['앱스토어','구글 플레이'],byApp:{club:{rating:4.8,count:12,fresh:1},wereplay:{rating:5,count:2}},reviews:[{k:'club',r:5,t:'편해요',b:'출석 체크가 쉬워졌어요',at:n-8e7}]},apps:{club:{order:1,name:'모스',full:'모스: 모두의 스포츠클럽',icon:'🎾',st:'live',ios:['live','출시 · 1.1.2 심사 중'],android:['live','출시'],kpi:[['가입',46],['7일 새 가입',30],['7일 접속',36],['클럽',7]],list:[{n:'테니홀릭',m:30,a:n-9e8}]},
@@ -128,7 +143,7 @@ if(/[?&]mock=1/.test(location.search)){const n=Date.now();
 else{firebase.initializeApp(FBC);const auth=firebase.auth();auth.getRedirectResult().catch(()=>{});
  auth.onAuthStateChanged(u=>{if(!u){$('who').textContent='';$('app').innerHTML='<div class="login"><p>관리자 계정으로 로그인</p><button id="lg">Google로 계속</button></div>';
    $('lg').onclick=()=>{const p=new firebase.auth.GoogleAuthProvider();auth.signInWithPopup(p).catch(()=>auth.signInWithRedirect(p))};return}
-  $('who').innerHTML=esc(u.email||u.displayName||'')+'<button id="lo">로그아웃</button>';$('lo').onclick=()=>auth.signOut();
+  $('who').innerHTML='<span class="em">'+esc(u.email||u.displayName||'')+'</span><button id="lo">로그아웃</button>';$('lo').onclick=()=>auth.signOut();
   const db=firebase.database();
   db.ref('ops_stats/latest').on('value',s=>{L=s.val();draw()},e=>{$('app').innerHTML='<p class="empty">⚠️ 관리자 계정이 아니에요<br><small>'+esc(e.code||e.message)+'</small></p>'});
   db.ref('ops_stats/hist').limitToLast(31).on('value',s=>{HI=s.val()||{};draw()})})}
