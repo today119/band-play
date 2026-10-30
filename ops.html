@@ -25,12 +25,12 @@ h2.pg{margin:0;font-size:20px;font-weight:700}.sub{color:var(--mu);font-size:13p
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .stat{border:1px solid var(--li);border-radius:10px;padding:14px 16px;background:#fff}.stat span{font-size:12px;color:var(--mu)}.stat b{display:block;font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}.stat b small{font-size:13px;font-weight:600;margin-left:2px}
 .stat.hot b{color:var(--bad)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px}
-.card{display:block;width:100%;text-align:left;font:inherit;color:inherit;border:1px solid var(--li);border-radius:10px;background:#fff;padding:12px;cursor:pointer;transition:border-color .12s,box-shadow .12s;position:relative}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.card{display:flex;flex-direction:column;min-width:0;width:100%;text-align:left;font:inherit;color:inherit;border:1px solid var(--li);border-radius:10px;background:#fff;padding:12px;cursor:pointer;transition:border-color .12s,box-shadow .12s;position:relative}
 .card:hover{border-color:var(--li2);box-shadow:0 2px 10px rgba(0,0,0,.05)}
 .thumb{height:92px;border-radius:8px;background:var(--soft);display:grid;place-items:center;margin-bottom:10px}.thumb img{width:52px;height:52px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.card .hd{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.card .nm{font-weight:700;font-size:15px;margin-right:2px}.card .ln{display:inline-flex;gap:4px;flex-wrap:wrap}
-.card .nb{display:flex;gap:16px;margin-top:8px}.card .nb b{display:block;font-size:17px;font-variant-numeric:tabular-nums}.card .nb small{font-size:11px;color:var(--mu)}
+.card .hd{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;min-width:0}.card .hd .stl{display:none}.card .hd .sts{display:inline}.card .nm{font-weight:700;font-size:15px;margin-right:2px}.card .ln{display:inline-flex;gap:4px;flex-wrap:nowrap}
+.card .nb{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.card .nb span{display:flex;flex-direction:column-reverse;gap:2px;min-width:0}.card .nb b{display:block;font-size:22px;line-height:1.1;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.3px}.card .nb small{font-size:12px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .ft{border-top:1px solid var(--li);margin-top:10px;padding-top:8px;font-size:12px;color:var(--mu);display:flex;gap:10px}.card .ft .t{color:var(--warn);font-weight:700}.card .ft .r{color:var(--bad);font-weight:700}
 .card .dt{position:absolute;top:10px;right:10px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;border-radius:9px;padding:1px 7px}
 .st{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;border:1px solid var(--li2);border-radius:6px;padding:1px 6px;white-space:nowrap;color:var(--mu);background:#fff}
@@ -39,7 +39,7 @@ h2.pg{margin:0;font-size:20px;font-weight:700}.sub{color:var(--mu);font-size:13p
 .sts{display:none}
 .lk{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.lk a{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--li2);border-radius:8px;padding:6px 11px;font-size:13px;font-weight:600;color:var(--tx);text-decoration:none;background:#fff}
 .lk a:hover{background:var(--soft)}.lk svg{width:14px;height:14px}.lk svg:not(.gp) path{fill:currentColor}
-.lk.sm{margin-top:10px}.lk.sm a{padding:4px 8px;font-size:12px;border-radius:6px}.lk.sm svg{width:12px;height:12px}
+.lk.sm{margin-top:auto;padding-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.lk.sm a{justify-content:center;height:30px;padding:0 4px;gap:5px;font-size:12px;border-radius:6px;white-space:nowrap}.lk.sm svg{width:12px;height:12px;flex:none}.lk.sm a.off{color:#c4c8cf;border-style:dashed;background:#fafafa;pointer-events:none}.lk.sm a.off svg path{fill:#c4c8cf}.lk.sm a.off svg.gp path{fill:#c4c8cf}
 .card:focus-visible{outline:2px solid var(--ac)}
 .crumb{font-size:13px;color:var(--mu);margin-bottom:10px}.crumb a{color:var(--mu);text-decoration:none}.crumb a:hover{color:var(--tx)}
 .ph{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ph img{width:48px;height:48px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.12)}.ph .sp{flex:1}
@@ -57,8 +57,8 @@ details.tg summary::-webkit-details-marker{display:none}details.tg summary:after
 .key{border:1px dashed var(--li2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--mu);background:var(--soft)}
 .login{text-align:center;padding:90px 20px;color:var(--mu)}.login button{margin-top:14px;background:var(--ac);color:#fff;border:0;border-radius:8px;padding:12px 22px;font-size:15px;font-weight:600}
 .empty{color:var(--mu);text-align:center;padding:40px}
-@media(max-width:899px){aside{display:none}main{padding:18px 16px 50px}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,1fr);gap:8px}
- .thumb{height:64px}.thumb img{width:40px;height:40px;border-radius:10px}.card{padding:10px}.card .nm{font-size:14px}.card .nb b{font-size:15px}.stl{display:none}.sts{display:inline}.who .em{display:none}.lk.sm a span{display:none}.lk.sm a{padding:6px 9px}.srch{flex:1 1 100%}}
+@media(max-width:899px){aside{display:none}main{padding:18px 16px 50px}.stats{grid-template-columns:repeat(2,1fr)}.stat{padding:12px 14px}.stat span{font-size:13px}.stat b{font-size:28px}.kp{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card .hd .sts{display:none}.card .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .thumb{height:64px}.thumb img{width:40px;height:40px;border-radius:10px}.card{padding:10px}.card .nm{font-size:14px}.card .nb b{font-size:24px}.card .nb small{font-size:12px}.card .ft{font-size:13px}.lk.sm a{height:34px}.card .nm{font-size:16px}.stl{display:none}.sts{display:inline}.who .em{display:none}.lk.sm a span{display:none}.srch{flex:1 1 100%}}
 </style></head><body>
 <div class="top"><h1 onclick="go('')"><img src="ops-ic/ops-180.png" alt="">앱 통합 현황</h1><div class="who" id="who"></div></div>
 <div class="shell"><aside id="side"></aside><main id="app"><p class="empty">불러오는 중…</p></main></div>
@@ -100,15 +100,20 @@ function go(k){if(VIEW()===k){draw();return}location.hash=k}
 addEventListener('hashchange',()=>{draw();scrollTo(0,0)});
 const SS={live:'출시',review:'심사',test:'테스트',plan:'예정',web:'웹'};
 function stb(kind,x){if(!x)return'';const st=x[0];return `<span class="st ${st}" title="${esc(x[1])}">${LOGO[st==='web'?'web':kind]}<span class="stl">${esc(SL[st]||st)}</span><span class="sts">${esc(SS[st]||st)}</span></span>`}
+const bdg=a=>a.ios&&a.android&&a.ios[0]==='web'&&a.android[0]==='web'?stb('web',a.ios):stb('ios',a.ios)+stb('android',a.android);
 const hiCount=(k,a,s)=>todo(k,a,s).filter(x=>x[0]!=='lo').length;
 const order=A=>Object.keys(A).sort((x,y)=>(A[x].order||99)-(A[y].order||99));
 function side(A,s,v){const ks=order(A);
  $('side').innerHTML=`<a href="#" class="${v?'':'on'}">📋 전체 앱 현황</a><div class="sec">앱</div>`+ks.map(k=>{const n=hiCount(k,A[k],s);return `<a href="#${k}" class="${v===k?'on':''}"><img src="ops-ic/${k}.png" alt="">${esc(A[k].name)}${n?`<span class="dt">${n}</span>`:''}</a>`}).join('')}
 function card(k,a,s){const hd=HEAD[k]||[],b=SB(s,k),n=hiCount(k,a,s),store=/^(live|review|test)$/.test(a.st);
  const ft=[];if(store)ft.push(b&&b.rating?`<span>★ ${(+b.rating).toFixed(1)} · 리뷰 ${b.count||0}</span>`:'<span>★ —</span>');if(b&&b.fresh)ft.push(`<span class="r">새 리뷰 ${b.fresh}</span>`);ft.push(n?`<span class="t">할 일 ${n}</span>`:'<span>할 일 0</span>');
- return `<div class="card" role="button" tabindex="0" onclick="go('${k}')">${n?`<span class="dt">${n}</span>`:''}<div class="thumb"><img src="ops-ic/${k}.png" alt=""></div><div class="hd"><span class="nm">${esc(a.name)}</span><span class="ln">${stb('ios',a.ios)}${stb('android',a.android)}</span></div><div class="nb">${hd.map(x=>`<span><b>${kv(a,x)}</b><small>${esc(x)}</small></span>`).join('')}</div><div class="ft">${ft.join('')}</div>${lnk(a,1)}</div>`}
+ return `<div class="card" role="button" tabindex="0" onclick="go('${k}')">${n?`<span class="dt">${n}</span>`:''}<div class="thumb"><img src="ops-ic/${k}.png" alt=""></div><div class="hd"><span class="nm">${esc(a.name)}</span><span class="ln">${bdg(a)}</span></div><div class="nb">${hd.map(x=>`<span><b>${kv(a,x)}</b><small>${esc(x)}</small></span>`).join('')}</div><div class="ft">${ft.join('')}</div>${lnk(a,1)}</div>`}
 // 바로가기(10/30 사용자 «각 앱에서 앱이나 웹으로 바로가기») — apps.json links=[[로고,이름,주소]]
-function lnk(a,small){const l=a.links||[];if(!l.length)return'';return `<div class="lk${small?' sm':''}">${l.map(([g,n,u])=>`<a href="${esc(u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${LOGO[g]||''}<span>${esc(n)}</span></a>`).join('')}</div>`}
+const SLOT=[['ios','iOS'],['android','Android'],['web','웹']];
+function lnk(a,small){const l=a.links||[];
+ // 카드: 같은 자리·같은 크기 3칸(iOS·Android·웹) 고정, 없으면 흐린 칸 (10/31 «버튼 명칭·크기 맞춰»)
+ if(small)return `<div class="lk sm">${SLOT.map(([g,n])=>{const x=l.find(y=>y[0]===g);return x?`<a href="${esc(x[2])}" target="_blank" rel="noopener" title="${esc(x[1])}" onclick="event.stopPropagation()">${LOGO[g]||''}<span>${n}</span></a>`:`<a class="off" aria-disabled="true">${LOGO[g]||''}<span>${n}</span></a>`}).join('')}</div>`;
+ if(!l.length)return'';return `<div class="lk${small?' sm':''}">${l.map(([g,n,u])=>`<a href="${esc(u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${LOGO[g]||''}<span>${esc(n)}</span></a>`).join('')}</div>`}
 function overview(A,s){const ks=order(A),c={};ks.forEach(k=>{const t=A[k].st||'web';c[t]=(c[t]||0)+1});
  const tot=ks.reduce((m,k)=>m+hiCount(k,A[k],s),0),FL=[['all','전체'],['live','출시'],['test','테스트'],['plan','등록 예정'],['web','웹 전용']];
  const vis=ks.filter(k=>(F==='all'||A[k].st===F||(F==='test'&&[A[k].ios,A[k].android].some(x=>x&&x[0]==='test')))&&(!Q||A[k].name.includes(Q)||(A[k].full||'').includes(Q)));
