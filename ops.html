@@ -37,6 +37,10 @@ h2.pg{margin:0;font-size:20px;font-weight:700}.sub{color:var(--mu);font-size:13p
 .st svg{width:11px;height:11px;flex:none}.st svg:not(.gp) path{fill:currentColor}
 .st.live{color:var(--ok);border-color:#bbf7d0;background:#f0fdf4}.st.review{color:var(--blue);border-color:#bfdbfe;background:#eff6ff}.st.test{color:var(--warn);border-color:#fde68a;background:#fffbeb}.st.plan{color:var(--vio);border-color:#ddd6fe;background:#f5f3ff}
 .sts{display:none}
+.lk{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.lk a{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--li2);border-radius:8px;padding:6px 11px;font-size:13px;font-weight:600;color:var(--tx);text-decoration:none;background:#fff}
+.lk a:hover{background:var(--soft)}.lk svg{width:14px;height:14px}.lk svg:not(.gp) path{fill:currentColor}
+.lk.sm{margin-top:10px}.lk.sm a{padding:4px 8px;font-size:12px;border-radius:6px}.lk.sm svg{width:12px;height:12px}
+.card:focus-visible{outline:2px solid var(--ac)}
 .crumb{font-size:13px;color:var(--mu);margin-bottom:10px}.crumb a{color:var(--mu);text-decoration:none}.crumb a:hover{color:var(--tx)}
 .ph{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ph img{width:48px;height:48px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.12)}.ph .sp{flex:1}
 .ph a.go{border:1px solid var(--li2);border-radius:8px;padding:7px 12px;color:var(--tx);text-decoration:none;font-size:13px;font-weight:600}
@@ -54,7 +58,7 @@ details.tg summary::-webkit-details-marker{display:none}details.tg summary:after
 .login{text-align:center;padding:90px 20px;color:var(--mu)}.login button{margin-top:14px;background:var(--ac);color:#fff;border:0;border-radius:8px;padding:12px 22px;font-size:15px;font-weight:600}
 .empty{color:var(--mu);text-align:center;padding:40px}
 @media(max-width:899px){aside{display:none}main{padding:18px 16px 50px}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,1fr);gap:8px}
- .thumb{height:64px}.thumb img{width:40px;height:40px;border-radius:10px}.card{padding:10px}.card .nm{font-size:14px}.card .nb b{font-size:15px}.stl{display:none}.sts{display:inline}.who .em{display:none}.srch{flex:1 1 100%}}
+ .thumb{height:64px}.thumb img{width:40px;height:40px;border-radius:10px}.card{padding:10px}.card .nm{font-size:14px}.card .nb b{font-size:15px}.stl{display:none}.sts{display:inline}.who .em{display:none}.lk.sm a span{display:none}.lk.sm a{padding:6px 9px}.srch{flex:1 1 100%}}
 </style></head><body>
 <div class="top"><h1 onclick="go('')"><img src="ops-ic/ops-180.png" alt="">앱 통합 현황</h1><div class="who" id="who"></div></div>
 <div class="shell"><aside id="side"></aside><main id="app"><p class="empty">불러오는 중…</p></main></div>
@@ -102,7 +106,9 @@ function side(A,s,v){const ks=order(A);
  $('side').innerHTML=`<a href="#" class="${v?'':'on'}">📋 전체 앱 현황</a><div class="sec">앱</div>`+ks.map(k=>{const n=hiCount(k,A[k],s);return `<a href="#${k}" class="${v===k?'on':''}"><img src="ops-ic/${k}.png" alt="">${esc(A[k].name)}${n?`<span class="dt">${n}</span>`:''}</a>`}).join('')}
 function card(k,a,s){const hd=HEAD[k]||[],b=SB(s,k),n=hiCount(k,a,s),store=/^(live|review|test)$/.test(a.st);
  const ft=[];if(store)ft.push(b&&b.rating?`<span>★ ${(+b.rating).toFixed(1)} · 리뷰 ${b.count||0}</span>`:'<span>★ —</span>');if(b&&b.fresh)ft.push(`<span class="r">새 리뷰 ${b.fresh}</span>`);ft.push(n?`<span class="t">할 일 ${n}</span>`:'<span>할 일 0</span>');
- return `<button class="card" onclick="go('${k}')">${n?`<span class="dt">${n}</span>`:''}<div class="thumb"><img src="ops-ic/${k}.png" alt=""></div><div class="hd"><span class="nm">${esc(a.name)}</span><span class="ln">${stb('ios',a.ios)}${stb('android',a.android)}</span></div><div class="nb">${hd.map(x=>`<span><b>${kv(a,x)}</b><small>${esc(x)}</small></span>`).join('')}</div><div class="ft">${ft.join('')}</div></button>`}
+ return `<div class="card" role="button" tabindex="0" onclick="go('${k}')">${n?`<span class="dt">${n}</span>`:''}<div class="thumb"><img src="ops-ic/${k}.png" alt=""></div><div class="hd"><span class="nm">${esc(a.name)}</span><span class="ln">${stb('ios',a.ios)}${stb('android',a.android)}</span></div><div class="nb">${hd.map(x=>`<span><b>${kv(a,x)}</b><small>${esc(x)}</small></span>`).join('')}</div><div class="ft">${ft.join('')}</div>${lnk(a,1)}</div>`}
+// 바로가기(10/30 사용자 «각 앱에서 앱이나 웹으로 바로가기») — apps.json links=[[로고,이름,주소]]
+function lnk(a,small){const l=a.links||[];if(!l.length)return'';return `<div class="lk${small?' sm':''}">${l.map(([g,n,u])=>`<a href="${esc(u)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${LOGO[g]||''}<span>${esc(n)}</span></a>`).join('')}</div>`}
 function overview(A,s){const ks=order(A),c={};ks.forEach(k=>{const t=A[k].st||'web';c[t]=(c[t]||0)+1});
  const tot=ks.reduce((m,k)=>m+hiCount(k,A[k],s),0),FL=[['all','전체'],['live','출시'],['test','테스트'],['plan','등록 예정'],['web','웹 전용']];
  const vis=ks.filter(k=>(F==='all'||A[k].st===F||(F==='test'&&[A[k].ios,A[k].android].some(x=>x&&x[0]==='test')))&&(!Q||A[k].name.includes(Q)||(A[k].full||'').includes(Q)));
@@ -115,7 +121,7 @@ function overview(A,s){const ks=order(A),c={};ks.forEach(k=>{const t=A[k].st||'w
  if(s.need&&s.need.length)h+=`<p class="sub" style="margin-top:18px">스토어 API 미연결: ${esc(s.need.join(', '))} — 연결되면 별점·리뷰·다운로드가 카드에 떠요</p>`;
  return h}
 function detail(k,a,s){const lk=LINK[k],t=todo(k,a,s);
- let h=`<div class="crumb"><a href="#">전체 앱 현황</a> / ${esc(a.name)}</div><div class="ph"><img src="ops-ic/${k}.png" alt=""><div><h2 class="pg">${esc(a.full||a.name)}</h2><div class="ln" style="display:flex;gap:4px;margin-top:4px">${stb('ios',a.ios)}${stb('android',a.android)}</div></div><span class="sp"></span>${lk?`<a class="go" href="${lk[0]}">${lk[1]} ↗</a>`:''}</div>`;
+ let h=`<div class="crumb"><a href="#">전체 앱 현황</a> / ${esc(a.name)}</div><div class="ph"><img src="ops-ic/${k}.png" alt=""><div><h2 class="pg">${esc(a.full||a.name)}</h2><div class="ln" style="display:flex;gap:4px;margin-top:4px">${stb('ios',a.ios)}${stb('android',a.android)}</div></div><span class="sp"></span>${lk?`<a class="go" href="${lk[0]}">${lk[1]} ↗</a>`:''}</div>${lnk(a)}`;
  h+=`<div class="kp">${(a.kpi||[]).map(([n,v])=>`<div class="stat"><span>${esc(n)}</span><b>${v}${diff(k,n,v)}</b></div>`).join('')}</div>`;
  if(t.length)h+=`<div class="box todo"><h3>할 일</h3>${t.map(([lv,x])=>`<div><span class="lv ${lv}">${{hi:'지금',md:'대기',lo:'참고'}[lv]}</span><span>${esc(x)}</span></div>`).join('')}</div>`;
  const info=[];if(a.req){const r=a.req;info.push(`악보 요청 — 전체 <b>${r.total}</b> · 이번 주 <b>${r.week}</b> · 진행 중 <b>${r.open}</b> · 자동 올림 <b>${r.auto}</b> · 실패 <b>${r.no}</b> · 고쳐 주세요 <b>${r.fix}</b>`)}
@@ -139,7 +145,7 @@ function draw(){if(!L){$('app').innerHTML='<p class="empty">아직 모은 자료
  const q=$('q');if(q){q.oninput=()=>{Q=q.value.trim();const p=q.selectionStart;draw();const n=$('q');n.focus();n.setSelectionRange(p,p)}}
  document.querySelectorAll('details.tg').forEach(d=>d.ontoggle=()=>{d.open?OPEN.add(d.dataset.o):OPEN.delete(d.dataset.o)})}
 if(/[?&]mock=1/.test(location.search)){const n=Date.now();
- L={t:n-3600e3,store:{need:['앱스토어','구글 플레이'],byApp:{club:{rating:4.8,count:12,fresh:1},wereplay:{rating:5,count:2}},reviews:[{k:'club',r:5,t:'편해요',b:'출석 체크가 쉬워졌어요',at:n-8e7}]},apps:{club:{order:1,name:'모스',full:'모스: 모두의 스포츠클럽',icon:'🎾',st:'live',ios:['live','출시 · 1.1.2 심사 중'],android:['live','출시'],kpi:[['가입',46],['7일 새 가입',30],['7일 접속',36],['클럽',7]],list:[{n:'테니홀릭',m:30,a:n-9e8}]},
+ L={t:n-3600e3,store:{need:['앱스토어','구글 플레이'],byApp:{club:{rating:4.8,count:12,fresh:1},wereplay:{rating:5,count:2}},reviews:[{k:'club',r:5,t:'편해요',b:'출석 체크가 쉬워졌어요',at:n-8e7}]},apps:{club:{links:[['ios','App Store','#'],['android','Google Play','#'],['web','웹','#']],order:1,name:'모스',full:'모스: 모두의 스포츠클럽',icon:'🎾',st:'live',ios:['live','출시 · 1.1.2 심사 중'],android:['live','출시'],kpi:[['가입',46],['7일 새 가입',30],['7일 접속',36],['클럽',7]],list:[{n:'테니홀릭',m:30,a:n-9e8}]},
  wereplay:{order:2,name:'위리',icon:'📹',st:'live',ios:['live','출시 · 1.0'],android:['test','내부 테스트'],kpi:[['경기 기록',50],['오늘',6],['7일',22],['30일',48],['라이브 방',28]],kinds:{tennis:30,volleyball:10}},
  weband:{order:3,name:'위밴드',icon:'🎸',st:'plan',ios:['plan','등록 예정'],android:['plan','등록 예정'],kpi:[['밴드',10],['멤버',30],['7일 활동 밴드',6]],req:{total:5,week:5,open:1,auto:2,done:3,no:1,fix:1,fixOpen:1},list:[{n:'WePlay',c:'9932',m:6,a:n-5e6}]},
  mmpro:{order:4,name:'매치메이커',icon:'🏆',st:'plan',ios:['plan','등록 예정'],android:['plan','등록 예정'],kpi:[['대회',20],['세션',8]]},
