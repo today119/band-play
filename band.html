@@ -85,6 +85,39 @@ html,body{overscroll-behavior-y:none}body{-webkit-user-select:none;user-select:n
 body::before{background:#000}
 input,select,textarea{border-color:#dcdce0}input:focus,select:focus,textarea:focus{outline:none;border-color:#111}.rs button.sel{background:#111}
 </style>
+<style id="th-v2" disabled>
+/* 디자인 v2 미리보기(11/9 «와이어프레임처럼 정돈·세련, 바이브코딩 티 빼기») — 규칙표 docs/design-v2.html
+   글자 28/19/15/13/11 · 간격 4·8·12·16·24 · 모서리 버튼 8·카드 12·칩 둥글게 · 1px 선, 그림자 없음 · 색은 잉크·민트·빨강·초록만 */
+:root{--p:#111113;--p2:#111113;--bg:#f5f5f4;--fg:#111113;--mu:#6b6b72;--li:#f0f0f1;--ln:#e7e7ea;--mint:#5ec4be;--red:#e5484d;--goc:#30a46c}
+html,body{font-family:Pretendard,-apple-system,"Apple SD Gothic Neo",sans-serif;letter-spacing:-.01em}
+main{padding:16px}
+.card{border:1px solid var(--ln);border-radius:12px;box-shadow:none;padding:16px;margin-bottom:12px}
+.card h3{font-size:13px;font-weight:600;color:var(--mu);margin:0 0 12px;letter-spacing:0}
+.row{font-size:15px;border-top-color:var(--ln)}
+button,.btn{font-weight:600;font-size:15px;border-radius:8px;padding:12px}
+.b2{background:#fff;color:var(--fg);border:1px solid var(--ln)}
+.sm{font-size:13px;padding:8px 12px}
+.hd .top{background:#000}.hd .top h1{font-size:19px;font-weight:700}
+.btabs{background:#fff;border-bottom:1px solid var(--ln);box-shadow:none}.btabs a{color:#8e8e93;font-weight:500;font-size:12px}.btabs a.on{color:#000;font-weight:700;border-bottom:2px solid #000}
+.tabs a{font-size:11px}
+.pill{font-weight:500;font-size:13px;background:#fff;border:1px solid var(--ln);color:var(--fg);padding:4px 10px}
+/* 밴드 홈 v2 */
+.cv{position:relative;height:148px;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#1c1c1f,#3a3a40);color:#fff;margin-bottom:12px;display:flex;flex-direction:column;justify-content:flex-end;padding:16px}
+.cv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.cv::after{content:'';position:absolute;inset:0;background:linear-gradient(transparent 35%,#0009)}
+.cv>*{position:relative;z-index:1}.cv b{font-size:23px;font-weight:700;letter-spacing:-.02em}.cv small{font-size:13px;opacity:.8;margin-top:2px}
+.cv .ini{position:absolute;right:16px;top:8px;font-size:72px;font-weight:800;opacity:.12;z-index:0}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;padding:4px 0}.kp b{display:block;font-size:28px;font-weight:700;letter-spacing:-.02em}.kp span{font-size:13px;color:var(--mu)}
+.ev1 .when{font-size:19px;font-weight:700}.ev1 .wh{font-size:13px;color:var(--mu);margin:4px 0 12px}
+.dd{float:right;font-size:13px;font-weight:700;color:var(--red)}
+.att{width:100%;height:48px;border-radius:8px;border:1px solid var(--ln);background:#fff;color:var(--fg);font-size:15px;font-weight:600}
+.att.on{background:var(--goc);border-color:var(--goc);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.chip{font-size:13px;padding:4px 10px;border-radius:999px;border:1px solid var(--ln);background:#fff}.chip.y{background:#e9f6ef;border-color:#bfe5cf;color:#1b7a4a}
+.todo .row b{font-weight:700}.todo .row b.r{color:var(--red)}
+.sl{counter-reset:n}.sl .row{justify-content:flex-start}.sl .row::before{counter-increment:n;content:counter(n);width:22px;color:var(--mu);font-size:13px}
+.grid2{display:flex;flex-direction:column}.grid2>div{display:contents}.o1{order:1}.o2{order:2}.o3{order:3}.o4{order:4}.o5{order:5}.o6{order:6}.o7{order:7}
+@media(min-width:760px){.grid2>div{display:block}.grid2>div>*{order:0}.grid2{display:grid;gap:12px}main.w{max-width:1040px}.grid2{grid-template-columns:1fr 1.3fr;align-items:start}.grid2>div>.card:last-child{margin-bottom:0}}
+.lnk{font-size:13px;color:var(--mu);text-decoration:none;float:right;font-weight:500}
+</style>
 <script>/* 테마 고르기(10/26 «블랙톤하고 보라톤 둘 다 선택») — 기본 블랙&화이트, 내 정보에서 바꿈 */try{if(JSON.parse(localStorage.getItem("band_play_theme"))==="p"){document.getElementById("th-k").disabled=true;document.querySelector("meta[name=theme-color]").content="#3B0A57"}}catch(e){}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard-subset.css">
 </head><body>
 <div id="spl"><div class="stg">
@@ -297,7 +330,7 @@ async function render(){const h=location.hash||'#/',p=h.slice(2).split('/');
   const mb=myBand(c);if(B.m[cid])adopt(c,mb.me,B.m);
   if(!B.m[cid]&&(apprOn()||mb.pend)){vWait(mb);return}if(mb.pend){delete mb.pend;saveBands()}
   LSet('band',mb);hello(mb);B.m[cid]={...(B.m[cid]||{}),name:mb.me,part:mb.part,t:Date.now(),...(mb.pp?{pp:true}:{})};bandTabs(c,t);
-  ({home:vHome,cal:vCal,score:vScore,mem:vMem,fee:vFee})[t]?.(mb);
+  ({home:V2?vHome2:vHome,cal:vCal,score:vScore,mem:vMem,fee:vFee})[t]?.(mb);
   // 다른 사람이 바꾼 역할·신청·일정이 보이게: 20초 넘은 데이터면 화면은 그대로 두고 뒤에서 새로 받아 다시 그림(모달 열려 있으면 다음 번에)
   if(Date.now()-B.at>20000&&!$('mod')){const h0=location.hash;load(c).then(x=>{if(x&&location.hash===h0&&!$('mod')&&document.activeElement.tagName!=='INPUT')render()})}return}
  if(p[0]==='join'){vJoin(p[1]);return}
@@ -426,6 +459,34 @@ function vHome(mb){const n=nextOf('j'),g=nextOf('g'),nt=B.nt;
  <div class="card" onclick="editNote()"><h3>📢 공지 ${can('note')?'<small style="font-weight:400">(눌러서 고치기)</small>':''}</h3><div class="note">${nt&&nt.txt?esc(nt.txt):'<span style="color:var(--mu)">공지가 없어요</span>'}</div>${nt&&nt.by?`<small style="color:var(--mu)">— ${esc(nt.by)}</small>`:''}</div>
  <div class="card"><h3>🎧 내 연습</h3><div class="row"><span>이번 주</span><b>${mins(w)} ${lw||w?`<small style="color:${w>=lw?'#16a34a':'#dc2626'}">${w>=lw?'▲':'▼'}${mins(Math.abs(w-lw))}</small>`:''}</b></div></div>
  <a class="btn" href="${atUrl(mb,n&&n.e.so?songKey(n.e.so.split(',')[0]):null)}">▶ 악보 열기 (연습·합주)</a></main>`)}
+
+// ════════ 밴드 홈 v2 미리보기(11/9) — band.html?v2=1 로 켜고 ?v2=0 으로 끔. 데이터·동작은 그대로, 화면만 새 디자인 ════════
+const V2=(()=>{try{const q=new URLSearchParams(location.search).get('v2');if(q!==null)localStorage.setItem('band_play_v2',q==='1'?'1':'0');return localStorage.getItem('band_play_v2')==='1'}catch(e){return false}})();
+if(V2){const st=document.getElementById('th-v2');if(st)st.disabled=false}
+async function att1(id,d){const mb=myBand(B.code),r=rsOf(id,d),on=r[cid]&&r[cid].s===1;  // 출석 버튼 하나(11/9 «누르면 가는 거, 안 누르면 못 가는 거»)
+ B.rs[id]=B.rs[id]||{};B.rs[id][d]=B.rs[id][d]||{};
+ if(on){delete B.rs[id][d][cid];render();DEL(B.code+'/rs/'+id+'/'+d+'/'+cid).catch(()=>toast('⚠️ 저장 못 했어요'))}
+ else{B.rs[id][d][cid]={s:1,name:mb.me,part:mb.part};render();PUT(B.code+'/rs/'+id+'/'+d+'/'+cid,{s:1,name:mb.me,part:mb.part,t:{'.sv':'timestamp'}}).catch(()=>toast('⚠️ 저장 못 했어요'))}}
+function vHome2(mb){const n=nextOf('j'),g=nextOf('g'),nt=B.nt,all=Object.entries(B.m).filter(([k,v])=>v&&v.name);
+ const nm=B.band.name||'',songs=new Set(Object.values(B.ev||{}).flatMap(e=>(e&&e.so||'').split(',').map(x=>x.trim()).filter(Boolean)));
+ const pr=myPr(),[w]=sumPr(pr,weekStart(today()),today());
+ const r=n?rsOf(n.id,n.d):{},yes=all.filter(([k])=>r[k]&&r[k].s===1),mine=r[cid]&&r[cid].s===1,nores=all.filter(([k])=>!(r[k]&&r[k].s===1));
+ const staff=!!roleOf(cid),rq=Object.keys(B.rq||{}).length;
+ const rep=Object.values(B.ev||{}).find(e=>e&&e.rep&&e.ty==='j');
+ const cover=`<div class="cv o1">${B.band.cv?`<img src="${esc(B.band.cv)}" alt="">`:`<span class="ini">${esc(nm.slice(0,1))}</span>`}<b>${esc(nm)}</b><small>멤버 ${all.length}명${rep?' · 매주 '+WD[pd(rep.d).getDay()]+' '+esc(rep.tm||''):''}</small></div>`;
+ const kp=`<div class="card o6"><div class="kp"><div><b>${all.length}</b><span>멤버</span></div><div><b>${songs.size}</b><span>곡</span></div><div><b>${mins(w).replace(/ .*/,'')}</b><span>이번 주 내 연습</span></div></div></div>`;
+ const todo=staff&&(n||rq)?`<div class="card todo o3"><h3>밴드장이 챙길 일</h3>${n?`<div class="row"><span>다음 합주 출석 안 누른 사람</span><b class="${nores.length?'r':''}">${nores.length}명</b></div>`:''}${rq?`<a class="row" style="text-decoration:none;color:inherit" href="#/b/${mb.code}/mem"><span>가입 신청</span><b class="r">${rq}건 ›</b></a>`:''}</div>`:'';
+ const ev=n?`<div class="card ev1 o2"><h3>다음 합주 <span class="dd">${dday(n.d)}</span></h3><div class="when">${fmt(n.d)} ${esc(n.e.tm||'')}</div><div class="wh">${esc(n.e.pl||'장소 미정')} · 출석 ${yes.length}명 / ${all.length}명</div>
+   <button class="att ${mine?'on':''}" onclick="att1('${n.id}','${n.d}')">${mine?'✓ 출석했어요':'출석'}</button>
+   <div class="chips">${all.map(([k,v])=>`<span class="chip ${r[k]&&r[k].s===1?'y':''}">${esc(v.name)}</span>`).join('')}</div>
+   <button class="btn b2 sm" style="margin-top:12px" onclick="share('${n.id}','${n.d}')">카톡·단톡방에 출석 보내기</button></div>`
+  :`<div class="card o2"><h3>다음 합주</h3><p class="empty">잡힌 합주가 없어요</p><a class="btn b2" href="#/b/${mb.code}/cal">합주 일정 만들기</a></div>`;
+ const sl=n&&n.e.so?`<div class="card sl o4"><h3>이번 합주 곡 <a class="lnk" href="#/b/${mb.code}/score">악보함 ›</a></h3>${n.e.so.split(',').map(x=>`<div class="row"><span>${esc(x.trim())}</span></div>`).join('')}</div>`:'';
+ const gg=g?`<div class="card o7"><h3>공연·행사 <span class="dd">${dday(g.d)}</span></h3><div class="row"><span>${esc(g.e.pl||'공연')}</span><span>${fmt(g.d)} ${esc(g.e.tm||'')}</span></div></div>`:'';
+ const note=`<div class="card o5" onclick="editNote()"><h3>공지${can('note')?' <span class="lnk">고치기</span>':''}</h3><div class="note">${nt&&nt.txt?esc(nt.txt):'<span style="color:var(--mu)">공지가 없어요</span>'}</div>${nt&&nt.by?`<small style="color:var(--mu);font-size:13px">${esc(nt.by)}</small>`:''}</div>`;
+ V(head(mb,nm)+`<main class="w"><div class="grid2"><div>${cover}${kp}${todo}${gg}</div><div>${ev}${sl}${note}</div></div>
+ <a class="btn" href="${atUrl(mb,n&&n.e.so?songKey(n.e.so.split(',')[0]):null)}">악보 열기 · 연습·합주</a>
+ <p style="text-align:center;font-size:12px;color:var(--mu);margin-top:16px">새 디자인 미리보기 · <a href="?v2=0${location.hash}" style="color:var(--mu)">예전 화면으로</a></p></main>`)}
 const songKey=name=>{name=(name||'').trim();for(const [k,v] of Object.entries(SN))if(v.replace(/^\S+ /,'')===name||k===name)return k;return null};
 function editNote(){if(!can('note')&&deny('note'))return;const nt=B.nt||{};modal(`<h2>📢 공지</h2><textarea id="ntx" rows="5" maxlength="500">${esc(nt.txt||'')}</textarea><button class="btn" id="nts">저장</button><button class="btn gh" onclick="closeM()">닫기</button>`);
  $('nts').onclick=()=>{const v={txt:$('ntx').value.trim(),by:myBand(B.code).me,t:{'.sv':'timestamp'}};B.nt={txt:v.txt,by:v.by};closeM();render();PUT(B.code+'/nt',v).catch(()=>toast('⚠️ 저장 못 했어요'))}}
