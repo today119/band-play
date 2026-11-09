@@ -8,4 +8,4 @@ button{width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-w
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
 <script>let c=null;try{const d=(location.hash.match(/d=([\w-]+)/)||[])[1];c=JSON.parse(decodeURIComponent(escape(atob(d.replace(/-/g,'+').replace(/_/g,'/')))))}catch(e){}
 if(!c){document.getElementById('t').textContent='보낼 내용이 없어요';document.getElementById('b').style.display='none'}
-else{document.getElementById('t').textContent=c.headerTitle||c.content&&c.content.title||'위밴드';Kakao.init('9316a3f1cf1a1915fe2f6d40521ce712');document.getElementById('b').onclick=()=>Kakao.Share.sendDefault(c)}</script></body></html>
+else{document.getElementById('t').textContent=c.headerTitle||c.content&&c.content.title||'위밴드';Kakao.init('4d962959edec48821edac78b8217bf25');document.getElementById('b').onclick=()=>Kakao.Share.sendDefault(c)}</script></body></html>

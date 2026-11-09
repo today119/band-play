@@ -725,10 +725,10 @@ async function saveSet(){const n=$('sbn').value.trim(),cfg={appr:$('sap').checke
  B.cfg=cfg;await PUT(B.code+'/cfg',cfg).catch(()=>toast('⚠️ 저장 못 했어요'));
  if(n&&n!==B.band.name){B.band.name=n;PUT(B.code+'/band/name',n).catch(()=>{});bands.forEach(x=>{if(x.code===B.code)x.name=n});saveBands()}
  toast('설정 저장했어요');render()}
-// 📨 초대 = 카톡 리스트 카드(11/9 «초대 링크를 리스트 카드로»). 키는 today119.github.io 가 등록된 카카오 JS 키(꿈길 앱과 같은 앱)
+// 📨 초대 = 카톡 리스트 카드(11/9 «초대 링크를 리스트 카드로»). 키 = 카카오 WeBand 앱(1642484) JS 키 — JS SDK 도메인·웹 도메인 today119.github.io 필요
 // 스토어 앱(capacitor://)은 카카오 도메인 인증이 안 돼서 → kshare.html(깃허브 페이지)을 브라우저로 열어 거기서 보냄(모스와 같은 방식)
 const PUB='https://today119.github.io/band-play/',PUBP=()=>NAT?PUB+'band.html':location.origin+location.pathname,PUBD=()=>NAT?PUB:location.origin+location.pathname.replace(/[^/]*$/,'');
-const KKEY='9316a3f1cf1a1915fe2f6d40521ce712';let kP=null;
+const KKEY='4d962959edec48821edac78b8217bf25';let kP=null;
 function kakao(){if(kP)return kP;kP=new Promise((ok,no)=>{if(window.Kakao&&Kakao.isInitialized&&Kakao.isInitialized())return ok(Kakao);const s=document.createElement('script');s.src='https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';s.onload=()=>{try{if(!Kakao.isInitialized())Kakao.init(KKEY);ok(Kakao)}catch(e){no(e)}};s.onerror=()=>{kP=null;no(new Error('sdk'))};document.head.appendChild(s)});return kP}
 const cut=(v,n)=>v&&v.length>n?v.slice(0,n-1)+'…':(v||'');
 function inviteCard(){const u=PUBP()+'#/join/'+B.code,link={mobileWebUrl:u,webUrl:u},im=f=>PUBD()+'img/'+f,
