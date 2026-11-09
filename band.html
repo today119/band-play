@@ -386,11 +386,21 @@ function rsvpBox(o){const r=rsOf(o.id,o.d),mine=r[cid],all=Object.entries(B.m).f
 async function rsvp(id,d,s){const mb=myBand(B.code),v={s,name:mb.me,part:mb.part,t:{'.sv':'timestamp'}};
  B.rs[id]=B.rs[id]||{};B.rs[id][d]=B.rs[id][d]||{};B.rs[id][d][cid]={s,name:mb.me,part:mb.part};render();
  PUT(B.code+'/rs/'+id+'/'+d+'/'+cid,v).catch(()=>toast('⚠️ 저장 못 했어요 — 인터넷 확인'))}
-async function share(id,d){const e=B.ev[id];const u=PUBP()+'#/b/'+B.code+'/cal/'+d;
+async function shareText(id,d){const e=B.ev[id];const u=PUBP()+'#/b/'+B.code+'/cal/'+d;
  const r=rsOf(id,d),yes=Object.values(r).filter(x=>x.s===1).map(x=>x.name);
  const t=`${e.ty==='g'?'🎤':'🎸'} «${B.band.name}» ${e.ty==='g'?'공연':'합주'} ${fmt(d)} ${e.tm||''}${e.pl?' · '+e.pl:''}${e.so?'\n🎵 '+e.so:''}${yes.length?'\n✋ 갑니다: '+yes.join(', '):''}\n출첵 👉 ${u}\n(처음이면 초대 코드 ${B.code})`;
  try{if(navigator.share){await navigator.share({text:t});return}}catch(x){if(x.name==='AbortError')return}
  try{await navigator.clipboard.writeText(t);toast('✅ 복사됨 — 단톡방에 붙여넣기')}catch(x){prompt('복사해서 보내세요',t)}}
+// 📤 출첵 = 카톡 리스트 카드(11/9) — 헤더 «밴드 · 날짜 합주», 줄: 장소/곡/갑니다, 버튼 «출석 체크하기». 카드 못 보내면 글자로
+function evKCard(id,d){const e=B.ev[id],u=PUBP()+'#/b/'+B.code+'/cal/'+d,link={mobileWebUrl:u,webUrl:u},im=f=>PUBD()+'img/'+f,
+ r=rsOf(id,d),yes=Object.values(r).filter(x=>x.s===1).map(x=>x.name),all=Object.values(B.m).filter(v=>v&&v.name).length,kind=e.ty==='g'?'공연':'합주',
+ rows=[{title:cut(`${fmt(d)} ${e.tm||''}`.trim(),34),description:cut(e.pl||'장소는 앱에서 확인',40),imageUrl:im('ic-cal.png'),link},
+  e.so?{title:cut(e.so.split(',').map(x=>x.trim()).filter(Boolean).join(', '),34),description:'악보는 앱 악보함에 있어요',imageUrl:im('ic-song.png'),link}:null,
+  {title:`갑니다 ${yes.length}명 / ${all}명`,description:cut(yes.length?yes.join(' · '):'아직 아무도 안 눌렀어요. 첫 출석!',40),imageUrl:im('ic-mem.png'),link}].filter(Boolean);
+ return {objectType:'list',headerTitle:`${e.ty==='g'?'🎤':'🎸'} ${cut(B.band.name,17)} ${kind} 출첵`,headerLink:link,contents:rows,buttons:[{title:'출석 체크하기',link}]}}
+async function share(id,d){const c=evKCard(id,d);
+ if(NAT){const x=btoa(unescape(encodeURIComponent(JSON.stringify(c)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');window.open(PUB+'kshare.html#d='+x,'_blank');return}
+ try{const K=await kakao();K.Share.sendDefault(c)}catch(x){shareText(id,d)}}
 
 // ── 연습 기록: 이 기기(at.html이 band_play_pr에 적음) + 밴드 DB(pr/{기기}) 중 큰 값
 function myPr(){const loc=LG('pr')||{},db=(B&&B.pr[cid])||{},out={};
