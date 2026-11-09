@@ -392,7 +392,7 @@ async function shareText(id,d){const e=B.ev[id];const u=PUBP()+'#/b/'+B.code+'/c
  try{if(navigator.share){await navigator.share({text:t});return}}catch(x){if(x.name==='AbortError')return}
  try{await navigator.clipboard.writeText(t);toast('✅ 복사됨 — 단톡방에 붙여넣기')}catch(x){prompt('복사해서 보내세요',t)}}
 // 📤 출첵 = 카톡 리스트 카드(11/9) — 헤더 «밴드 · 날짜 합주», 줄: 장소/곡/갑니다, 버튼 «출석 체크하기». 카드 못 보내면 글자로
-function evKCard(id,d){const e=B.ev[id],u=PUBP()+'#/b/'+B.code+'/cal/'+d,link={mobileWebUrl:u,webUrl:u},im=f=>PUBD()+'img/'+f,
+function evKCard(id,d){const e=B.ev[id],u=PUBP()+'?to=/b/'+B.code+'/cal/'+d,link={mobileWebUrl:u,webUrl:u},im=f=>PUBD()+'img/'+f,
  r=rsOf(id,d),yes=Object.values(r).filter(x=>x.s===1).map(x=>x.name),all=Object.values(B.m).filter(v=>v&&v.name).length,kind=e.ty==='g'?'공연':'합주',
  rows=[{title:cut(`${fmt(d)} ${e.tm||''}`.trim(),34),description:cut(e.pl||'장소는 앱에서 확인',40),imageUrl:im('ic-cal.png'),link},
   e.so?{title:cut(e.so.split(',').map(x=>x.trim()).filter(Boolean).join(', '),34),description:'악보는 앱 악보함에 있어요',imageUrl:im('ic-song.png'),link}:null,
@@ -731,7 +731,7 @@ const PUB='https://today119.github.io/band-play/',PUBP=()=>NAT?PUB+'band.html':l
 const KKEY='4d962959edec48821edac78b8217bf25';let kP=null;
 function kakao(){if(kP)return kP;kP=new Promise((ok,no)=>{if(window.Kakao&&Kakao.isInitialized&&Kakao.isInitialized())return ok(Kakao);const s=document.createElement('script');s.src='https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';s.onload=()=>{try{if(!Kakao.isInitialized())Kakao.init(KKEY);ok(Kakao)}catch(e){no(e)}};s.onerror=()=>{kP=null;no(new Error('sdk'))};document.head.appendChild(s)});return kP}
 const cut=(v,n)=>v&&v.length>n?v.slice(0,n-1)+'…':(v||'');
-function inviteCard(){const u=PUBP()+'#/join/'+B.code,link={mobileWebUrl:u,webUrl:u},im=f=>PUBD()+'img/'+f,
+function inviteCard(){const u=PUBP()+'?to=/join/'+B.code,link={mobileWebUrl:u,webUrl:u},im=f=>PUBD()+'img/'+f,
  ms=Object.values(B.m).filter(v=>v&&v.name),n=nextOf('j')||nextOf(),
  parts=Object.keys(PN).filter(pt=>ms.some(v=>v.part===pt)).map(pn),
  rows=[n&&{title:cut(`다음 ${n.e.ty==='g'?'공연':'합주'} ${fmt(n.d)} ${n.e.tm||''}`.trim(),34),description:cut(n.e.pl||'장소는 앱에서 확인',40),imageUrl:im('ic-cal.png'),link},
@@ -750,6 +750,8 @@ function quit(){if(roleOf(cid)==='lead'&&Object.keys(B.m).filter(k=>k!==cid).len
  const cur=LG('band');if(cur&&cur.code===B.code){LSet('band',null);LSet('jr',null);LSet('mode','solo')}B=null;go('#/')}
 function vFee(mb){V(head(mb,'💰 회비')+`<main><div class="card"><h3>2단계에서 열려요</h3><div style="font-size:15px;line-height:1.6">모스처럼 <b>월별 체크판</b>으로 — 누가 몇 월분을 냈는지 한눈에, 총무 혼자서도 관리.</div></div></main>`)}
 
+// 카톡 카드 링크는 #(해시) 대신 ?to= 로 보냄(카카오가 # 주소를 버튼에서 빼는 경우 대비) → 여기서 해시로 바꿈
+{const q=new URLSearchParams(location.search).get('to');if(q&&/^\/(join\/\d{4}|b\/\d{4}\/cal\/[\d-]{10})$/.test(q)){history.replaceState(null,'',location.pathname+'#'+q)}}
 // 초대 링크(#/join/코드) · 출첵 링크(#/b/코드/cal/날짜)를 가입 전에 열면 가입 후 그 자리로
 {const h=location.hash,m=h.match(/^#\/b\/(\d{4})\//);if(m&&!myBand(m[1])){try{sessionStorage.setItem('wb_after',h)}catch(e){}location.hash='#/join/'+m[1]}}
 // 처음 열 때: 밴드가 하나뿐이고 주소가 비었으면 바로 그 밴드 홈
