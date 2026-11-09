@@ -126,6 +126,7 @@ select{height:40px;padding:0 10px!important}
 .kp{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;padding:4px 0}.kp b{display:block;font-size:28px;font-weight:700;letter-spacing:-.02em}.kp span{font-size:13px;color:var(--mu)}
 .ev1 .when{font-size:19px;font-weight:700}.ev1 .wh{font-size:13px;color:var(--mu);margin:4px 0 12px}
 .dd{float:right;font-size:13px;font-weight:700;color:var(--red)}
+.evr{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;padding:12px 14px}.evm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.evt{font-size:16px}.evs{font-size:13px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.evc{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:13px}.evc b{color:var(--mu);font-weight:600}.evc b.ok{color:#1b7a4a}.evc small{color:var(--mu)}.evg{font-size:20px;color:var(--mu)}
 .att{width:100%;height:48px;border-radius:8px;border:1px solid var(--ln);background:#fff;color:var(--fg);font-size:15px;font-weight:600}
 .att.on{background:var(--goc);border-color:var(--goc);color:#fff}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.chip{font-size:13px;padding:4px 10px;border-radius:999px;border:1px solid var(--ln);background:#fff}.chip.y{background:#e9f6ef;border-color:#bfe5cf;color:#1b7a4a}
@@ -377,6 +378,9 @@ function occ(from,to){const out=[];if(!B)return out;
 const rsOf=(id,d)=>(B.rs[id]&&B.rs[id][d])||{};
 const nextOf=ty=>occ(today(),addD(today(),400)).find(o=>!ty||o.e.ty===ty);
 function rsvpBox(o){const r=rsOf(o.id,o.d),mine=r[cid],all=Object.entries(B.m).filter(([k,v])=>v&&v.name);
+ if(V2){const yes=all.filter(([k])=>r[k]&&r[k].s===1).length,on=mine&&mine.s===1;
+  return `<div style="font-size:13px;color:var(--mu);margin:10px 0 8px">출석 ${yes}명 / ${all.length}명</div><button class="att ${on?'on':''}" onclick="att1('${o.id}','${o.d}')">${on?'✓ 출석했어요':'출석'}</button>
+  <div class="chips">${all.map(([k,v])=>`<span class="chip ${r[k]&&r[k].s===1?'y':''}">${esc(v.name)}</span>`).join('')}</div>`}
  const yes=Object.values(r).filter(x=>x.s===1).length,no=Object.values(r).filter(x=>x.s===0).length,nr=all.filter(([k])=>!r[k]).length;
  const who=all.map(([k,v])=>{const s=r[k]?r[k].s:null;return `<span class="pill ${s===1?'ok':s===0?'no':'q'}">${pe(v.part)} ${esc(v.name)}</span>`}).join('');
  const miss=Object.keys(PN).filter(pt=>all.some(([k,v])=>v.part===pt)&&!all.some(([k,v])=>v.part===pt&&r[k]&&r[k].s===1)&&all.filter(([k,v])=>v.part===pt).every(([k])=>r[k]&&r[k].s===0));
@@ -388,7 +392,7 @@ async function rsvp(id,d,s){const mb=myBand(B.code),v={s,name:mb.me,part:mb.part
  PUT(B.code+'/rs/'+id+'/'+d+'/'+cid,v).catch(()=>toast('⚠️ 저장 못 했어요 — 인터넷 확인'))}
 async function shareText(id,d){const e=B.ev[id];const u=PUBP()+'#/b/'+B.code+'/cal/'+d;
  const r=rsOf(id,d),yes=Object.values(r).filter(x=>x.s===1).map(x=>x.name);
- const t=`${e.ty==='g'?'🎤':'🎸'} «${B.band.name}» ${e.ty==='g'?'공연':'합주'} ${fmt(d)} ${e.tm||''}${e.pl?' · '+e.pl:''}${e.so?'\n🎵 '+e.so:''}${yes.length?'\n✋ 갑니다: '+yes.join(', '):''}\n출첵 👉 ${u}\n(처음이면 초대 코드 ${B.code})`;
+ const t=`${e.ty==='g'?'🎤':'🎸'} «${B.band.name}» ${e.nm||(e.ty==='g'?'공연':'합주')} ${fmt(d)} ${e.tm||''}${e.pl?' · '+e.pl:''}${e.so?'\n🎵 '+e.so:''}${yes.length?'\n✋ 갑니다: '+yes.join(', '):''}\n출첵 👉 ${u}\n(처음이면 초대 코드 ${B.code})`;
  try{if(navigator.share){await navigator.share({text:t});return}}catch(x){if(x.name==='AbortError')return}
  try{await navigator.clipboard.writeText(t);toast('✅ 복사됨 — 단톡방에 붙여넣기')}catch(x){prompt('복사해서 보내세요',t)}}
 // 📤 출첵 = 카톡 리스트 카드(11/9) — 헤더 «밴드 · 날짜 합주», 줄: 장소/곡/갑니다, 버튼 «출석 체크하기». 카드 못 보내면 글자로
@@ -396,8 +400,8 @@ function evKCard(id,d){const e=B.ev[id],u=PUBP()+'?to=/b/'+B.code+'/cal/'+d,link
  r=rsOf(id,d),yes=Object.values(r).filter(x=>x.s===1).map(x=>x.name),all=Object.values(B.m).filter(v=>v&&v.name).length,kind=e.ty==='g'?'공연':'합주',
  rows=[{title:cut(`${fmt(d)} ${e.tm||''}`.trim(),34),description:cut(e.pl||'장소는 앱에서 확인',40),imageUrl:im('ic-cal.png'),link},
   e.so?{title:cut(e.so.split(',').map(x=>x.trim()).filter(Boolean).join(', '),34),description:'악보는 앱 악보함에 있어요',imageUrl:im('ic-song.png'),link}:null,
-  {title:`갑니다 ${yes.length}명 / ${all}명`,description:cut(yes.length?yes.join(' · '):'아직 아무도 안 눌렀어요. 첫 출석!',40),imageUrl:im('ic-mem.png'),link}].filter(Boolean);
- return {objectType:'list',headerTitle:`${e.ty==='g'?'🎤':'🎸'} ${cut(B.band.name,17)} ${kind} 출첵`,headerLink:link,contents:rows,buttons:[{title:'출석 체크하기',link}]}}
+  {title:`출석 ${yes.length}명 / ${all}명`,description:cut(yes.length?yes.join(' · '):'아직 아무도 안 눌렀어요. 첫 출석!',40),imageUrl:im('ic-mem.png'),link}].filter(Boolean);
+ return {objectType:'list',headerTitle:e.nm?`${e.ty==='g'?'🎤':'🎸'} ${cut(e.nm,18)} 출첵`:`${e.ty==='g'?'🎤':'🎸'} ${cut(B.band.name,17)} ${kind} 출첵`,headerLink:link,contents:rows,buttons:[{title:'출석 체크하기',link}]}}
 async function share(id,d){const c=evKCard(id,d);
  if(NAT){const x=btoa(unescape(encodeURIComponent(JSON.stringify(c)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');window.open(PUB+'kshare.html#d='+x,'_blank');return}
  try{const K=await kakao();K.Share.sendDefault(c)}catch(x){shareText(id,d)}}
@@ -503,7 +507,8 @@ if(V2){const EM=/^\s*(?:[\p{Extended_Pictographic}☀-➿][️‍\p{Extended_Pic
 async function att1(id,d){const mb=myBand(B.code),r=rsOf(id,d),on=r[cid]&&r[cid].s===1;  // 출석 버튼 하나(11/9 «누르면 가는 거, 안 누르면 못 가는 거»)
  B.rs[id]=B.rs[id]||{};B.rs[id][d]=B.rs[id][d]||{};
  if(on){delete B.rs[id][d][cid];render();DEL(B.code+'/rs/'+id+'/'+d+'/'+cid).catch(()=>toast('⚠️ 저장 못 했어요'))}
- else{B.rs[id][d][cid]={s:1,name:mb.me,part:mb.part};render();PUT(B.code+'/rs/'+id+'/'+d+'/'+cid,{s:1,name:mb.me,part:mb.part,t:{'.sv':'timestamp'}}).catch(()=>toast('⚠️ 저장 못 했어요'))}}
+ else{B.rs[id][d][cid]={s:1,name:mb.me,part:mb.part};render();PUT(B.code+'/rs/'+id+'/'+d+'/'+cid,{s:1,name:mb.me,part:mb.part,t:{'.sv':'timestamp'}}).catch(()=>toast('⚠️ 저장 못 했어요'))}
+ if(evOpen&&evOpen[0]===id&&evOpen[1]===d&&$('mod'))evDetail(id,d)}
 function vHome2(mb){const n=nextOf('j'),g=nextOf('g'),nt=B.nt,all=Object.entries(B.m).filter(([k,v])=>v&&v.name);
  const nm=B.band.name||'',songs=new Set(Object.values(B.ev||{}).flatMap(e=>(e&&e.so||'').split(',').map(x=>x.trim()).filter(Boolean)));
  const pr=myPr(),[w]=sumPr(pr,weekStart(today()),today());
@@ -513,7 +518,7 @@ function vHome2(mb){const n=nextOf('j'),g=nextOf('g'),nt=B.nt,all=Object.entries
  const cover=`<div class="cv o1">${B.band.cv?`<img src="${esc(B.band.cv)}" alt="">`:`<span class="ini">${esc(nm.slice(0,1))}</span>`}<b>${esc(nm)}</b><small>멤버 ${all.length}명${rep?' · 매주 '+WD[pd(rep.d).getDay()]+' '+esc(rep.tm||''):''}</small></div>`;
  const kp=`<div class="card o6"><div class="kp"><div><b>${all.length}</b><span>멤버</span></div><div><b>${songs.size}</b><span>곡</span></div><div><b>${mins(w).replace(/ .*/,'')}</b><span>이번 주 내 연습</span></div></div></div>`;
  const todo=staff&&(n||rq)?`<div class="card todo o3"><h3>밴드장이 챙길 일</h3>${n?`<div class="row"><span>다음 합주 출석 안 누른 사람</span><b class="${nores.length?'r':''}">${nores.length}명</b></div>`:''}${rq?`<a class="row" style="text-decoration:none;color:inherit" href="#/b/${mb.code}/mem"><span>가입 신청</span><b class="r">${rq}건 ›</b></a>`:''}</div>`:'';
- const ev=n?`<div class="card ev1 o2"><h3>다음 합주 <span class="dd">${dday(n.d)}</span></h3><div class="when">${fmt(n.d)} ${esc(n.e.tm||'')}</div><div class="wh">${esc(n.e.pl||'장소 미정')} · 출석 ${yes.length}명 / ${all.length}명</div>
+ const ev=n?`<div class="card ev1 o2"><h3>다음 합주 <span class="dd">${dday(n.d)}</span></h3>${n.e.nm?`<div style="font-size:17px;font-weight:700;margin-bottom:2px">${esc(n.e.nm)}</div>`:''}<div class="when">${fmt(n.d)} ${esc(n.e.tm||'')}</div><div class="wh">${esc(n.e.pl||'장소 미정')} · 출석 ${yes.length}명 / ${all.length}명</div>
    <button class="att ${mine?'on':''}" onclick="att1('${n.id}','${n.d}')">${mine?'✓ 출석했어요':'출석'}</button>
    <div class="chips">${all.map(([k,v])=>`<span class="chip ${r[k]&&r[k].s===1?'y':''}">${esc(v.name)}</span>`).join('')}</div>
    <button class="btn b2 sm" style="margin-top:12px" onclick="share('${n.id}','${n.d}')">카톡·단톡방에 출석 보내기</button></div>`
@@ -556,10 +561,21 @@ function vCal(mb){const p=location.hash.split('/');if(location.hash!==calH){calH
  else{const past=occ(addD(today(),-120),addD(today(),-1)).filter(o=>o.e.ty==='j'),mem=Object.entries(B.m).filter(([k,v])=>v&&v.name);
   body=`<div class="card"><h3>최근 120일 합주 ${past.length}번</h3>${mem.map(([k,v])=>{const n=past.filter(o=>rsOf(o.id,o.d)[k]&&rsOf(o.id,o.d)[k].s===1).length,pc=past.length?Math.round(n/past.length*100):0;
    return `<div class="row"><span>${pe(v.part)} ${esc(v.name)}</span><span style="flex:1;max-width:45%"><span class="prog" style="display:block;margin:0"><i style="width:${pc}%"></i></span></span><b>${n}/${past.length}</b></div>`}).join('')||'<p class="empty">멤버가 없어요</p>'}
-   <small style="color:var(--mu)">«갑니다»를 누른 날 = 출석으로 셉니다</small></div>`}
+   <small style="color:var(--mu)">${V2?'«출석»':'«갑니다»'}를 누른 날 = 출석으로 셉니다</small></div>`}
  V(head(mb,'📅 일정')+'<main>'+seg+body+'</main>')}
-function evCard(o){const e=o.e;return `<div class="card"><div class="row" style="padding-top:0"><div><span class="tag ${e.ty==='g'?'g':''}">${e.ty==='g'?'공연·행사':'합주'}${e.rep?' · 매주':''}</span><br><b>${fmt(o.d)} ${esc(e.tm||'')}</b>${e.pl?'<br><small style="color:var(--mu)">📍 '+esc(e.pl)+'</small>':''}${e.so?'<br><small style="color:var(--mu)">🎵 '+esc(e.so)+'</small>':''}</div>
- <span style="display:flex;gap:4px"><button class="sm b2" onclick="share('${o.id}','${o.d}')">📤</button>${can('cal')?`<button class="sm b2" onclick="evMenu('${o.id}','${o.d}')">⋯</button>`:''}</span></div>${rsvpBox(o)}</div>`}
+// 일정 = 리스트 줄만, 누르면 상세(참석자·출석 버튼)(11/9 «일정을 리스트만 만들고 그 안에 들어가면 참석자 나오게»)
+let evOpen=null;
+function evRow(o){const e=o.e,r=rsOf(o.id,o.d),all=Object.entries(B.m).filter(([k,v])=>v&&v.name),yes=all.filter(([k])=>r[k]&&r[k].s===1).length,on=r[cid]&&r[cid].s===1;
+ return `<a class="card evr" href="javascript:void 0" onclick="evDetail('${o.id}','${o.d}')"><div class="evm"><span class="tag ${e.ty==='g'?'g':''}">${e.ty==='g'?'공연·행사':'합주'}${e.rep?' · 매주':''}</span>
+  <b class="evt">${esc(e.nm||(e.ty==='g'?'공연·행사':'합주'))}</b><span class="evs">${fmt(o.d)} ${esc(e.tm||'')}${e.pl?' · '+esc(e.pl):''}</span></div>
+  <div class="evc"><b class="${on?'ok':''}">${on?'✓ 출석':'출석 전'}</b><small>${yes}/${all.length}명</small></div><span class="evg">›</span></a>`}
+function evDetail(id,d){const e=B.ev[id];if(!e)return;evOpen=[id,d];const o={id,d,e};
+ modal(`<span class="tag ${e.ty==='g'?'g':''}">${e.ty==='g'?'공연·행사':'합주'}${e.rep?' · 매주':''}</span><h2 style="margin:4px 0 2px">${esc(e.nm||(e.ty==='g'?'공연·행사':'합주'))}</h2>
+  <div style="font-size:15px">${fmt(d)} ${esc(e.tm||'')}${e.pl?' · '+esc(e.pl):''}</div>${e.so?`<div style="font-size:13px;color:var(--mu);margin-top:2px">곡: ${esc(e.so)}</div>`:''}
+  ${rsvpBox(o)}<button class="btn b2" onclick="share('${id}','${d}')">카톡으로 출첵 보내기</button>${can('cal')?`<button class="btn b2" onclick="evMenu('${id}','${d}')">일정 쉬기·지우기</button>`:''}<button class="btn gh" onclick="evOpen=null;closeM()">닫기</button>`);
+ const m=$('mod');if(m)m.onclick=ev=>{if(ev.target===m){evOpen=null;closeM()}}}
+function evCard(o){if(V2)return evRow(o);const e=o.e;return `<div class="card"><div class="row" style="padding-top:0"><div><span class="tag ${e.ty==='g'?'g':''}">${e.ty==='g'?'공연·행사':'합주'}${e.rep?' · 매주':''}</span>${e.nm?'<br><b style="font-size:17px">'+esc(e.nm)+'</b>':''}<br><b>${fmt(o.d)} ${esc(e.tm||'')}</b>${e.pl?'<br><small style="color:var(--mu)">📍 '+esc(e.pl)+'</small>':''}${e.so?'<br><small style="color:var(--mu)">🎵 '+esc(e.so)+'</small>':''}</div>
+ <span style="display:flex;gap:4px"><button class="sm b2" onclick="share('${o.id}','${o.d}')">${V2?'카톡 공유':'📤'}</button>${can('cal')?`<button class="sm b2" onclick="evMenu('${o.id}','${o.d}')">⋯</button>`:''}</span></div>${rsvpBox(o)}</div>`}
 function evMenu(id,d){if(!can('cal')&&deny('cal'))return;const e=B.ev[id];modal(`<h2>${e.ty==='g'?'공연·행사':'합주'} ${fmt(d)}</h2>
  ${e.rep?`<button class="btn b2" onclick="skipEv('${id}','${d}')">이번 주(${fmt(d)})만 쉬기</button><button class="btn b2" onclick="endEv('${id}','${d}')">${fmt(d)}부터 반복 끝내기</button>`:''}
  <button class="btn" style="background:#dc2626" onclick="delEv('${id}')">${e.rep?'반복 일정 전부 지우기':'일정 지우기'}</button><button class="btn gh" onclick="closeM()">닫기</button>`)}
@@ -569,6 +585,7 @@ async function delEv(id){if(!confirm('지울까요?'))return;closeM();delete B.e
 async function newEv(d){if(!can('cal')&&deny('cal'))return;let songs=[];try{const [o]=await Promise.all([fetch(LIB+(B.band.k||DEFK)+'/tex.json?shallow=true').then(r=>r.json()),nmLoad(B.band.k||DEFK)]);songs=[...new Set(Object.keys(o||{}).map(k=>k.split('_')[0]))]}catch(e){}
  const wd=WD[pd(d).getDay()];
  modal(`<h2>＋ 일정 만들기</h2><div class="seg" id="ety"><a href="javascript:void 0" class="on" data-t="j">🎸 합주</a><a href="javascript:void 0" data-t="g">🎤 공연·행사</a></div>
+ <label class="l">일정 이름 <small style="font-weight:400;color:var(--mu)">(선택)</small></label><input id="enm" maxlength="30" placeholder="예: 정기 합주 · 공연 리허설">
  <label class="l">날짜</label><input type="date" id="ed" value="${d}"><label class="l">시간</label><input type="time" id="et" value="19:00">
  <label class="l" id="epl">장소</label><input id="ep" maxlength="40" placeholder="예: 음악실">
  ${songs.length?`<label class="l">곡</label><div class="chk">${songs.map(s=>`<label><input type="checkbox" value="${esc((SN[s]||s).replace(/^\S+ /,''))}">${esc(SN[s]||s)}</label>`).join('')}</div>`:''}
@@ -578,10 +595,10 @@ async function newEv(d){if(!can('cal')&&deny('cal'))return;let songs=[];try{cons
  $('ed').onchange=()=>{$('ewd').textContent=WD[pd($('ed').value).getDay()]};
  $('es').onclick=async()=>{const dd=$('ed').value;if(!dd){toast('날짜를 골라 주세요');return}
   const so=[...document.querySelectorAll('#mod .chk input[type=checkbox]:not(#er):checked')].map(x=>x.value).join(', ');
-  const v={ty,d:dd,tm:$('et').value||'',pl:$('ep').value.trim(),so,rep:$('er').checked?1:0,by:myBand(B.code).me,t:{'.sv':'timestamp'}};
+  const v={ty,d:dd,tm:$('et').value||'',pl:$('ep').value.trim(),so,...($('enm').value.trim()?{nm:$('enm').value.trim()}:{}),rep:$('er').checked?1:0,by:myBand(B.code).me,t:{'.sv':'timestamp'}};
   const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);
   $('es').disabled=true;try{await PUT(B.code+'/ev/'+id,v)}catch(e){$('es').disabled=false;toast('⚠️ 저장 못 했어요 — 인터넷 확인');return}
-  B.ev[id]={...v,t:Date.now()};closeM();calSel=dd;calM=dd.slice(0,7);calSeg='cal';render();toast('✅ 만들었어요 — 📤로 단톡방에 출첵 보내기')}}
+  B.ev[id]={...v,t:Date.now()};closeM();calSel=dd;calM=dd.slice(0,7);calSeg='cal';render();toast('✅ 만들었어요 — «카톡 공유»로 단톡방에 출첵 보내기')}}
 
 // 🎼 악보함: 방 악보함(band_play_lib/{k}/tex)의 곡 → 내 파트로 열기. 막대 = 이 기기에서 ▶로 지나간 마디 비율(at.html이 band_play_cov에 적음)
 async function vScore(mb){V(head(mb,'🎼 악보함','내 파트: '+(PN[mb.part]||''))+'<main id="sl"><p class="empty">불러오는 중…</p></main>');
