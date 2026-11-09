@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>위밴드 전체 악보</title>
+<style>
+:root{--bg:#f4f4f6;--card:#fff;--tx:#111;--mu:#6b6b76;--li:#e9e9ec}
+*{box-sizing:border-box;min-width:0}html,body{overflow-x:hidden}body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;-webkit-text-size-adjust:100%}
+.top{background:#111;color:#fff;padding:18px 16px 16px;padding-top:max(18px,env(safe-area-inset-top))}.top h1{margin:2px 0 0;font-size:22px}.top small{color:#aaa}.top small a{color:#aaa}
+.top .who{float:right;font-size:12px;color:#aaa;text-align:right}.top .who button{background:none;border:1px solid #555;color:#ddd;border-radius:6px;padding:3px 8px;margin-top:4px}
+main{padding:12px 16px 40px;max-width:1000px;margin:0 auto}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.kpi>div{background:var(--card);border-radius:12px;padding:10px 12px;border:1px solid var(--li)}.kpi b{display:block;font-size:26px;font-variant-numeric:tabular-nums}.kpi span{font-size:12px;color:var(--mu)}
+input.s{width:100%;margin:14px 0 6px;padding:11px 12px;border:1px solid #ccc;border-radius:10px;font-size:16px}
+h2{font-size:15px;margin:18px 2px 8px;display:flex;justify-content:space-between;gap:8px}h2 small{font-weight:400;color:var(--mu);font-size:12px;overflow-wrap:anywhere}
+.sg{background:var(--card);border-radius:12px;border:1px solid var(--li);padding:12px;margin-bottom:8px}
+.sg .t{font-weight:700;font-size:16px}.sg .t small{font-weight:400;color:var(--mu);font-size:12px}
+.pt{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.pt a{background:#111;color:#fff;text-decoration:none;border-radius:8px;padding:7px 11px;font-size:13px;font-weight:700}
+.tag{font-size:11px;font-weight:700;border-radius:8px;padding:2px 7px;background:#eef7ff;color:#1a5fb4;margin-left:4px;vertical-align:2px}
+.login{text-align:center;padding:60px 20px}.login button{background:#111;color:#fff;border:0;border-radius:10px;padding:14px 22px;font-size:16px;font-weight:700}
+.empty{color:var(--mu);text-align:center;padding:30px}
+</style></head><body>
+<div class="top"><div class="who" id="who"></div><small>위밴드 관리자 · <a href="admin.html">🎼 요청 현황</a> · <a href="ops.html">📈 통합 현황</a></small><h1>📚 전체 변환 악보</h1></div>
+<main id="app"><p class="empty">불러오는 중…</p></main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+// 11/10 사용자 «변환된 악보에 모두 접근할 수 있는 권한과 페이지» — 모든 악보함(band_play_lib/*)의 곡·파트를 한곳에서 열기
+//   악보함 목록(band_play_lib 루트 읽기)은 관리자만(band_play_admin/{uid}=true) · 각 악보함 안은 원래대로 키를 알면 누구나 읽기
+const FBC={apiKey:'AIzaSyBWAAeuN_bwwrY2R1NupXLwT4ECPhyivo0',authDomain:'matchmaker-28187.firebaseapp.com',projectId:'matchmaker-28187',appId:'1:640935869730:web:893abadb93ae3e949df97b',databaseURL:'https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app'};
+const DB=FBC.databaseURL+'/',DEFK='cfinph2riiRuxxtqTv87VFIq';
+const PN={vocal:'🎤 보컬',g1:'🎸 기타1',g2:'🎸 기타2',bass:'🎸 베이스',keys:'🎹 키보드',drums:'🥁 드럼'},PO=Object.keys(PN);
+const SN0={butterfly:'버터플라이',redsunset:'붉은노을',smileboy:'Smile Boy'};
+const $=id=>document.getElementById(id),esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let L=[],Q='';
+const J=(p,tk,sh)=>fetch(DB+p+'.json?'+(tk?'auth='+tk+'&':'')+(sh?'shallow=true':'')).then(r=>r.json());
+async function load(tk){
+ const root=await J('band_play_lib',tk,1);if(!root||root.error)throw new Error((root&&root.error)||'빈 목록');
+ // 악보함을 쓰는 밴드 이름: 요청 상태(band_play_req_st)의 k ↔ 요청(band_play_req)의 밴드 코드
+ let st={},rq={};try{[st,rq]=await Promise.all([J('band_play_req_st',tk),J('band_play_req',tk)])}catch(e){}
+ const bands={};Object.entries(st||{}).forEach(([id,s])=>{const b=rq&&rq[id]&&rq[id].band;if(s&&s.k&&b)(bands[s.k]=bands[s.k]||new Set).add(b)});
+ const bn={};await Promise.all([...new Set(Object.values(bands).flatMap(s=>[...s]))].map(c=>J('band_play/'+c+'/band/name',tk).then(n=>{bn[c]=n}).catch(()=>{})));
+ L=await Promise.all(Object.keys(root).map(async k=>{const [tex,nm,dr]=await Promise.all([J('band_play_lib/'+k+'/tex',0,1),J('band_play_lib/'+k+'/nm'),J('band_play_lib/'+k+'/dr')]);
+  const songs={};Object.keys(tex||{}).forEach(x=>{const [s,p]=x.split('_');(songs[s]=songs[s]||[]).push(p)});
+  return {k,songs,nm:{...SN0,...(nm||{})},dr:dr||{},who:[...(bands[k]||[])].map(c=>bn[c]?bn[c]+' ('+c+')':c)}}));
+ L.sort((a,b)=>(b.k===DEFK)-(a.k===DEFK)||Object.keys(b.songs).length-Object.keys(a.songs).length);draw()}
+function draw(){const q=Q.trim().toLowerCase(),all=L.flatMap(l=>Object.keys(l.songs).map(s=>[l,s]));
+ const nParts=L.reduce((a,l)=>a+Object.values(l.songs).reduce((x,p)=>x+p.length,0),0),uniq=new Set(all.map(([l,s])=>s)).size;
+ const body=L.map(l=>{const ss=Object.keys(l.songs).filter(s=>!q||(l.nm[s]||s).toLowerCase().includes(q)||s.includes(q)).sort((a,b)=>(l.nm[a]||a).localeCompare(l.nm[b]||b,'ko'));if(!ss.length)return'';
+  return `<h2><span>${l.k===DEFK?'⭐ 기본 악보함':'📁 악보함'} · ${ss.length}곡</span><small>${l.who.length?'밴드 '+esc(l.who.join(', ')):''} · ${esc(l.k.slice(0,6))}…</small></h2>`+ss.map(s=>{const ps=l.songs[s].sort((a,b)=>PO.indexOf(a)-PO.indexOf(b));
+   return `<div class="sg"><div class="t">${esc(l.nm[s]||s)}${l.dr[s]?'<span class="tag">🤖 자동 초안</span>':''} <small>· ${ps.length}파트 · ${esc(s)}</small></div><div class="pt">${ps.map(p=>`<a target="_blank" href="at.html?k=${encodeURIComponent(l.k)}&s=${encodeURIComponent(s+'_'+p)}">${PN[p]||esc(p)}</a>`).join('')}</div></div>`}).join('')}).join('');
+ $('app').innerHTML=`<div class="kpi"><div><b>${L.length}</b><span>악보함</span></div><div><b>${uniq}</b><span>곡(중복 제외)</span></div><div><b>${nParts}</b><span>파트 악보</span></div></div>
+ <input class="s" id="q" placeholder="곡 이름 검색" value="${esc(Q)}">${body||'<p class="empty">찾는 곡이 없어요</p>'}`;
+ const i=$('q');i.oninput=()=>{Q=i.value;const p=i.selectionStart;draw();const j=$('q');j.focus();j.setSelectionRange(p,p)}}
+firebase.initializeApp(FBC);const auth=firebase.auth();auth.getRedirectResult().catch(()=>{});
+auth.onAuthStateChanged(u=>{if(!u){$('who').textContent='';$('app').innerHTML='<div class="login"><p>관리자 구글 계정으로 들어와 주세요</p><button id="lg">Google로 로그인</button></div>';
+  $('lg').onclick=()=>{const p=new firebase.auth.GoogleAuthProvider();auth.signInWithPopup(p).catch(()=>auth.signInWithRedirect(p))};return}
+ $('who').innerHTML=esc(u.displayName||u.email||'')+'<br><button id="lo">로그아웃</button>';$('lo').onclick=()=>auth.signOut();
+ u.getIdToken().then(load).catch(e=>{$('app').innerHTML='<p class="empty">⚠️ 관리자 계정이 아니에요<br><small>'+esc(e.message)+'</small></p>'})});
+</script></body></html>
