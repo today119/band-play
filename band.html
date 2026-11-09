@@ -316,10 +316,11 @@ const RN={lead:'👑 밴드장',chief:'🎖️ 단장',vice:'⭐ 부밴드장',m
 // 집행부 = 역할 있는 사람 전부(밴드장 포함). 목록에 없는 직책은 'c:이름'으로 직접 입력(10/27 «집행부는 총무·회계·밴드장·단장 등을 총칭»)
 const rName=r=>!r?'':RN[r]||'🏷️ '+String(r).replace(/^c:/,'');
 const PMN={note:'📢 공지 쓰기',cal:'📅 일정 만들기·지우기',arr:'🎼 진행표·밴드 키',mem:'👥 가입 승인·멤버 관리',fee:'💰 회비 관리'},PMD={note:'staff',cal:'all',arr:'staff',mem:'staff',fee:'staff'};
-const LVN={all:'모든 멤버',staff:'집행부',lead:'밴드장만'};
+const LVN={all:'모든 멤버',staff:'집행부',lead:'밴드장·부밴드장'};
 const roleOf=k=>B&&B.ro&&B.ro[k]||'',hasLead=b=>Object.values((b||B||{}).ro||{}).includes('lead');
 const apprOn=b=>{b=b||B;return !!b&&(b.cfg||{}).appr!==false&&hasLead(b)};
-function can(a){if(!B||!B.m[cid])return false;const r=roleOf(cid);if(r==='lead')return true;const l=((B.cfg||{}).pm||{})[a]||PMD[a];return l==='all'||(l==='staff'&&!!r)}
+const boss=k=>{const r=roleOf(k);return r==='lead'||r==='vice'}; // 부밴드장 = 밴드장과 똑같이 다 할 수 있음(11/9 «부밴드장도 다되게»)
+function can(a){if(!B||!B.m[cid])return false;const r=roleOf(cid);if(boss(cid))return true;const l=((B.cfg||{}).pm||{})[a]||PMD[a];return l==='all'||(l==='staff'&&!!r)}
 const deny=a=>{toast(PMN[a].replace(/^\S+ /,'')+'은(는) '+LVN[((B.cfg||{}).pm||{})[a]||PMD[a]]+'만 할 수 있어요');return true};
 const rTag=k=>{const r=roleOf(k);return r?` <span class="rt rt-${RN[r]?r:'c'}">${esc(rName(r).replace(/^\S+ /,''))}</span>`:''};
 // 가입: 승인제면 신청서(rq)를, 아니면 바로 내 밴드 목록에(멤버 줄은 밴드 열 때 hello가 씀)
@@ -695,7 +696,7 @@ async function rqPoll(){clearTimeout(_rqT);const mine=(LG('reqs')||[]).filter(x=
 // 👥 멤버
 function vMem(mb){const now=Date.now(),PK=Object.keys(PN),ro=k=>{const r=roleOf(k),i=RK.indexOf(r);return i>=0?i:r?8:9};
  const mem=Object.entries(B.m).filter(([k,v])=>v&&v.name).sort((a,b)=>ro(a[0])-ro(b[0])||PK.indexOf(a[1].part)-PK.indexOf(b[1].part));
- const ws=weekStart(today()),wk=k=>{const [t]=sumPr(B.pr[k]||{},ws,today());return t},rq=Object.entries(B.rq).filter(([k,v])=>v&&v.name),mg=can('mem'),ld=roleOf(cid)==='lead';
+ const ws=weekStart(today()),wk=k=>{const [t]=sumPr(B.pr[k]||{},ws,today());return t},rq=Object.entries(B.rq).filter(([k,v])=>v&&v.name),mg=can('mem'),ld=boss(cid);
  V(head(mb,'👥 멤버')+`<main>
  ${mg&&rq.length?`<div class="card" style="border:2px solid #FF3B47"><h3>🙋 가입 신청 ${rq.length}명</h3>${rq.map(([k,v])=>`<div class="row"><span>${pe(v.part)} <b>${esc(v.name)}</b> <small style="color:var(--mu)">${pn(v.part)}</small></span><span style="display:flex;gap:4px"><button class="sm" onclick="okRq('${k}')">승인</button><button class="sm b2" onclick="noRq('${k}')">거절</button></span></div>`).join('')}</div>`:''}
  ${hasLead()?'':`<div class="card"><h3>👑 아직 밴드장이 없어요</h3><div style="color:var(--mu);font-size:14px">밴드장이 있어야 역할을 정하고 가입을 승인할 수 있어요</div><button class="btn" onclick="claimLead()">내가 밴드장 맡기</button></div>`}
@@ -717,14 +718,15 @@ async function okRq(k){const v=B.rq[k];if(!v)return;
  const row={name:v.name,part:v.part,t:{'.sv':'timestamp'}};await PUT(B.code+'/m/'+k,row).catch(()=>{});DEL(B.code+'/rq/'+k).catch(()=>{});
  B.m[k]={...row,t:Date.now()};delete B.rq[k];toast('✅ '+v.name+' 승인했어요');render()}
 async function noRq(k){const v=B.rq[k];if(!v||!confirm(`«${v.name}» 가입 신청을 거절할까요?`))return;DEL(B.code+'/rq/'+k).catch(()=>{});delete B.rq[k];render()}
-function memMenu(k){const v=B.m[k];if(!v)return;const ld=roleOf(cid)==='lead',r=roleOf(k),kick=can('mem')&&r!=='lead'&&(ld||!r);
+function memMenu(k){const v=B.m[k];if(!v)return;const ld=boss(cid),r=roleOf(k),kick=can('mem')&&r!=='lead'&&(ld||!r);
  modal(`<h2>${pe(v.part)} ${esc(v.name)}${rTag(k)}</h2><div style="color:var(--mu);margin-bottom:6px">${pn(v.part)}</div>
- ${ld?`<label class="l">역할 — 역할이 있으면 집행부예요</label><div class="chk">${['',...RK.filter(x=>x!=='lead')].map(x=>`<label><input type="radio" name="rr" value="${x}" ${r===x?'checked':''}>${x?RN[x]:'일반 멤버'}</label>`).join('')}<label><input type="radio" name="rr" value="c" ${/^c:/.test(r)?'checked':''}>🏷️ 직접 입력</label></div>
+ ${ld&&r!=='lead'?`<label class="l">역할 — 역할이 있으면 집행부예요</label><div class="chk">${['',...RK.filter(x=>x!=='lead')].map(x=>`<label><input type="radio" name="rr" value="${x}" ${r===x?'checked':''}>${x?RN[x]:'일반 멤버'}</label>`).join('')}<label><input type="radio" name="rr" value="c" ${/^c:/.test(r)?'checked':''}>🏷️ 직접 입력</label></div>
   <input id="rcx" maxlength="10" placeholder="예: 음향감독, 홍보" value="${/^c:/.test(r)?esc(r.slice(2)):''}" style="margin-top:6px" oninput="document.querySelector('input[name=rr][value=c]').checked=true">
   <button class="btn" id="rsv">역할 저장</button><button class="btn b2" onclick="giveLead('${k}')">👑 밴드장 넘기기</button>`:''}
  ${kick?`<button class="btn gh" style="color:#dc2626" onclick="kick('${k}')">밴드에서 내보내기</button>`:''}<button class="btn gh" onclick="closeM()">닫기</button>`);
  if(ld)$('rsv').onclick=()=>{let x=(document.querySelector('input[name=rr]:checked')||{}).value||'';if(x==='c'){const t=$('rcx').value.trim().replace(/[.#$\[\]\/]/g,'');if(!t){toast('직책 이름을 넣어 주세요');return}x='c:'+t}closeM();if(x){B.ro[k]=x;PUT(B.code+'/ro/'+k,x).catch(()=>toast('⚠️ 저장 못 했어요'))}else{delete B.ro[k];DEL(B.code+'/ro/'+k).catch(()=>{})}toast('저장했어요');render()}}
 async function giveLead(k){const v=B.m[k];if(!confirm(`«${v.name}»에게 밴드장을 넘길까요?\n나는 부밴드장이 돼요.`))return;closeM();
+ for(const [x,r] of Object.entries(B.ro))if(r==='lead'&&x!==k){B.ro[x]='vice';PUT(B.code+'/ro/'+x,'vice').catch(()=>{})}
  B.ro[k]='lead';B.ro[cid]='vice';await PUT(B.code+'/ro/'+k,'lead').catch(()=>{});await PUT(B.code+'/ro/'+cid,'vice').catch(()=>{});toast('👑 밴드장을 넘겼어요');render()}
 async function kick(k){const v=B.m[k];if(!confirm(`«${v.name}»을(를) 밴드에서 내보낼까요?\n다시 들어오려면 가입 신청을 해야 해요.`))return;closeM();
  DEL(B.code+'/m/'+k).catch(()=>{});DEL(B.code+'/ro/'+k).catch(()=>{});delete B.m[k];delete B.ro[k];toast('내보냈어요');render()}
@@ -732,7 +734,7 @@ async function claimLead(){if(!confirm('이 밴드의 밴드장을 맡을까요?
  const ro=await J(B.code+'/ro').catch(()=>null)||{};if(Object.values(ro).includes('lead')){B.ro=ro;toast('이미 밴드장이 생겼어요');render();return}
  await PUT(B.code+'/ro/'+cid,'lead').catch(()=>{});B.ro[cid]='lead';toast('👑 밴드장이 됐어요 — 아래 «밴드 설정»에서 권한을 정하세요');render()}
 // ⚙️ 밴드 설정(밴드장만): 가입 승인제 · 일별 권한 · 밴드 이름
-function setCard(){const pm=(B.cfg||{}).pm||{};return `<div class="card"><h3>⚙️ 밴드 설정 <small style="font-weight:400">(밴드장만 보여요)</small></h3>
+function setCard(){const pm=(B.cfg||{}).pm||{};return `<div class="card"><h3>⚙️ 밴드 설정 <small style="font-weight:400">(밴드장·부밴드장만 보여요)</small></h3>
  <label class="l">밴드 이름</label><input id="sbn" maxlength="30" value="${esc(B.band.name)}">
  <label class="chk" style="margin-top:10px"><label><input type="checkbox" id="sap" ${(B.cfg||{}).appr!==false?'checked':''}>가입 승인제 — 초대 링크로 와도 집행부(가입 승인 권한)가 승인해야 들어와요</label></label>
  <h3 style="margin-top:14px">누가 할 수 있나</h3><small style="color:var(--mu)">집행부 = 밴드장·단장·부밴드장·매니저·총무·회계 등 역할을 맡은 사람 전부 · 밴드장은 늘 다 할 수 있어요 (역할은 멤버 이름을 눌러 정해요)</small>
