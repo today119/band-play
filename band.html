@@ -347,7 +347,7 @@ async function render(){const h=location.hash||'#/',p=h.slice(2).split('/');
   if(!myBand(c)){go('#/join/'+c);return}
   if(!B||B.code!==c){V('<main><p class="empty">불러오는 중…</p></main>');if(!await load(c)){V('<main><div class="card">밴드를 못 찾았어요. 인터넷 연결을 확인해 주세요.</div><a class="btn b2" href="#/">← 내 밴드</a></main>');return}}
   const mb=myBand(c);if(B.m[cid])adopt(c,mb.me,B.m);
-  if(!B.m[cid]&&(apprOn()||mb.pend)){vWait(mb);return}if(mb.pend){delete mb.pend;saveBands()}
+  if(!B.m[cid]&&!B.ro[cid]&&(apprOn()||mb.pend)){vWait(mb);return}if(mb.pend){delete mb.pend;saveBands()}
   LSet('band',mb);hello(mb);B.m[cid]={...(B.m[cid]||{}),name:mb.me,part:mb.part,t:Date.now(),...(mb.pp?{pp:true}:{})};bandTabs(c,t);
   ({home:V2?vHome2:vHome,cal:vCal,score:vScore,mem:vMem,fee:vFee})[t]?.(mb);
   // 다른 사람이 바꾼 역할·신청·일정이 보이게: 20초 넘은 데이터면 화면은 그대로 두고 뒤에서 새로 받아 다시 그림(모달 열려 있으면 다음 번에)
@@ -450,6 +450,7 @@ function vMake(){$('tabs').innerHTML='';
   let k=DEFK;try{k=localStorage.getItem('at_k')||DEFK}catch(e){}
   await PUT(c+'/band',{name:n,made:{'.sv':'timestamp'},k}).catch(()=>{});
   await PUT(c+'/ro/'+cid,'lead').catch(()=>{}); // 만든 사람 = 밴드장
+  await PUT(c+'/m/'+cid,{name:nm,part:$('bp').value,t:{'.sv':'timestamp'}}).catch(()=>{}); // 만든 사람도 멤버로
   const mb={code:c,name:n,me:nm,part:$('bp').value};bands.unshift(mb);saveBands();me={...me,name:nm,part:mb.part};LSet('me',me);B=null;go('#/b/'+c+'/mem')}}
 async function vJoin(c){$('tabs').innerHTML='';V('<main><p class="empty">밴드 찾는 중…</p></main>');
  const o=await J(c+'/band').catch(()=>null),ap=o&&apprOn({ro:await J(c+'/ro').catch(()=>null)||{},cfg:await J(c+'/cfg').catch(()=>null)||{}});
