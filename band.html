@@ -386,7 +386,7 @@ function rsvpBox(o){const r=rsOf(o.id,o.d),mine=r[cid],all=Object.entries(B.m).f
 async function rsvp(id,d,s){const mb=myBand(B.code),v={s,name:mb.me,part:mb.part,t:{'.sv':'timestamp'}};
  B.rs[id]=B.rs[id]||{};B.rs[id][d]=B.rs[id][d]||{};B.rs[id][d][cid]={s,name:mb.me,part:mb.part};render();
  PUT(B.code+'/rs/'+id+'/'+d+'/'+cid,v).catch(()=>toast('⚠️ 저장 못 했어요 — 인터넷 확인'))}
-async function share(id,d){const e=B.ev[id];const u=location.origin+location.pathname+'#/b/'+B.code+'/cal/'+d;
+async function share(id,d){const e=B.ev[id];const u=PUBP()+'#/b/'+B.code+'/cal/'+d;
  const r=rsOf(id,d),yes=Object.values(r).filter(x=>x.s===1).map(x=>x.name);
  const t=`${e.ty==='g'?'🎤':'🎸'} «${B.band.name}» ${e.ty==='g'?'공연':'합주'} ${fmt(d)} ${e.tm||''}${e.pl?' · '+e.pl:''}${e.so?'\n🎵 '+e.so:''}${yes.length?'\n✋ 갑니다: '+yes.join(', '):''}\n출첵 👉 ${u}\n(처음이면 초대 코드 ${B.code})`;
  try{if(navigator.share){await navigator.share({text:t});return}}catch(x){if(x.name==='AbortError')return}
@@ -675,7 +675,7 @@ function vMem(mb){const now=Date.now(),PK=Object.keys(PN),ro=k=>{const r=roleOf(
  <div class="card"><h3>멤버 ${mem.length}명 <small style="font-weight:400">(● 최근 접속${mg?' · 눌러서 관리':''})</small></h3>
  ${mem.map(([k,v])=>`<div class="row"${mg&&k!==cid?` onclick="memMenu('${k}')" style="cursor:pointer"`:''}><span>${pe(v.part)} <b>${esc(v.name)}</b> <small style="color:var(--mu)">${pn(v.part)}</small>${rTag(k)}${now-(v.t||0)<180000?' <span style="color:#16a34a">●</span>':''}${k===cid?' <span class="tag">나</span>':''}</span><small style="color:var(--mu)">${v.pp?'이번 주 '+mins(wk(k)):''}${mg&&k!==cid?' ⋯':''}</small></div>`).join('')}</div>
  ${ld?setCard():''}
- <div class="card"><h3>📨 멤버 초대</h3><div>초대 코드 <span class="code">${mb.code}</span></div><button class="btn" onclick="invite()">초대 링크 보내기</button></div>
+ <div class="card"><h3>📨 멤버 초대</h3><div>초대 코드 <span class="code">${mb.code}</span></div><button class="btn" onclick="invite()">카톡으로 초대 카드 보내기</button><button class="btn b2" style="margin-top:6px" onclick="inviteText()">링크만 복사·다른 앱으로</button></div>
  <div class="card"><h3>나</h3><label class="l">이름</label><input id="mn" maxlength="20" value="${esc(mb.me)}"><label class="l">파트</label>${partSel('mp',mb.part)}
  <label class="chk" style="margin-top:10px"><label><input type="checkbox" id="mpp" ${mb.pp?'checked':''}>내 연습 시간을 밴드에 보여 주기</label></label>
  <button class="btn" id="msv">저장</button><button class="btn gh" style="color:#dc2626" onclick="quit()">밴드 나가기</button></div></main>`);
@@ -715,9 +715,27 @@ async function saveSet(){const n=$('sbn').value.trim(),cfg={appr:$('sap').checke
  B.cfg=cfg;await PUT(B.code+'/cfg',cfg).catch(()=>toast('⚠️ 저장 못 했어요'));
  if(n&&n!==B.band.name){B.band.name=n;PUT(B.code+'/band/name',n).catch(()=>{});bands.forEach(x=>{if(x.code===B.code)x.name=n});saveBands()}
  toast('설정 저장했어요');render()}
-async function invite(){const u=location.origin+location.pathname+'#/join/'+B.code,t=`🎸 «${B.band.name}» 위밴드 초대\n누르고 이름·파트만 넣으면 끝! (초대 코드 ${B.code})\n${u}`;
+// 📨 초대 = 카톡 리스트 카드(11/9 «초대 링크를 리스트 카드로»). 키는 today119.github.io 가 등록된 카카오 JS 키(꿈길 앱과 같은 앱)
+// 스토어 앱(capacitor://)은 카카오 도메인 인증이 안 돼서 → kshare.html(깃허브 페이지)을 브라우저로 열어 거기서 보냄(모스와 같은 방식)
+const PUB='https://today119.github.io/band-play/',PUBP=()=>NAT?PUB+'band.html':location.origin+location.pathname,PUBD=()=>NAT?PUB:location.origin+location.pathname.replace(/[^/]*$/,'');
+const KKEY='9316a3f1cf1a1915fe2f6d40521ce712';let kP=null;
+function kakao(){if(kP)return kP;kP=new Promise((ok,no)=>{if(window.Kakao&&Kakao.isInitialized&&Kakao.isInitialized())return ok(Kakao);const s=document.createElement('script');s.src='https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';s.onload=()=>{try{if(!Kakao.isInitialized())Kakao.init(KKEY);ok(Kakao)}catch(e){no(e)}};s.onerror=()=>{kP=null;no(new Error('sdk'))};document.head.appendChild(s)});return kP}
+const cut=(v,n)=>v&&v.length>n?v.slice(0,n-1)+'…':(v||'');
+function inviteCard(){const u=PUBP()+'#/join/'+B.code,link={mobileWebUrl:u,webUrl:u},im=f=>PUBD()+'img/'+f,
+ ms=Object.values(B.m).filter(v=>v&&v.name),n=nextOf('j')||nextOf(),
+ parts=Object.keys(PN).filter(pt=>ms.some(v=>v.part===pt)).map(pn),
+ rows=[n&&{title:cut(`다음 ${n.e.ty==='g'?'공연':'합주'} ${fmt(n.d)} ${n.e.tm||''}`.trim(),34),description:cut(n.e.pl||'장소는 앱에서 확인',40),imageUrl:im('ic-cal.png'),link},
+  {title:`멤버 ${ms.length}명`,description:cut(parts.join(' · ')||'첫 멤버가 되어 주세요',40),imageUrl:im('ic-mem.png'),link},
+  n&&n.e.so?{title:cut('이번 곡 · '+n.e.so.split(',').map(x=>x.trim()).filter(Boolean).join(', '),34),description:'악보는 앱 악보함에 있어요',imageUrl:im('ic-song.png'),link}
+   :{title:'합주 출첵 · 파트 악보 · 연습 기록',description:'우리 밴드 일은 위밴드 하나로',imageUrl:im('ic-song.png'),link},
+  {title:`초대 코드 ${B.code}`,description:'설치 없이 이름·파트만 넣으면 가입 끝',imageUrl:im('ic-join.png'),link}].filter(Boolean).slice(0,3);
+ return {objectType:'list',headerTitle:`🎸 ${cut(B.band.name,21)} 초대`,headerLink:link,contents:rows,buttons:[{title:'위밴드 가입하기',link}]}}
+async function inviteText(){const u=PUBP()+'#/join/'+B.code,t=`🎸 «${B.band.name}» 위밴드 초대\n누르고 이름·파트만 넣으면 끝! (초대 코드 ${B.code})\n${u}`;
  try{if(navigator.share){await navigator.share({title:'위밴드 초대',text:t});return}}catch(e){if(e.name==='AbortError')return}
  try{await navigator.clipboard.writeText(t);toast('✅ 복사됨 — 단톡방에 붙여넣기')}catch(e){prompt('복사해서 보내세요',t)}}
+async function invite(){const c=inviteCard();
+ if(NAT){const d=btoa(unescape(encodeURIComponent(JSON.stringify(c)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');window.open(PUB+'kshare.html#d='+d,'_blank');return}
+ try{const K=await kakao();K.Share.sendDefault(c)}catch(e){inviteText()}}
 function quit(){if(roleOf(cid)==='lead'&&Object.keys(B.m).filter(k=>k!==cid).length){toast('밴드장은 먼저 다른 멤버에게 밴드장을 넘겨 주세요');return}if(!confirm(`«${B.band.name}»에서 나갈까요?`))return;DEL(B.code+'/m/'+cid).catch(()=>{});bands=bands.filter(x=>x.code!==B.code);saveBands();
  const cur=LG('band');if(cur&&cur.code===B.code){LSet('band',null);LSet('jr',null);LSet('mode','solo')}B=null;go('#/')}
 function vFee(mb){V(head(mb,'💰 회비')+`<main><div class="card"><h3>2단계에서 열려요</h3><div style="font-size:15px;line-height:1.6">모스처럼 <b>월별 체크판</b>으로 — 누가 몇 월분을 냈는지 한눈에, 총무 혼자서도 관리.</div></div></main>`)}

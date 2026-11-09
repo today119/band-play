@@ -1,0 +1,11 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>위밴드 · 카톡으로 보내기</title>
+<style>body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:#f4f4f6;color:#111;display:flex;min-height:100vh;align-items:center;justify-content:center}
+.c{background:#fff;border-radius:18px;padding:24px 20px;max-width:360px;width:calc(100% - 32px);text-align:center;box-shadow:0 2px 12px #0001}
+h1{font-size:19px;margin:0 0 6px}p{font-size:15px;color:#666;margin:0 0 18px;line-height:1.5}
+button{width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:700;background:#FEE500;color:#191919}</style></head>
+<body><div class="c"><h1 id="t">위밴드 초대 카드</h1><p>아래 버튼을 누르면 카카오톡이 열려요.<br>보낼 단톡방을 고르세요.</p><button id="b">카카오톡으로 보내기</button></div>
+<!-- 스토어 앱(위밴드)은 카카오 JS 도메인 인증이 안 돼서 이 페이지(today119.github.io)로 넘겨 보낸다 -->
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
+<script>let c=null;try{const d=(location.hash.match(/d=([\w-]+)/)||[])[1];c=JSON.parse(decodeURIComponent(escape(atob(d.replace(/-/g,'+').replace(/_/g,'/')))))}catch(e){}
+if(!c){document.getElementById('t').textContent='보낼 내용이 없어요';document.getElementById('b').style.display='none'}
+else{document.getElementById('t').textContent=c.headerTitle||c.content&&c.content.title||'위밴드';Kakao.init('9316a3f1cf1a1915fe2f6d40521ce712');document.getElementById('b').onclick=()=>Kakao.Share.sendDefault(c)}</script></body></html>
