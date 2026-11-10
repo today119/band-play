@@ -156,7 +156,9 @@ window.IC=IC;const BL=window.BL=(id,ic,t)=>{const b=$(id);if(b)b.innerHTML=IC[ic
  if(location.search.slice(1)!==q.toString())history.replaceState(null,'','?'+q.toString())}
 // 아이폰: 무음 스위치가 켜져 있으면 웹오디오(악보 소리)가 안 남 → 오디오 세션을 «재생»으로 바꾸고, 첫 터치에 무음 오디오를 틀어 풀어 줌
 try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
-let unl=false;const unlock=()=>{if(unl)return;unl=true;try{// ★ 길이 0초 파일을 반복하면 PC 크롬이 쉬지 않고 «끝→처음»을 돌아 화면이 굳음(10/27 «PC에서 버튼도 안 눌러지는 멈춤», 응답 최대 27초) → 1초짜리 진짜 무음
+const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+// 11/10 «맥북 스피커 지지직» — 무음 반복은 아이폰 무음 스위치용이라 iOS에서만 튼다(PC·맥에선 소리 장치를 계속 붙잡을 이유 없음)
+let unl=false;const unlock=()=>{if(unl)return;unl=true;if(IOS)try{// ★ 길이 0초 파일을 반복하면 PC 크롬이 쉬지 않고 «끝→처음»을 돌아 화면이 굳음(10/27 «PC에서 버튼도 안 눌러지는 멈춤», 응답 최대 27초) → 1초짜리 진짜 무음
  const n=8000,w=new DataView(new ArrayBuffer(44+n)),S=(o,t)=>[...t].forEach((c,i)=>w.setUint8(o+i,c.charCodeAt(0)));
  S(0,'RIFF');w.setUint32(4,36+n,true);S(8,'WAVEfmt ');w.setUint32(16,16,true);w.setUint16(20,1,true);w.setUint16(22,1,true);w.setUint32(24,8000,true);w.setUint32(28,8000,true);w.setUint16(32,1,true);w.setUint16(34,8,true);S(36,'data');w.setUint32(40,n,true);for(let i=0;i<n;i++)w.setUint8(44+i,128);
  const au=new Audio(URL.createObjectURL(new Blob([w],{type:'audio/wav'})));au.loop=true;au.volume=0.01;au.play().catch(()=>{})}catch(e){}
@@ -695,7 +697,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261028m';
+const ATVER='20261110a';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
