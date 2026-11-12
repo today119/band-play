@@ -455,10 +455,10 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
  const soloPP=window.soloPP=()=>{if(!api.isReadyForPlayback&&api.playerState!==1){wantPlay=!wantPlay;$('st').textContent=wantPlay?'🎵 소리 준비 중 — 끝나면 바로 시작해요':'';$('p').classList.toggle('on',wantPlay);return}api.playPause()};$('p').onclick=soloPP;$('h').onclick=()=>api.stop();
  // ── 11/12 «재생 누르고 바로 멈췄던 곳으로 재생바가 돌아가» + «컴에선 스페이스바 재생·멈춤, 방향키로 재생바 이동(멈춤일 때만)»
  //  멈춤 중 자리(방향키·악보 누르기로 옮긴 곳 포함)를 기억 → ▶ 직후 1.2초 안에 다른 자리로 튀면 그 자리로 되돌려 놓고, 기기 정보를 0000/dbg_solo에 남김
- {let want=-1,guard=0,fixN=0;const T=()=>api.tickPosition;
-  api.playerStateChanged.on(e=>{if(e.state===1){if(want<0)want=T();guard=performance.now()+1200;fixN=0}else setTimeout(()=>{if(api.playerState!==1)want=T()},0)});
+ {let want=-1,guard=0,fixN=0,t0=0;const T=()=>api.tickPosition;
+  api.playerStateChanged.on(e=>{if(e.state===1){if(want<0)want=T();t0=performance.now();guard=t0+1200;fixN=0}else setTimeout(()=>{if(api.playerState!==1)want=T()},0)});
   api.playerPositionChanged.on(e=>{if(api.playerState!==1){if(e.isSeek)want=e.currentTick;return}
-   if(want<0||performance.now()>guard)return;try{if(room||(yp&&$('yt').classList.contains('on')))return}catch(x){}const d=e.currentTick-want;
+   if(want<0||performance.now()>guard)return;try{if(room||(yp&&$('yt').classList.contains('on')))return}catch(x){}const d=e.currentTick-want-Math.max(0,performance.now()-t0)*960*(e.modifiedTempo||120)/60000; // 흐른 시간만큼 간 건 정상
    if((d<-480||d>1920)&&fixN<2){fixN++;const from=e.currentTick,to=want;api.tickPosition=to;
     try{fetch('https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/0000/dbg/s'+String(cid).slice(0,10)+'.json',{method:'PUT',body:JSON.stringify(JSON.stringify({solo:1,at:new Date().toISOString(),v:ATVER,ua:navigator.userAgent.slice(0,120),s:SONG,p:PART,from,to,even:EVEN}))}).catch(()=>{})}catch(x){}}});
   // 방향키: ←→ 한 박(음표) · ↑↓ 한 마디 — 멈춤일 때만. 스페이스 = ▶/⏸ (입력칸에 쓰는 중이면 안 함)
@@ -713,7 +713,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261112a';
+const ATVER='20261112b';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
