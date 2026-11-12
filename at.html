@@ -461,9 +461,11 @@ fetch(DB+q.get('k')+'/tex/'+q.get('s')+'.json').then(r=>r.json()).then(t=>t?with
    if(want<0||performance.now()>guard)return;try{if(room||(yp&&$('yt').classList.contains('on')))return}catch(x){}const d=e.currentTick-want-Math.max(0,performance.now()-t0)*960*(e.modifiedTempo||120)/60000; // 흐른 시간만큼 간 건 정상
    if((d<-480||d>1920)&&fixN<2){fixN++;const from=e.currentTick,to=want;api.tickPosition=to;
     try{fetch('https://matchmaker-28187-default-rtdb.asia-southeast1.firebasedatabase.app/band_play/0000/dbg/s'+String(cid).slice(0,10)+'.json',{method:'PUT',body:JSON.stringify(JSON.stringify({solo:1,at:new Date().toISOString(),v:ATVER,ua:navigator.userAgent.slice(0,120),s:SONG,p:PART,from,to,even:EVEN}))}).catch(()=>{})}catch(x){}}});
-  // 방향키: ←→ 한 박(음표) · ↑↓ 한 마디 — 멈춤일 때만. 스페이스 = ▶/⏸ (입력칸에 쓰는 중이면 안 함)
+  // 방향키: ←→ 한 박(음표) · ↑↓ 윗줄·아랫줄 첫 마디(11/12 «위 아래 방향키는 윗줄로 이동») — 멈춤일 때만. 스페이스 = ▶/⏸ (입력칸에 쓰는 중이면 안 함)
   const step=(dir,bar)=>{const tc=api.tickCache;if(!tc||!api.score)return;const tr=new Set(api.tracks.map(t=>t.index)),t=T(),r=tc.findBeat(tr,t);if(!r)return;let n=t;
-   if(bar){const ml=r.masterBar;if(dir>0)n=ml.end;else if(t-ml.start>120)n=ml.start;else{const pr=ml.start>0&&tc.findBeat(tr,ml.start-1);n=pr?pr.masterBar.start:0}}
+   if(bar){const lb=api.renderer.boundsLookup,ss=lb&&lb.staffSystems||[],bi=r.masterBar.masterBar.index,i=ss.findIndex(y=>y.bars.some(m=>m.index===bi)),tg=ss[i+dir];if(!tg)return;
+    const j=tg.bars[0].index,L=tc.masterBars.filter(m=>m.masterBar.index===j);if(!L.length)return; // 도돌이로 같은 마디가 여러 번이면 지금 자리에서 그 방향 가장 가까운 것
+    const c=dir>0?L.find(m=>m.start>t):[...L].reverse().find(m=>m.start<t);n=(c||L[dir>0?L.length-1:0]).start}
    else if(dir>0)n=r.start+r.tickDuration;else if(t-r.start>60)n=r.start;else{const pr=r.start>0&&tc.findBeat(tr,r.start-1);n=pr?pr.start:0}
    const end=tc.masterBars.length?tc.masterBars[tc.masterBars.length-1].end:n;n=Math.max(0,Math.min(end-1,n));api.tickPosition=n;want=n;try{window.__cx&&window.__cx(n)}catch(x){}};
   addEventListener('keydown',e=>{const el=e.target;if(e.metaKey||e.ctrlKey||e.altKey||(el&&(el.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))))return;
@@ -713,7 +715,7 @@ if(document.getElementById('fs'))document.getElementById('fs').onclick=()=>{cons
  document.addEventListener('click',e=>{if(mp.classList.contains('on')&&!mp.contains(e.target)&&e.target!==mb){mp.classList.remove('on');mb.classList.remove('on')}},true)}
 // 새 버전 자동 적용(10/27 «폰이 시작하면 아이패드만 까딱» — 오래 열어 둔 아이패드가 옛 코드로 돌던 것으로 보임):
 //  돌아올 때·1분마다 서버의 at.html 버전을 보고, 다르면 연주 중이 아닐 때 새로고침
-const ATVER='20261112b';
+const ATVER='20261112c';
 // 화면 아래 손잡이 옆에 버전을 작게(기기마다 새 버전인지 눈으로 확인)
 {const f=document.getElementById('foot');if(f){const v=document.createElement('small');v.id='ver';v.textContent='v'+ATVER.slice(4);v.style.cssText='position:absolute;right:4px;font:600 10px ui-monospace,monospace;color:#55555a';f.appendChild(v)}}
 {const chk=()=>{if(window.api&&api.playerState===1)return;fetch('at.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/const ATVER='([^']+)'/);
